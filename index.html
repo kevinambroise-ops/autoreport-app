@@ -1489,7 +1489,7 @@
       </div>
       <div class="report-section">
        <div class="report-heading">
-        📋 Historique des Alertes
+        �� Historique des Alertes
        </div>
        <div id="alerts-list"></div>
       </div>
@@ -2041,16 +2041,10 @@
     }
 
     function setupLoginForm() {
-      const toggleAdminBtn = document.getElementById('toggle-admin-btn');
-      if (toggleAdminBtn) {
-        const newBtn = toggleAdminBtn.cloneNode(true);
-        toggleAdminBtn.parentNode.replaceChild(newBtn, toggleAdminBtn);
-        
-        document.getElementById('toggle-admin-btn').addEventListener('click', function(e) {
-          e.preventDefault();
-          toggleAdminLogin();
-        });
-      }
+      document.getElementById('toggle-admin-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        toggleAdminLogin();
+      });
 
       document.getElementById('login-form').addEventListener('submit', (e) => {
         e.preventDefault();
@@ -3357,7 +3351,7 @@
           <h4 style="font-weight: 600; color: #1e40af; margin-bottom: 10px;">📊 Analyse du Jour</h4>
           <div style="color: #1e40af; font-size: 13px; line-height: 1.6;">
             <p>• ${incidents.length === 0 ? '✅ Aucun incident enregistré aujourd\'hui' : `⚠️ ${incidents.length} incident(s) enregistré(s)`}</p>
-            <p>����� ${alerts.length === 0 ? '✅ Aucune alerte urgente' : `🚨 ${alerts.length} alerte(s) déclenchée(s)`}</p>
+            <p>����� ${alerts.length === 0 ? '✅ Aucune alerte urgente' : `�� ${alerts.length} alerte(s) déclenchée(s)`}</p>
             <p>• 👮 ${patrols.length} patrouille(s) effectuée(s)</p>
             ${incidents.length > 0 ? `<p>• 🔴 Incidents de haute sévérité: ${incidents.filter(i => i.severity === 'high').length}</p>` : ''}
           </div>
@@ -3902,5 +3896,5 @@ Rapport généré par AUTOREPORT - Plateforme de Sécurité
       }
     });
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cc1a284f0b18a42',t:'MTc3MDc4OTcyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cc2035912288a42',t:'MTc3MDc5MzY4Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
