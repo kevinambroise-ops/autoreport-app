@@ -3903,6 +3903,32 @@ Rapport généré par AUTOREPORT - Plateforme de Sécurité
       if (e.target === modal) {
         closeModal();
       }
+     function toggleAdminLogin() {
+  const adminForm = document.getElementById('admin-login-form');
+  const loginForm = document.getElementById('login-form');
+  
+  if (adminForm.style.display === 'none' || adminForm.style.display === '') {
+    adminForm.style.display = 'block';
+    loginForm.style.display = 'none';
+    document.getElementById('admin-password-input').focus();
+  } else {
+    adminForm.style.display = 'none';
+    loginForm.style.display = 'block';
+  }
+}
+
+function handleAdminLogin(event) {
+  event.preventDefault();
+  const password = document.getElementById('admin-password-input').value;
+  const errorDiv = document.getElementById('admin-login-error');
+  
+  if (password === 'admin123') {
+    sessionStorage.setItem('adminLoggedIn', 'true');
+    window.location.href = '/admin';
+  } else {
+    errorDiv.textContent = '❌ Mot de passe incorrect';
+  }
+}
     });
   </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cc25e9e87a27400',t:'MTc3MDc5NzQyNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
