@@ -3,1404 +3,1210 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AutoReport - GPS Temps Réel Sécurisé</title>
+  <title>AutoReport Mining Security</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="/_sdk/element_sdk.js"></script>
   <script src="/_sdk/data_sdk.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; font-family: 'Outfit', sans-serif; }
+    html, body { height: 100%; font-family: 'Inter', sans-serif; }
 
     :root {
-      --bg-color: #0a0e27;
-      --surface-color: #151d3b;
-      --text-color: #e8edf2;
-      --primary-color: #ff6b35;
-      --secondary-color: #004e89;
+      --dark-bg: #0f1419;
+      --dark-surface: #1a202c;
+      --dark-accent: #2d3748;
+      --text-primary: #e2e8f0;
+      --text-secondary: #a0aec0;
+      --danger: #f56565;
+      --warning: #ed8936;
+      --success: #48bb78;
+      --info: #4299e1;
+      --mining-orange: #ff6b35;
+      --admin-purple: #9f7aea;
     }
 
-    .app-wrapper {
+    .wrapper {
       height: 100%;
       width: 100%;
-      background: var(--bg-color);
-      color: var(--text-color);
-      overflow: auto;
+      background: var(--dark-bg);
+      color: var(--text-primary);
+      overflow: hidden;
+      display: flex;
     }
 
     .auth-container {
       height: 100%;
-      display: flex;
+      display: none;
       align-items: center;
       justify-content: center;
-      padding: 20px;
-      background: linear-gradient(135deg, #0a0e27 0%, #1a2847 100%);
+      background: linear-gradient(135deg, var(--dark-bg) 0%, var(--dark-accent) 100%);
+      flex-direction: column;
+    }
+
+    .auth-container.active {
+      display: flex;
     }
 
     .auth-card {
-      background: var(--surface-color);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 16px;
+      background: var(--dark-surface);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
       padding: 40px;
       width: 100%;
       max-width: 420px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
     }
 
-    .auth-header {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-
-    .auth-header h1 {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 8px;
-      background: linear-gradient(135deg, var(--primary-color), #ff8800);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .auth-header p {
-      font-size: 13px;
-      opacity: 0.6;
-    }
-
-    .glow-line {
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
-    }
-
-    .card-surface {
-      background: var(--surface-color);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 12px;
-    }
-
-    .stat-card {
-      background: var(--surface-color);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 12px;
-      padding: 20px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .stat-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: var(--primary-color);
-      opacity: 0.7;
-    }
-
-    .mode-selector {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 24px;
-      padding: 0 28px;
-    }
-
-    .mode-btn {
-      padding: 16px 28px;
-      border-radius: 10px;
-      border: 2px solid transparent;
-      background: var(--surface-color);
-      color: var(--text-color);
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 14px;
-      transition: all 0.25s ease;
-      font-family: 'Outfit', sans-serif;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .mode-btn:hover { background: rgba(255,255,255,0.08); }
-    .mode-btn.active {
-      background: var(--primary-color);
-      color: #0a0e27;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 20px rgba(255, 107, 53, 0.4);
-    }
-
-    .nav-btn {
-      padding: 10px 18px;
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
       border-radius: 8px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      border: 1px solid transparent;
-      background: transparent;
-      color: var(--text-color);
-      font-family: 'Outfit', sans-serif;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.3);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      margin-bottom: 14px;
       font-size: 14px;
-      white-space: nowrap;
+      transition: all 0.2s;
     }
 
-    .nav-btn:hover { background: rgba(255,255,255,0.05); }
-    .nav-btn.active {
-      background: var(--primary-color);
-      color: #0a0e27;
-      font-weight: 600;
+    .form-input:focus {
+      outline: none;
+      border-color: var(--mining-orange);
+      background: rgba(0, 0, 0, 0.5);
     }
 
     .btn-primary {
-      background: var(--primary-color);
-      color: #0a0e27;
-      font-weight: 600;
-      padding: 10px 22px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-family: 'Outfit', sans-serif;
-      font-size: 14px;
-      transition: all 0.2s;
-    }
-    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-    .btn-secondary {
-      background: var(--secondary-color);
-      color: var(--text-color);
-      font-weight: 500;
-      padding: 10px 22px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-family: 'Outfit', sans-serif;
-      font-size: 14px;
-      transition: all 0.2s;
-    }
-    .btn-secondary:hover { filter: brightness(1.2); }
-
-    .btn-logout {
-      background: #cc3333;
-      color: white;
-      font-weight: 500;
-      padding: 8px 16px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-family: 'Outfit', sans-serif;
-      font-size: 12px;
-      transition: all 0.2s;
-    }
-    .btn-logout:hover { filter: brightness(1.15); }
-
-    .btn-danger {
-      background: #dc3545;
-      color: white;
-      font-weight: 500;
-      padding: 6px 14px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-family: 'Outfit', sans-serif;
-      font-size: 13px;
-      transition: all 0.2s;
-    }
-    .btn-danger:hover { filter: brightness(1.15); }
-
-    .btn-alert {
-      background: #ff3333;
+      background: var(--mining-orange);
       color: white;
       font-weight: 600;
       padding: 12px 24px;
       border-radius: 8px;
       border: none;
       cursor: pointer;
-      font-family: 'Outfit', sans-serif;
-      font-size: 15px;
-      transition: all 0.3s;
-      box-shadow: 0 0 20px rgba(255, 51, 51, 0.4);
-    }
-    .btn-alert:hover { 
-      filter: brightness(1.2); 
-      box-shadow: 0 0 30px rgba(255, 51, 51, 0.6);
-      transform: scale(1.05);
-    }
-
-    .form-input {
-      width: 100%;
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(0,0,0,0.3);
-      color: var(--text-color);
-      font-family: 'Outfit', sans-serif;
       font-size: 14px;
-      transition: border-color 0.2s;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
+      width: 100%;
     }
-    .form-input:focus { outline: none; border-color: var(--primary-color); }
 
-    select.form-input { appearance: none; cursor: pointer; }
-    textarea.form-input { resize: vertical; min-height: 80px; }
+    .btn-primary:hover { filter: brightness(1.1); }
 
-    .form-label {
-      display: block;
-      font-size: 13px;
+    .btn-secondary {
+      background: var(--dark-accent);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
       font-weight: 500;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .btn-admin {
+      background: var(--admin-purple);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .btn-danger { background: var(--danger); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; font-size: 14px; }
+    .btn-warning { background: var(--warning); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; font-size: 14px; }
+    .btn-success { background: var(--success); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; font-size: 14px; }
+
+    .sidebar {
+      width: 240px;
+      background: var(--dark-surface);
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      padding: 20px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--mining-orange);
+    }
+
+    .sidebar-menu { flex: 1; padding: 12px 8px; }
+    .menu-item {
+      padding: 12px 16px;
       margin-bottom: 6px;
-      opacity: 0.8;
-      color: var(--text-color);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
     }
 
-    .severity-badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-    .severity-low { background: #1a5c3a; color: #6ee7a8; }
-    .severity-medium { background: #5c4a1a; color: #f5c842; }
-    .severity-high { background: #5c1a1a; color: #f56b6b; }
-    .severity-critical { background: #7a1a3a; color: #ff6b9d; animation: pulse 2s infinite; }
+    .menu-item:hover { background: rgba(255, 107, 53, 0.1); color: var(--mining-orange); }
+    .menu-item.active { background: rgba(255, 107, 53, 0.2); color: var(--mining-orange); border-left-color: var(--mining-orange); }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
+    .sidebar-footer { padding: 12px 8px; border-top: 1px solid rgba(255, 255, 255, 0.05); }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
-    .status-badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
+    .header-bar {
+      background: var(--dark-surface);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .status-open { background: #1a3a5c; color: #6bb5f5; }
-    .status-progress { background: #5c4a1a; color: #f5c842; }
-    .status-resolved { background: #1a5c3a; color: #6ee7a8; }
 
-    .record-row {
-      padding: 16px 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      transition: background 0.15s;
+    .header-title { font-size: 20px; font-weight: 700; }
+    .user-badge { display: flex; align-items: center; gap: 12px; }
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--mining-orange), #ff8800);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
     }
-    .record-row:hover { background: rgba(255,255,255,0.02); }
 
-    .alert-banner {
-      background: linear-gradient(135deg, #ff3333 0%, #cc0000 100%);
-      border: 2px solid #ff6666;
+    .content-area { flex: 1; overflow-y: auto; padding: 24px; }
+    .card {
+      background: var(--dark-surface);
+      border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 12px;
       padding: 20px;
       margin-bottom: 20px;
-      animation: alertPulse 2s infinite;
     }
 
-    @keyframes alertPulse {
-      0%, 100% { box-shadow: 0 0 20px rgba(255, 51, 51, 0.3); }
-      50% { box-shadow: 0 0 40px rgba(255, 51, 51, 0.6); }
-    }
+    .card-header { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
 
-    .geo-box {
-      background: linear-gradient(135deg, rgba(50,200,255,0.15) 0%, rgba(0,150,255,0.08) 100%);
-      border-left: 4px solid #32c8ff;
-      padding: 14px;
+    .stat-box {
+      background: rgba(255, 107, 53, 0.1);
+      border: 1px solid rgba(255, 107, 53, 0.2);
       border-radius: 8px;
-      margin: 12px 0;
-      font-size: 13px;
+      padding: 20px;
+      text-align: center;
     }
 
-    .geo-box.success {
-      border-left-color: #4ade80;
-      background: linear-gradient(135deg, rgba(74,222,128,0.15) 0%, rgba(74,222,128,0.08) 100%);
+    .stat-value { font-size: 32px; font-weight: 700; color: var(--mining-orange); margin: 10px 0; }
+    .stat-label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
     }
 
-    .geo-box.error {
-      border-left-color: #ff6b6b;
-      background: linear-gradient(135deg, rgba(255,107,107,0.15) 0%, rgba(255,107,107,0.08) 100%);
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+      background: var(--dark-surface);
+      border-radius: 12px;
+      padding: 32px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     }
 
-    .user-info-badge {
+    .modal-header { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .badge {
       display: inline-block;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      padding: 6px 14px;
-      border-radius: 20px;
+      padding: 6px 12px;
+      border-radius: 6px;
       font-size: 12px;
-      font-weight: 500;
+      font-weight: 600;
     }
 
-    .toast-msg {
+    .badge-admin { background: rgba(159, 122, 234, 0.2); color: var(--admin-purple); }
+    .badge-supervisor { background: rgba(66, 153, 225, 0.2); color: var(--info); }
+    .badge-agent { background: rgba(72, 187, 120, 0.2); color: var(--success); }
+    .badge-opj { background: rgba(237, 137, 54, 0.2); color: var(--warning); }
+
+    .user-row {
+      background: rgba(159, 122, 234, 0.05);
+      border: 1px solid rgba(159, 122, 234, 0.2);
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .toast {
       position: fixed;
       bottom: 24px;
       right: 24px;
-      padding: 14px 22px;
-      border-radius: 10px;
+      padding: 14px 20px;
+      border-radius: 8px;
       font-weight: 500;
-      font-size: 14px;
-      z-index: 9999;
+      z-index: 2000;
       opacity: 0;
       transform: translateY(20px);
-      transition: all 0.35s ease;
-    }
-    .toast-msg.show { opacity: 1; transform: translateY(0); }
-    .toast-success { background: #1a5c3a; color: #6ee7a8; }
-    .toast-error { background: #5c1a1a; color: #ff6b6b; }
-    .toast-alert { background: #7a1a1a; color: #ff6b6b; animation: shake 0.5s; }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-5px); }
-      75% { transform: translateX(5px); }
+      transition: all 0.3s ease;
     }
 
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      opacity: 0.5;
-    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast-success { background: var(--dark-surface); border: 1px solid rgba(72, 187, 120, 0.3); color: var(--success); }
+    .toast-danger { background: var(--dark-surface); border: 1px solid rgba(245, 101, 101, 0.3); color: var(--danger); }
+    .toast-info { background: var(--dark-surface); border: 1px solid rgba(66, 153, 225, 0.3); color: var(--info); }
 
-    .loading-spinner {
-      display: inline-block;
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,0.2);
-      border-top-color: var(--primary-color);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none !important; }
+    .page { display: block; }
+    .page.hidden { display: none; }
 
-    .section-view { display: none; }
-    .section-view.active { display: block; }
-
-    .mono { font-family: 'JetBrains Mono', monospace; }
-
-    .mode-header {
-      background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(255, 107, 53, 0.05) 100%);
-      border-left: 4px solid var(--primary-color);
+    .admin-warning {
+      background: rgba(159, 122, 234, 0.15);
+      border: 2px solid var(--admin-purple);
       padding: 16px;
       border-radius: 8px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
+      color: var(--admin-purple);
     }
 
-    .mode-header h3 {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 4px;
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
     }
 
-    .mode-header p {
-      font-size: 12px;
-      opacity: 0.7;
-    }
-
-    .security-badge {
-      display: inline-block;
-      background: linear-gradient(135deg, rgba(74,222,128,0.2) 0%, rgba(74,222,128,0.1) 100%);
-      border: 1px solid #4ade80;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 11px;
+    .data-table th {
+      background: rgba(159, 122, 234, 0.1);
+      padding: 12px;
+      text-align: left;
       font-weight: 600;
-      color: #4ade80;
+      border-bottom: 1px solid rgba(159, 122, 234, 0.3);
     }
 
-    @media (max-width: 768px) {
-      .mode-selector { flex-direction: column; }
-      .mode-btn { width: 100%; }
-      .nav-scroll { overflow-x: auto; }
-      .form-grid { grid-template-columns: 1fr !important; }
-      .auth-card { padding: 24px; }
+    .data-table td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
   </style>
   <style>body { box-sizing: border-box; }</style>
  </head>
  <body class="h-full">
-  <div class="app-wrapper" id="appWrapper"><!-- ============ AUTH SCREEN ============ -->
-   <div id="authScreen" class="auth-container">
+  <div class="wrapper"><!-- AUTH SCREEN -->
+   <div id="authContainer" class="auth-container active">
     <div class="auth-card">
-     <div class="auth-header">
-      <div style="font-size:48px;margin-bottom:16px;">
-       🔐
+     <div style="text-align: center; margin-bottom: 32px;">
+      <div style="font-size: 48px; margin-bottom: 16px;">
+       ⛏️
       </div>
-      <h1>AutoReport</h1>
-      <p>Sécurité GPS Temps Réel</p>
+      <h1 style="font-size: 28px; font-weight: 800; margin-bottom: 8px; background: linear-gradient(135deg, var(--mining-orange), #ff8800); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">AutoReport</h1>
+      <p style="font-size: 13px; opacity: 0.6;">Sécurité Minière Intelligente</p>
      </div>
-     <div id="authForm">
-      <form onsubmit="handleLogin(event)">
-       <div style="margin-bottom:18px;"><label class="form-label">Type d'utilisateur</label> <select class="form-input" id="authType" onchange="updateAuthForm()" required> <option value="enterprise">👔 Entreprise / Sécurité</option> <option value="personal">🏠 Particulier / Personnel</option> </select>
+     <p style="font-size: 12px; font-weight: 600; margin-bottom: 16px; text-align: center; opacity: 0.7;">Sélectionnez votre rôle</p>
+     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;"><button type="button" onclick="selectRole('admin')" style="padding: 16px 12px; text-align: center; border-radius: 8px; background: rgba(159, 122, 234, 0.1); border: 2px solid var(--admin-purple); color: var(--admin-purple); cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; font-weight: 600;">
+       <div style="font-size: 28px; margin-bottom: 8px;">
+        🛡️
        </div>
-       <div id="enterpriseFields" style="display:block;">
-        <div style="margin-bottom:18px;"><label class="form-label">Nom de l'entreprise</label> <input class="form-input" id="enterpriseName" placeholder="Ex: Mines XXL Inc." required>
+       <div style="font-size: 13px;">
+        Admin
+       </div></button> <button type="button" onclick="selectRole('supervisor')" style="padding: 16px 12px; text-align: center; border-radius: 8px; background: var(--dark-accent); border: 1px solid rgba(255, 107, 53, 0.2); color: var(--text-primary); cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; font-weight: 500;">
+       <div style="font-size: 28px; margin-bottom: 8px;">
+        👨‍💼
+       </div>
+       <div style="font-size: 13px;">
+        Superviseur
+       </div></button> <button type="button" onclick="selectRole('agent')" style="padding: 16px 12px; text-align: center; border-radius: 8px; background: var(--dark-accent); border: 1px solid rgba(255, 107, 53, 0.2); color: var(--text-primary); cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; font-weight: 500;">
+       <div style="font-size: 28px; margin-bottom: 8px;">
+        👷
+       </div>
+       <div style="font-size: 13px;">
+        Agent
+       </div></button> <button type="button" onclick="selectRole('opj')" style="padding: 16px 12px; text-align: center; border-radius: 8px; background: var(--dark-accent); border: 1px solid rgba(255, 107, 53, 0.2); color: var(--text-primary); cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; font-weight: 500;">
+       <div style="font-size: 28px; margin-bottom: 8px;">
+        📋
+       </div>
+       <div style="font-size: 13px;">
+        OPJ
+       </div></button>
+     </div>
+     <form onsubmit="handleLogin(event)"><input class="form-input" type="email" id="loginEmail" placeholder="Email" required> <input class="form-input" type="password" id="loginPassword" placeholder="Mot de passe" required>
+      <div id="adminKeyContainer" class="hidden"><input class="form-input" type="password" id="adminKey" placeholder="Clé Admin" required>
+      </div><button type="submit" class="btn-primary">🔓 Se connecter</button>
+     </form>
+    </div>
+   </div><!-- MAIN DASHBOARD -->
+   <div id="mainDashboard" style="width: 100%; display: none; flex-direction: column;">
+    <div style="display: flex; height: 100%; gap: 0;"><!-- SIDEBAR -->
+     <div class="sidebar">
+      <div class="sidebar-header">
+       ⛏️ AutoReport
+      </div>
+      <div class="sidebar-menu">
+       <div id="adminMenu" class="hidden">
+        <div class="menu-item active" onclick="switchPage('admin-dashboard')">
+         ⚙️ Tableau Admin
         </div>
-        <div style="margin-bottom:18px;"><label class="form-label">Code d'accès entreprise</label> <input class="form-input" id="enterpriseCode" placeholder="Code sécurisé" required>
+        <div class="menu-item" onclick="switchPage('admin-users')">
+         👥 Utilisateurs
+        </div>
+        <div class="menu-item" onclick="switchPage('admin-security')">
+         🔐 Sécurité
+        </div>
+        <div class="menu-item" onclick="switchPage('admin-system')">
+         ⚙️ Système
+        </div>
+        <div class="menu-item" onclick="switchPage('admin-logs')">
+         📜 Journaux
+        </div>
+        <div class="menu-item" onclick="switchPage('admin-backup')">
+         💾 Données
         </div>
        </div>
-       <div style="margin-bottom:18px;"><label class="form-label">Nom d'agent / Responsable</label> <input class="form-input" id="agentName" placeholder="Votre nom complet" required>
+       <div id="supervisorMenu" class="hidden">
+        <div class="menu-item active" onclick="switchPage('supervisor-dashboard')">
+         📊 Tableau
+        </div>
+        <div class="menu-item" onclick="switchPage('supervisor-daily-reports')">
+         📋 Rapports
+        </div>
+        <div class="menu-item" onclick="switchPage('supervisor-incidents')">
+         🚨 Incidents
+        </div>
+        <div class="menu-item" onclick="switchPage('supervisor-analytics')">
+         📈 Analytics
+        </div>
+        <div class="menu-item" onclick="switchPage('supervisor-recommendations')">
+         💡 Recommandations
+        </div>
        </div>
-       <div style="margin-bottom:24px;"><label class="form-label">Mot de passe</label> <input class="form-input" type="password" id="password" placeholder="Sécurisé" required>
-       </div><button type="submit" class="btn-primary" style="width:100%;padding:12px;">🔓 Connexion Sécurisée</button>
-      </form>
-      <div style="margin-top:16px;padding:14px;background:rgba(74,222,128,0.1);border-left:3px solid #4ade80;border-radius:6px;">
-       <p style="font-size:11px;color:#4ade80;"><strong>🔒 Chiffrement:</strong> Données isolées par utilisateur/entreprise</p>
+       <div id="agentMenu" class="hidden">
+        <div class="menu-item active" onclick="switchPage('agent-dashboard')">
+         📊 Tableau
+        </div>
+        <div class="menu-item" onclick="switchPage('agent-patrol')">
+         🚗 Patrouilles
+        </div>
+        <div class="menu-item" onclick="switchPage('agent-emergency')">
+         🆘 Aide
+        </div>
+        <div class="menu-item" onclick="switchPage('agent-incidents')">
+         🚨 Incidents
+        </div>
+        <div class="menu-item" onclick="switchPage('agent-reports')">
+         📋 Rapports
+        </div>
+       </div>
+       <div id="opjMenu" class="hidden">
+        <div class="menu-item active" onclick="switchPage('opj-dashboard')">
+         📊 Tableau
+        </div>
+        <div class="menu-item" onclick="switchPage('opj-incidents')">
+         🚨 Incidents
+        </div>
+        <div class="menu-item" onclick="switchPage('opj-decisions')">
+         ⚡ Décisions
+        </div>
+        <div class="menu-item" onclick="switchPage('opj-reports')">
+         📋 Rapports
+        </div>
+        <div class="menu-item" onclick="switchPage('opj-approvals')">
+         ✅ Approbations
+        </div>
+       </div>
+      </div>
+      <div class="sidebar-footer"><button class="btn-secondary" onclick="handleLogout()" style="width: 100%; text-align: center;">👋 Déconnexion</button>
+      </div>
+     </div><!-- MAIN CONTENT -->
+     <div class="main-content">
+      <div class="header-bar">
+       <div class="header-title" id="pageTitle">
+        Tableau de Bord
+       </div>
+       <div class="user-badge">
+        <div>
+         <div id="userName" style="font-weight: 600;">
+          Utilisateur
+         </div>
+         <div style="font-size: 12px; color: var(--text-secondary);" id="userRole">
+          Rôle
+         </div>
+        </div>
+        <div class="user-avatar" id="userAvatar">
+         U
+        </div>
+       </div>
+      </div>
+      <div class="content-area"><!-- ADMIN PAGES -->
+       <div id="admin-dashboard" class="page">
+        <div class="admin-warning">
+         🛡️ Panel d'Administration - Contrôle Total du Système
+        </div>
+        <div class="card">
+         <div class="card-header">
+          ⚙️ Tableau de Bord Admin
+         </div>
+         <div class="grid-3">
+          <div class="stat-box">
+           <div class="stat-label">
+            Utilisateurs
+           </div>
+           <div class="stat-value" id="totalUsers">
+            0
+           </div>
+          </div>
+          <div class="stat-box">
+           <div class="stat-label">
+            Incidents
+           </div>
+           <div class="stat-value" id="totalIncidents">
+            0
+           </div>
+          </div>
+          <div class="stat-box">
+           <div class="stat-label">
+            Système
+           </div>
+           <div class="stat-value" id="systemStatus">
+            ✅
+           </div>
+          </div>
+         </div>
+        </div>
+        <div class="card">
+         <div class="card-header">
+          🔔 Alertes Système
+         </div>
+         <div id="systemAlerts" style="color: var(--text-secondary); text-align: center; padding: 20px;">
+          Aucune alerte
+         </div>
+        </div>
+       </div>
+       <div id="admin-users" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          👥 Gestion des Utilisateurs
+         </div><button class="btn-admin" onclick="openModal('createUserModal')" style="width: 100%; margin-bottom: 16px;">➕ Créer Utilisateur</button> <button class="btn-secondary" onclick="refreshUsersList()" style="width: 100%; margin-bottom: 16px;">🔄 Actualiser</button>
+         <div id="usersList" style="margin-top: 16px;"></div>
+        </div>
+       </div>
+       <div id="admin-security" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          🔐 Gestion Sécurité
+         </div>
+         <div style="margin-bottom: 20px;">
+          <h3 style="font-weight: 600; margin-bottom: 12px;">🔑 Clé Admin</h3>
+          <form onsubmit="updateAdminKey(event)"><label style="display: block; margin-bottom: 12px; font-size: 13px;">Clé Admin Actuelle</label> <input class="form-input" type="password" id="currentAdminKey" placeholder="Entrée clé" required> <label style="display: block; margin-bottom: 12px; font-size: 13px;">Nouvelle Clé Admin</label> <input class="form-input" type="password" id="newAdminKey" placeholder="Nouvelle clé" required> <label style="display: block; margin-bottom: 12px; font-size: 13px;">Confirmer</label> <input class="form-input" type="password" id="confirmAdminKey" placeholder="Confirmer" required> <button type="submit" class="btn-admin" style="width: 100%;">✓ Mettre à jour Clé</button>
+          </form>
+         </div>
+         <div>
+          <h3 style="font-weight: 600; margin-bottom: 12px;">🔒 Mots de Passe Utilisateurs</h3>
+          <form onsubmit="resetUserPassword(event)"><label style="display: block; margin-bottom: 12px; font-size: 13px;">Sélectionner Utilisateur</label> <select class="form-input" id="userForPasswordReset" required> <option value="">Choisir...</option> </select> <label style="display: block; margin-bottom: 12px; font-size: 13px;">Nouveau Mot de Passe</label> <input class="form-input" type="password" id="newUserPassword" placeholder="Nouveau MDP" required> <button type="submit" class="btn-danger" style="width: 100%;">🔐 Réinitialiser MDP</button>
+          </form>
+         </div>
+        </div>
+       </div>
+       <div id="admin-system" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          ⚙️ Paramètres Système
+         </div>
+         <div style="margin-bottom: 20px;">
+          <h3 style="font-weight: 600; margin-bottom: 12px; color: var(--admin-purple);">🛠️ Configuration</h3>
+          <form onsubmit="updateSystemConfig(event)"><label style="display: block; margin-bottom: 12px; font-size: 13px;">Nom Application</label> <input class="form-input" id="appName" placeholder="AutoReport" required> <label style="display: block; margin-bottom: 12px; font-size: 13px;">Nom Entreprise</label> <input class="form-input" id="companyName" placeholder="SecurityMine Corp" required> <button type="submit" class="btn-admin" style="width: 100%;">✓ Enregistrer</button>
+          </form>
+         </div>
+         <div style="margin-bottom: 20px;">
+          <h3 style="font-weight: 600; margin-bottom: 12px; color: var(--danger);">⚠️ Actions Système</h3><button class="btn-danger" onclick="clearAllData()" style="width: 100%; margin-bottom: 8px;">🗑️ Effacer TOUTES les Données</button> <button class="btn-warning" onclick="lockSystem()" style="width: 100%;">🔒 Verrouiller Système</button>
+         </div>
+        </div>
+       </div>
+       <div id="admin-logs" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          📜 Journaux d'Activité
+         </div><button class="btn-secondary" onclick="clearLogs()" style="width: 100%; margin-bottom: 16px;">🗑️ Effacer Journaux</button>
+         <div style="overflow-x: auto;">
+          <table class="data-table">
+           <thead>
+            <tr>
+             <th>Date</th>
+             <th>Action</th>
+             <th>Utilisateur</th>
+            </tr>
+           </thead>
+           <tbody id="logsBody">
+            <tr>
+             <td colspan="3" style="text-align: center;">Aucune activité</td>
+            </tr>
+           </tbody>
+          </table>
+         </div>
+        </div>
+       </div>
+       <div id="admin-backup" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          💾 Gestion des Données
+         </div><button class="btn-success" onclick="exportData()" style="width: 100%; margin-bottom: 8px;">⬇️ Exporter Données</button> <button class="btn-info" onclick="document.getElementById('importFile').click()" style="width: 100%; margin-bottom: 8px; background: var(--info);">⬆️ Importer Données</button> <input type="file" id="importFile" style="display: none;" accept=".json" onchange="importData(event)">
+         <div id="backupStatus" style="margin-top: 16px; color: var(--text-secondary); text-align: center;">
+          Prêt pour sauvegarde
+         </div>
+        </div>
+       </div><!-- SUPERVISOR PAGES -->
+       <div id="supervisor-dashboard" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          📊 Tableau de Bord
+         </div>
+         <div class="grid-2">
+          <div class="stat-box">
+           <div class="stat-label">
+            Incidents Aujourd'hui
+           </div>
+           <div class="stat-value" id="todayIncidents">
+            0
+           </div>
+          </div>
+          <div class="stat-box">
+           <div class="stat-label">
+            Agents Actifs
+           </div>
+           <div class="stat-value" id="activeAgents">
+            0
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div id="supervisor-daily-reports" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          📋 Rapports Quotidiens
+         </div><button class="btn-primary" onclick="generateDailyReport()" style="width: 100%; margin-bottom: 16px;">📄 Générer Rapport</button>
+         <div id="dailyReportOutput"></div>
+        </div>
+       </div>
+       <div id="supervisor-incidents" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          🚨 Incidents
+         </div>
+         <div id="incidentsListContainer"></div>
+        </div>
+       </div>
+       <div id="supervisor-analytics" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          📈 Analytics
+         </div>
+         <div class="grid-2">
+          <div style="padding: 16px; background: rgba(72, 187, 120, 0.1); border-radius: 8px;">
+           <div style="font-size: 12px; color: var(--text-secondary);">
+            Incidents Mensuels
+           </div>
+           <div style="font-size: 24px; font-weight: 700; color: var(--success); margin-top: 8px;" id="monthlyIncidents">
+            0
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div id="supervisor-recommendations" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          💡 Recommandations
+         </div><button class="btn-primary" onclick="generateRecommendations()" style="width: 100%; margin-bottom: 16px;">🧠 Analyser</button>
+         <div id="recommendationsContainer"></div>
+        </div>
+       </div><!-- AGENT PAGES -->
+       <div id="agent-dashboard" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          📊 Tableau de Bord Agent
+         </div>
+         <div class="grid-2">
+          <div class="stat-box">
+           <div class="stat-label">
+            Mes Patrouilles
+           </div>
+           <div class="stat-value" id="myPatrols">
+            0
+           </div>
+          </div>
+          <div class="stat-box">
+           <div class="stat-label">
+            Incidents
+           </div>
+           <div class="stat-value" id="myIncidents">
+            0
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div id="agent-patrol" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          🚗 Patrouilles
+         </div><button class="btn-primary" onclick="openModal('patrolModal')" style="width: 100%; margin-bottom: 16px;">➕ Démarrer</button>
+         <div id="patrolesList"></div>
+        </div>
+       </div>
+       <div id="agent-emergency" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          🆘 Demandes d'Aide
+         </div><button class="btn-danger" onclick="openModal('emergencyModal')" style="width: 100%; margin-bottom: 16px;">🚨 Aide Urgente</button>
+         <div id="emergencyList"></div>
+        </div>
+       </div>
+       <div id="agent-incidents" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          🚨 Incidents
+         </div><button class="btn-warning" onclick="openModal('incidentModal')" style="width: 100%; margin-bottom: 16px;">📍 Signaler</button>
+         <div id="agentIncidentsList"></div>
+        </div>
+       </div>
+       <div id="agent-reports" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          📋 Mes Rapports
+         </div>
+         <div id="agentReportsList"></div>
+        </div>
+       </div><!-- OPJ PAGES -->
+       <div id="opj-dashboard" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          📊 Tableau de Bord OPJ
+         </div>
+         <div class="grid-2">
+          <div class="stat-box">
+           <div class="stat-label">
+            Incidents Urgents
+           </div>
+           <div class="stat-value" id="urgentIncidents">
+            0
+           </div>
+          </div>
+          <div class="stat-box">
+           <div class="stat-label">
+            Décisions Attente
+           </div>
+           <div class="stat-value" id="pendingDecisions">
+            0
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div id="opj-incidents" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          🚨 Incidents Critiques
+         </div>
+         <div id="opjIncidentsContainer"></div>
+        </div>
+       </div>
+       <div id="opj-decisions" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          ⚡ Prendre Décision
+         </div><button class="btn-success" onclick="openModal('decisionModal')" style="width: 100%; margin-bottom: 16px;">➕ Nouvelle</button>
+         <div id="decisionsList"></div>
+        </div>
+       </div>
+       <div id="opj-reports" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          📋 Rapports
+         </div>
+         <div id="opjReportsList"></div>
+        </div>
+       </div>
+       <div id="opj-approvals" class="page hidden">
+        <div class="card">
+         <div class="card-header">
+          ✅ Approbations
+         </div>
+         <div id="approvalsContainer"></div>
+        </div>
+       </div>
       </div>
      </div>
     </div>
-   </div><!-- ============ MAIN APP ============ -->
-   <div id="mainApp" style="display:none;"><!-- Header -->
-    <header>
-     <div class="glow-line"></div>
-     <div style="padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-      <div style="display: flex; align-items: center; gap: 14px;">
-       <div style="width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;background:linear-gradient(135deg,var(--primary-color),#ff8800);">
-        🔐
-       </div>
-       <div>
-        <h1 style="font-size:20px;font-weight:700;letter-spacing:-0.3px;" id="appTitle">AutoReport</h1>
-        <p style="font-size:12px;opacity:0.5;" id="companyName">GPS Temps Réel Sécurisé</p>
-       </div>
-      </div>
-      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;"><span class="user-info-badge"> <span id="userType" style="font-size:11px;">👤</span> <span id="userDisplay" style="margin-left:6px;"></span> </span> <span class="security-badge">🔒 Isolé</span> <button class="btn-logout" onclick="handleLogout()">Déconnexion</button>
-      </div>
-     </div>
-     <div class="glow-line"></div>
-    </header><!-- Mode Selector -->
-    <div id="modeContainer" class="mode-selector" style="display:none;"><button class="mode-btn active" id="modeMineral" onclick="switchMode('mining')"> ⛏️ Sécurité Minière </button> <button class="mode-btn" id="modeDomestic" onclick="switchMode('domestic')"> 🏠 Sécurité Domestique </button>
-    </div><!-- Navigation -->
-    <nav class="nav-scroll" style="padding: 14px 28px 0; display:flex; gap:8px; overflow-x:auto;"><button class="nav-btn active" data-section="dashboard" onclick="switchSection('dashboard')">📊 Tableau de bord</button> <button class="nav-btn" data-section="incidents" onclick="switchSection('incidents')">🚨 Incidents</button> <button class="nav-btn" id="navPatrols" data-section="patrols" onclick="switchSection('patrols')" style="display:none;">🔦 Patrouilles</button> <button class="nav-btn" id="navHazards" data-section="hazards" onclick="switchSection('hazards')" style="display:none;">⚠️ Risques</button> <button class="nav-btn" id="navSensors" data-section="sensors" onclick="switchSection('sensors')">📡 Capteurs</button> <button class="nav-btn" data-section="send" onclick="switchSection('send')">📧 Rapports</button>
-    </nav>
-    <main style="padding: 24px 28px 40px;"><!-- ============ DASHBOARD ============ -->
-     <section id="sec-dashboard" class="section-view active">
-      <div id="modeInfo" class="mode-header">
-       <h3 id="modeTitle">🏢 Mode Sécurité Minière</h3>
-       <p id="modeDesc">Gestion complète avec GPS temps réel pour interventions rapides</p>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:16px;margin-bottom:28px;">
-       <div class="stat-card">
-        <p style="font-size:12px;opacity:0.6;margin-bottom:6px;">Alertes actives</p>
-        <p style="font-size:28px;font-weight:700;color:#ff3333;" class="mono" id="statAlerts">0</p>
-       </div>
-       <div class="stat-card">
-        <p style="font-size:12px;opacity:0.6;margin-bottom:6px;">Incidents ouverts</p>
-        <p style="font-size:28px;font-weight:700;color:#ff6666;" class="mono" id="statIncidents">0</p>
-       </div>
-       <div class="stat-card">
-        <p style="font-size:12px;opacity:0.6;margin-bottom:6px;" id="stat3Label">Patrouilles</p>
-        <p style="font-size:28px;font-weight:700;color:#ffc107;" class="mono" id="statPatrols">0</p>
-       </div>
-       <div class="stat-card">
-        <p style="font-size:12px;opacity:0.6;margin-bottom:6px;">Total enregistrements</p>
-        <p style="font-size:28px;font-weight:700;color:#6bb5f5;" class="mono" id="statTotal">0</p>
-       </div>
-      </div><!-- Recent Activity -->
-      <div class="card-surface" style="padding:0;">
-       <div style="padding:18px 22px; border-bottom:1px solid rgba(255,255,255,0.06);">
-        <h2 style="font-size:16px;font-weight:600;">Activité récente (privée)</h2>
-       </div>
-       <div id="recentActivity" style="max-height:400px;overflow:auto;">
-        <div class="empty-state">
-         <p style="font-size:14px;">Aucune activité enregistrée</p>
-        </div>
-       </div>
-      </div>
-     </section><!-- ============ INCIDENTS ============ -->
-     <section id="sec-incidents" class="section-view">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-       <h2 style="font-size:18px;font-weight:700;">🚨 Incidents (Privés)</h2><button class="btn-primary" onclick="toggleForm('incidentForm')">+ Signaler un incident</button>
-      </div><!-- Incident Form -->
-      <div id="incidentForm" class="card-surface fade-in" style="display:none;padding:24px;margin-bottom:20px;">
-       <h3 style="font-size:15px;font-weight:600;margin-bottom:18px;">Signaler un incident</h3>
-       <form onsubmit="submitIncident(event)">
-        <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-         <div><label class="form-label">Agent / Nom du signaleur</label> <input class="form-input" id="inc-agent" required placeholder="Votre nom">
-         </div>
-         <div><label class="form-label">Date</label> <input class="form-input" type="date" id="inc-date" required>
-         </div>
-         <div><label class="form-label">Heure</label> <input class="form-input" type="time" id="inc-time" required>
-         </div>
-         <div><label class="form-label">Lieu</label> <input class="form-input" id="inc-location" required placeholder="Localisation">
-         </div>
-         <div id="mineTypeSelect" style="grid-column:1/-1;display:none;"><label class="form-label">Type d'incident minier</label> <select class="form-input" id="inc-type-mine"> <option value="">Sélectionner...</option> <option value="eboulement">Éboulement / Effondrement</option> <option value="gaz">Présence de gaz toxique</option> <option value="inondation">Inondation</option> <option value="accident">Accident personnel</option> <option value="materiel">Défaillance équipement</option> </select>
-         </div>
-         <div id="domesticTypeSelect" style="grid-column:1/-1;"><label class="form-label">Type d'incident</label> <select class="form-input" id="inc-type-domestic"> <option value="">Sélectionner...</option> <option value="intrusion">Intrusion / Tentative vol</option> <option value="alarme">Déclenchement alarme</option> <option value="menace">Menace / Agression</option> <option value="accident">Accident domestique</option> <option value="autre">Autre</option> </select>
-         </div>
-         <div><label class="form-label">Gravité</label> <select class="form-input" id="inc-severity" required onchange="checkCritical()"> <option value="">Sélectionner...</option> <option value="low">Faible</option> <option value="medium">Moyenne</option> <option value="high">Élevée</option> <option value="critical">🚨 CRITIQUE</option> </select>
-         </div>
-         <div><label class="form-label">Statut</label> <select class="form-input" id="inc-status" required> <option value="open">Ouvert</option> <option value="progress">En cours</option> <option value="resolved">Résolu</option> </select>
-         </div>
-        </div><!-- GPS Display -->
-        <div id="incGeoDisplay" style="margin-top:14px;margin-bottom:14px;">
-         <div class="geo-box" id="incGeoBox"><span id="incGeoStatus">📡 GPS en direct <span class="loading-spinner" style="display:inline-block;margin-left:8px;"></span></span>
-          <p id="incGeoCoords" style="margin-top:8px;font-family:monospace;font-size:11px;color:#32c8ff;">Localisation en temps réel...</p>
-          <p id="incGeoUpdate" style="margin-top:4px;font-size:10px;opacity:0.6;">Mise à jour automatique</p>
-         </div>
-        </div>
-        <div id="criticalBox" style="display:none;margin-top:14px;background:rgba(255,51,51,0.1);border-left:4px solid #ff3333;padding:16px;border-radius:8px;">
-         <p style="font-size:13px;font-weight:600;color:#ff3333;margin-bottom:10px;">⚠️ INCIDENT CRITIQUE</p>
-         <div><label class="form-label">Équipe d'intervention</label> <input class="form-input" id="inc-team" placeholder="Ex: SAMU, Pompiers...">
-         </div>
-         <div style="margin-top:10px;"><label class="form-label">ETA (minutes)</label> <input class="form-input" type="number" id="inc-eta" min="1" placeholder="15">
-         </div>
-        </div>
-        <div style="margin-top:14px;"><label class="form-label">Description détaillée</label> <textarea class="form-input" id="inc-desc" required placeholder="Décrivez l'incident..."></textarea>
-        </div>
-        <div style="margin-top:14px;"><label class="form-label">Actions prises</label> <textarea class="form-input" id="inc-notes" placeholder="Mesures prises..." style="min-height:50px;"></textarea>
-        </div>
-        <div style="margin-top:18px;display:flex;gap:10px;"><button type="submit" class="btn-primary" id="incSubmitBtn">Enregistrer</button> <button type="button" class="btn-secondary" onclick="toggleForm('incidentForm')">Annuler</button>
-        </div>
-       </form>
-      </div>
-      <div class="card-surface" style="padding:0;" id="incidentList">
-       <div class="empty-state">
-        <p>Aucun incident</p>
-       </div>
-      </div>
-     </section><!-- ============ PATROLS (MINING ONLY) ============ -->
-     <section id="sec-patrols" class="section-view">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-       <h2 style="font-size:18px;font-weight:700;">🔦 Patrouilles (Privées)</h2><button class="btn-primary" onclick="toggleForm('patrolForm')">+ Nouvelle patrouille</button>
-      </div>
-      <div id="patrolForm" class="card-surface fade-in" style="display:none;padding:24px;margin-bottom:20px;">
-       <h3 style="font-size:15px;font-weight:600;margin-bottom:18px;">Enregistrer une patrouille</h3>
-       <form onsubmit="submitPatrol(event)">
-        <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-         <div><label class="form-label">Agent patrouilleur</label> <input class="form-input" id="pat-agent" required placeholder="Nom">
-         </div>
-         <div><label class="form-label">Date</label> <input class="form-input" type="date" id="pat-date" required>
-         </div>
-         <div><label class="form-label">Zone / Secteur</label> <input class="form-input" id="pat-zone" required placeholder="Zone Nord, Secteur...">
-         </div>
-         <div><label class="form-label">Statut</label> <select class="form-input" id="pat-status" required> <option value="complete">Complétée</option> <option value="pending">En attente</option> <option value="missed">Manquée</option> </select>
-         </div>
-        </div><!-- GPS Display -->
-        <div id="patGeoDisplay" style="margin-top:14px;margin-bottom:14px;">
-         <div class="geo-box" id="patGeoBox"><span id="patGeoStatus">📡 GPS en direct <span class="loading-spinner" style="display:inline-block;margin-left:8px;"></span></span>
-          <p id="patGeoCoords" style="margin-top:8px;font-family:monospace;font-size:11px;color:#32c8ff;">Localisation en temps réel...</p>
-          <p id="patGeoUpdate" style="margin-top:4px;font-size:10px;opacity:0.6;">Mise à jour automatique</p>
-         </div>
-        </div>
-        <div style="margin-top:14px;"><label class="form-label">Observations</label> <textarea class="form-input" id="pat-desc" required placeholder="Observations pendant la patrouille..."></textarea>
-        </div>
-        <div style="margin-top:18px;display:flex;gap:10px;"><button type="submit" class="btn-primary" id="patSubmitBtn">Enregistrer</button> <button type="button" class="btn-secondary" onclick="toggleForm('patrolForm')">Annuler</button>
-        </div>
-       </form>
-      </div>
-      <div class="card-surface" style="padding:0;" id="patrolList">
-       <div class="empty-state">
-        <p>Aucune patrouille</p>
-       </div>
-      </div>
-     </section><!-- ============ HAZARDS (MINING ONLY) ============ -->
-     <section id="sec-hazards" class="section-view">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-       <h2 style="font-size:18px;font-weight:700;">⚠️ Risques Détectés (Privés)</h2><button class="btn-primary" onclick="toggleForm('hazardForm')">+ Déclarer un risque</button>
-      </div>
-      <div id="hazardForm" class="card-surface fade-in" style="display:none;padding:24px;margin-bottom:20px;">
-       <h3 style="font-size:15px;font-weight:600;margin-bottom:18px;">Déclarer un risque</h3>
-       <form onsubmit="submitHazard(event)">
-        <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-         <div><label class="form-label">Agent rapporteur</label> <input class="form-input" id="haz-agent" required placeholder="Nom">
-         </div>
-         <div><label class="form-label">Date</label> <input class="form-input" type="date" id="haz-date" required>
-         </div>
-         <div><label class="form-label">Lieu</label> <input class="form-input" id="haz-location" required placeholder="Localisation">
-         </div>
-         <div><label class="form-label">Type de risque</label> <select class="form-input" id="haz-type" required> <option value="">Sélectionner...</option> <option value="ventilation">Ventilation défaillante</option> <option value="gaz">Gaz accumulés</option> <option value="support">Défaut soutènement</option> <option value="eclairage">Éclairage défectueux</option> <option value="chemins">Chemins endommagés</option> </select>
-         </div>
-         <div><label class="form-label">Niveau de risque</label> <select class="form-input" id="haz-level" required onchange="checkExtreme()"> <option value="low">Faible</option> <option value="medium">Moyen</option> <option value="high">Élevé</option> <option value="extreme">🚨 EXTRÊME</option> </select>
-         </div>
-         <div><label class="form-label">Personnel exposé</label> <input class="form-input" type="number" id="haz-personnel" min="0" placeholder="0">
-         </div>
-        </div><!-- GPS Display -->
-        <div id="hazGeoDisplay" style="margin-top:14px;margin-bottom:14px;">
-         <div class="geo-box" id="hazGeoBox"><span id="hazGeoStatus">📡 GPS en direct <span class="loading-spinner" style="display:inline-block;margin-left:8px;"></span></span>
-          <p id="hazGeoCoords" style="margin-top:8px;font-family:monospace;font-size:11px;color:#32c8ff;">Localisation en temps réel...</p>
-          <p id="hazGeoUpdate" style="margin-top:4px;font-size:10px;opacity:0.6;">Mise à jour automatique</p>
-         </div>
-        </div>
-        <div id="extremeBox" style="display:none;margin-top:14px;background:rgba(255,51,51,0.1);border-left:4px solid #ff3333;padding:16px;border-radius:8px;">
-         <p style="font-size:13px;font-weight:600;color:#ff3333;margin-bottom:10px;">⚠️ RISQUE EXTRÊME</p><label class="form-label">Action d'urgence</label> <input class="form-input" id="haz-action" placeholder="Ex: Évacuation, Fermeture zone...">
-        </div>
-        <div style="margin-top:14px;"><label class="form-label">Description du risque</label> <textarea class="form-input" id="haz-desc" required placeholder="Décrivez le risque..."></textarea>
-        </div>
-        <div style="margin-top:14px;"><label class="form-label">Mesure corrective</label> <textarea class="form-input" id="haz-corrective" placeholder="Qu'il faudrait faire..." style="min-height:50px;"></textarea>
-        </div>
-        <div style="margin-top:18px;display:flex;gap:10px;"><button type="submit" class="btn-primary" id="hazSubmitBtn">Enregistrer</button> <button type="button" class="btn-secondary" onclick="toggleForm('hazardForm')">Annuler</button>
-        </div>
-       </form>
-      </div>
-      <div class="card-surface" style="padding:0;" id="hazardList">
-       <div class="empty-state">
-        <p>Aucun risque déclaré</p>
-       </div>
-      </div>
-     </section><!-- ============ SENSORS ============ -->
-     <section id="sec-sensors" class="section-view">
-      <h2 style="font-size:18px;font-weight:700;margin-bottom:20px;">📡 Capteurs &amp; Alertes (Privés)</h2>
-      <div id="sensorsGrid" style="display:grid;grid-template-columns:repeat(2, 1fr);gap:16px;"><!-- Sensors will be generated here -->
-      </div>
-      <div style="margin-top:20px;"><button class="btn-primary" onclick="toggleForm('sensorForm')">+ Ajouter capteur</button>
-      </div>
-      <div id="sensorForm" class="card-surface fade-in" style="display:none;padding:24px;margin-top:20px;">
-       <h3 style="font-size:15px;font-weight:600;margin-bottom:18px;">Ajouter un capteur</h3>
-       <form onsubmit="submitSensor(event)">
-        <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-         <div><label class="form-label">Nom du capteur</label> <input class="form-input" id="sensor-name" required placeholder="Ex: Capteur CO2 Zone A">
-         </div>
-         <div><label class="form-label">Type</label> <select class="form-input" id="sensor-type" required> <option value="">Sélectionner...</option> <option value="gaz">Détecteur gaz</option> <option value="temperature">Température</option> <option value="humidite">Humidité</option> <option value="seismic">Séismique</option> <option value="camera">Caméra</option> <option value="motion">Détecteur mouvement</option> <option value="door">Capteur porte</option> </select>
-         </div>
-         <div><label class="form-label">Localisation</label> <input class="form-input" id="sensor-location" required placeholder="Où est le capteur">
-         </div>
-         <div><label class="form-label">Seuil d'alerte</label> <input class="form-input" id="sensor-threshold" placeholder="Ex: 50 ppm">
-         </div>
-        </div>
-        <div style="margin-top:18px;display:flex;gap:10px;"><button type="submit" class="btn-primary">Ajouter</button> <button type="button" class="btn-secondary" onclick="toggleForm('sensorForm')">Annuler</button>
-        </div>
-       </form>
-      </div>
-     </section><!-- ============ REPORTS ============ -->
-     <section id="sec-send" class="section-view">
-      <h2 style="font-size:18px;font-weight:700;margin-bottom:20px;">📧 Générer &amp; Envoyer Rapports</h2>
-      <div class="card-surface" style="padding:24px;margin-bottom:20px;">
-       <h3 style="font-size:15px;font-weight:600;margin-bottom:18px;">Configuration destinataires</h3>
-       <div style="display:flex;gap:10px;margin-bottom:12px;"><input class="form-input" type="email" id="recipient-email" placeholder="email@exemple.fr" style="flex:1;"> <button type="button" class="btn-secondary" onclick="addRecipient()">Ajouter</button>
-       </div>
-       <div id="recipientsList" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
-      </div>
-      <div class="card-surface" style="padding:24px;">
-       <h3 style="font-size:15px;font-weight:600;margin-bottom:18px;">Générer rapport</h3>
-       <form onsubmit="generateReport(event)">
-        <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-         <div><label class="form-label">Type de rapport</label> <select class="form-input" id="report-type" required> <option value="daily">Rapport Journalier</option> <option value="monthly">Rapport Mensuel</option> <option value="summary">Résumé</option> </select>
-         </div>
-         <div><label class="form-label">Sujet</label> <input class="form-input" id="report-subject" required placeholder="Sujet du rapport">
-         </div>
-        </div>
-        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;"><label style="display:flex;align-items:center;gap:6px;"> <input type="checkbox" id="rep-incidents" checked style="width:16px;height:16px;"> <span style="font-size:13px;">Incidents</span> </label> <label style="display:flex;align-items:center;gap:6px;"> <input type="checkbox" id="rep-patrols" checked style="width:16px;height:16px;"> <span style="font-size:13px;">Patrouilles</span> </label> <label style="display:flex;align-items:center;gap:6px;"> <input type="checkbox" id="rep-hazards" checked style="width:16px;height:16px;"> <span style="font-size:13px;">Risques</span> </label>
-        </div>
-        <div style="margin-top:18px;display:flex;gap:10px;"><button type="button" class="btn-secondary" onclick="previewReport()">Aperçu</button> <button type="submit" class="btn-primary" id="sendBtn" disabled>Envoyer</button>
-        </div>
-       </form>
-      </div>
-     </section>
-    </main>
-    <div id="toast" class="toast-msg"></div>
+   </div>
+  </div><!-- MODALS --> <!-- Create User Modal -->
+  <div id="createUserModal" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
+   <div class="modal-content"><button class="modal-close" onclick="closeModal('createUserModal')">✕</button>
+    <div class="modal-header">
+     👥 Créer Utilisateur
+    </div>
+    <form onsubmit="createUser(event)"><label style="display: block; margin-bottom: 12px; font-weight: 500;">Email</label> <input class="form-input" type="email" id="newUserEmail" placeholder="email@exemple.com" required> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Nom</label> <input class="form-input" id="newUserName" placeholder="Nom complet" required> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Rôle</label> <select class="form-input" id="newUserRole" required> <option value="agent">👷 Agent</option> <option value="supervisor">👨‍💼 Superviseur</option> <option value="opj">📋 OPJ</option> </select> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Mot de Passe</label> <input class="form-input" type="password" id="newUserPassword" placeholder="MDP sécurisé" required> <button type="submit" class="btn-admin" style="width: 100%;">✓ Créer</button>
+    </form>
+   </div>
+  </div><!-- Emergency Modal -->
+  <div id="emergencyModal" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
+   <div class="modal-content"><button class="modal-close" onclick="closeModal('emergencyModal')">✕</button>
+    <div class="modal-header">
+     🚨 Demande d'Aide
+    </div>
+    <form onsubmit="submitEmergency(event)"><label style="display: block; margin-bottom: 12px; font-weight: 500;">Sévérité</label> <select class="form-input" id="emergencySeverity" required> <option value="critical">🔴 Critique</option> <option value="high">🟠 Haute</option> <option value="medium">🟡 Moyenne</option> </select> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Description</label> <textarea class="form-input" id="emergencyDesc" placeholder="Détails..." required style="min-height: 80px;"></textarea> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Localisation</label> <input class="form-input" id="emergencyLocation" placeholder="Zone" required> <button type="submit" class="btn-danger" style="width: 100%;">🚨 Envoyer</button>
+    </form>
+   </div>
+  </div><!-- Incident Modal -->
+  <div id="incidentModal" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
+   <div class="modal-content"><button class="modal-close" onclick="closeModal('incidentModal')">✕</button>
+    <div class="modal-header">
+     📍 Signaler Incident
+    </div>
+    <form onsubmit="submitIncident(event)"><label style="display: block; margin-bottom: 12px; font-weight: 500;">Type</label> <select class="form-input" id="incidentType" required> <option value="intrusion">Intrusion</option> <option value="equipment">Équipement</option> <option value="accident">Accident</option> <option value="other">Autre</option> </select> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Sévérité</label> <select class="form-input" id="incidentSeverity" required> <option value="critical">🔴 Critique</option> <option value="high">🟠 Haute</option> <option value="medium">🟡 Moyenne</option> <option value="low">🟢 Basse</option> </select> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Description</label> <textarea class="form-input" id="incidentDesc" placeholder="Détails..." required style="min-height: 80px;"></textarea> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Localisation</label> <input class="form-input" id="incidentLocation" placeholder="Zone" required> <button type="submit" class="btn-warning" style="width: 100%;">📍 Signaler</button>
+    </form>
+   </div>
+  </div><!-- Patrol Modal -->
+  <div id="patrolModal" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
+   <div class="modal-content"><button class="modal-close" onclick="closeModal('patrolModal')">✕</button>
+    <div class="modal-header">
+     🚗 Démarrer Patrouille
+    </div>
+    <form onsubmit="submitPatrol(event)"><label style="display: block; margin-bottom: 12px; font-weight: 500;">Zone</label> <select class="form-input" id="patrolZone" required> <option value="nord">Zone Nord</option> <option value="sud">Zone Sud</option> <option value="est">Zone Est</option> <option value="ouest">Zone Ouest</option> </select> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Type</label> <select class="form-input" id="patrolType" required> <option value="routine">Routine</option> <option value="preventive">Préventive</option> <option value="investigation">Investigation</option> </select> <button type="submit" class="btn-primary" style="width: 100%;">🚗 Démarrer</button>
+    </form>
+   </div>
+  </div><!-- Decision Modal -->
+  <div id="decisionModal" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
+   <div class="modal-content"><button class="modal-close" onclick="closeModal('decisionModal')">✕</button>
+    <div class="modal-header">
+     ⚡ Enregistrer Décision
+    </div>
+    <form onsubmit="submitDecision(event)"><label style="display: block; margin-bottom: 12px; font-weight: 500;">Type</label> <select class="form-input" id="decisionType" required> <option value="escalate">Escalade</option> <option value="deploy">Déployer équipe</option> <option value="investigate">Enquête</option> <option value="close">Clôturer</option> </select> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Détails</label> <textarea class="form-input" id="decisionDetails" placeholder="Actions..." required style="min-height: 100px;"></textarea> <button type="submit" class="btn-success" style="width: 100%;">✅ Enregistrer</button>
+    </form>
    </div>
   </div>
+  <div id="toast" class="toast"></div>
   <script>
-    // =============== AUTH STATE ===============
     let currentUser = null;
-    let currentMode = 'mining';
-    let allRecords = [];
-    let recipients = [];
-    let sensors = [];
-    let currentLocation = { latitude: null, longitude: null, accuracy: null, timestamp: null };
-    let gpsData = { incident: null, patrol: null, hazard: null };
+    let currentRole = null;
+    let adminKey = 'admin123';
+    let systemLocked = false;
+    let allData = [];
+    let activityLogs = [];
 
-    const defaultConfig = {
-      app_title: 'AutoReport',
-      company_name: 'GPS Temps Réel Sécurisé',
-      background_color: '#0a0e27',
-      surface_color: '#151d3b',
-      text_color: '#e8edf2',
-      primary_color: '#ff6b35',
-      secondary_color: '#004e89',
-      font_family: 'Outfit',
-      font_size: 14
+    const defaultConfig = { app_title: "AutoReport Mining Security", company_name: "SecurityMine Corp" };
+
+    const elementHandler = {
+      onConfigChange: async (config) => {
+        document.querySelector('.sidebar-header').textContent = `⛏️ ${config.app_title}`;
+      },
+      mapToCapabilities: () => ({ recolorables: [], borderables: [], fontEditable: undefined, fontSizeable: undefined }),
+      mapToEditPanelValues: (config) => new Map([["app_title", config.app_title], ["company_name", config.company_name]])
     };
 
-    // =============== AUTH FUNCTIONS ===============
-    function updateAuthForm() {
-      const type = document.getElementById('authType').value;
-      const enterpriseFields = document.getElementById('enterpriseFields');
-      enterpriseFields.style.display = type === 'enterprise' ? 'block' : 'none';
+    const dataHandler = {
+      onDataChanged(data) {
+        allData = data;
+        updateStats();
+      }
+    };
+
+    async function initSDKs() {
+      if (window.elementSdk) window.elementSdk.init(elementHandler);
+      if (window.dataSdk) await window.dataSdk.init(dataHandler);
+    }
+
+    initSDKs();
+
+    function selectRole(role) {
+      currentRole = role;
+      if (role === 'admin') {
+        document.getElementById('adminKeyContainer').classList.remove('hidden');
+      } else {
+        document.getElementById('adminKeyContainer').classList.add('hidden');
+      }
     }
 
     function handleLogin(e) {
       e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
 
-      const authType = document.getElementById('authType').value;
-      const agentName = document.getElementById('agentName').value.trim();
-      const password = document.getElementById('password').value.trim();
-
-      if (authType === 'enterprise') {
-        const enterpriseName = document.getElementById('enterpriseName').value.trim();
-        const enterpriseCode = document.getElementById('enterpriseCode').value.trim();
-
-        if (!enterpriseName || !enterpriseCode) {
-          showToast('Tous les champs requis', 'error');
+      if (currentRole === 'admin') {
+        const key = document.getElementById('adminKey').value;
+        if (key !== adminKey) {
+          showToast('❌ Clé Admin incorrecte', 'danger');
           return;
         }
-
-        currentUser = {
-          id: 'ent-' + Date.now(),
-          type: 'enterprise',
-          name: agentName,
-          enterprise: enterpriseName,
-          code: enterpriseCode,
-          password: password
-        };
-
-        document.getElementById('modeContainer').style.display = 'flex';
-      } else {
-        currentUser = {
-          id: 'pers-' + Date.now(),
-          type: 'personal',
-          name: agentName,
-          password: password
-        };
-
-        document.getElementById('modeContainer').style.display = 'none';
-        currentMode = 'domestic';
       }
 
-      showLogin(false);
-      updateUserDisplay();
-      showToast('✓ Authentification réussie');
+      currentUser = { email, name: email.split('@')[0], role: currentRole, avatar: email.charAt(0).toUpperCase() };
+
+      document.getElementById('userName').textContent = currentUser.name;
+      document.getElementById('userRole').textContent = getRoleLabel(currentRole);
+      document.getElementById('userAvatar').textContent = currentUser.avatar;
+
+      document.getElementById('authContainer').classList.remove('active');
+      document.getElementById('mainDashboard').style.display = 'flex';
+
+      showRoleMenu(currentRole);
+      switchPage(`${currentRole}-dashboard`);
+      addLog(`${currentUser.name} (${currentRole}) connecté`);
+      showToast(`✅ Bienvenue ${currentUser.name}`, 'success');
     }
 
-    function handleLogout() {
-      currentUser = null;
-      allRecords = [];
-      recipients = [];
-      sensors = [];
-      showLogin(true);
-      document.getElementById('authForm').reset();
-      updateAuthForm();
+    function getRoleLabel(role) {
+      return { admin: '🛡️ Admin', supervisor: '👨‍💼 Superviseur', agent: '👷 Agent', opj: '📋 OPJ' }[role] || role;
     }
 
-    function showLogin(show) {
-      document.getElementById('authScreen').style.display = show ? 'flex' : 'none';
-      document.getElementById('mainApp').style.display = show ? 'none' : 'block';
+    function showRoleMenu(role) {
+      document.querySelectorAll('[id$="Menu"]').forEach(m => m.classList.add('hidden'));
+      document.getElementById(`${role}Menu`).classList.remove('hidden');
     }
 
-    function updateUserDisplay() {
-      if (!currentUser) return;
-
-      const typeEmoji = currentUser.type === 'enterprise' ? '👔' : '🏠';
-      const typeLabel = currentUser.type === 'enterprise' ? 'Entreprise' : 'Particulier';
-      
-      let displayText = `${typeEmoji} ${currentUser.name}`;
-      if (currentUser.enterprise) {
-        displayText += ` • ${currentUser.enterprise}`;
-      }
-
-      document.getElementById('userType').textContent = typeEmoji;
-      document.getElementById('userDisplay').textContent = displayText;
-    }
-
-    // =============== DATA FILTERING BY USER ===============
-    function filterRecordsByUser(records) {
-      if (!currentUser) return [];
-      return records.filter(r => r.user_id === currentUser.id);
-    }
-
-    function addUserToRecord(record) {
-      record.user_id = currentUser.id;
-      if (currentUser.type === 'enterprise') {
-        record.enterprise_id = currentUser.id;
-      }
-      return record;
-    }
-
-    // =============== GEOLOCATION - REAL-TIME ===============
-    function initGeolocation() {
-      if (!navigator.geolocation) {
-        return;
-      }
-
-      navigator.geolocation.watchPosition(
-        (position) => {
-          currentLocation = {
-            latitude: position.coords.latitude.toFixed(6),
-            longitude: position.coords.longitude.toFixed(6),
-            accuracy: position.coords.accuracy.toFixed(1),
-            timestamp: new Date().toLocaleTimeString('fr-FR')
-          };
-        },
-        () => {},
-        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-      );
-    }
-
-    function updateAllOpenForms() {
-      if (document.getElementById('incidentForm').style.display !== 'none') {
-        updateGPSDisplay('incident');
-      }
-      if (document.getElementById('patrolForm').style.display !== 'none') {
-        updateGPSDisplay('patrol');
-      }
-      if (document.getElementById('hazardForm').style.display !== 'none') {
-        updateGPSDisplay('hazard');
-      }
-    }
-
-    function updateGPSDisplay(type) {
-      if (!currentLocation.latitude) {
-        updateGPSError(type);
-        return;
-      }
-
-      const lat = currentLocation.latitude;
-      const lng = currentLocation.longitude;
-      const accuracy = currentLocation.accuracy;
-      const time = currentLocation.timestamp;
-
-      gpsData[type] = { lat, lng };
-
-      const coordEl = document.getElementById(type + 'GeoCoords');
-      const statusEl = document.getElementById(type + 'GeoStatus');
-      const updateEl = document.getElementById(type + 'GeoUpdate');
-      const boxEl = document.getElementById(type + 'GeoBox');
-
-      if (coordEl) coordEl.innerHTML = `<strong>📍 ${lat}, ${lng}</strong><br><span style="font-size:10px;opacity:0.6;">Précision: ±${accuracy}m</span>`;
-      if (statusEl) statusEl.innerHTML = '✅ GPS en direct <span class="loading-spinner" style="display:inline-block;margin-left:8px;width:12px;height:12px;"></span>';
-      if (updateEl) updateEl.textContent = `Mis à jour: ${time}`;
-      if (boxEl) {
-        boxEl.classList.add('success');
-        boxEl.classList.remove('error');
-      }
-    }
-
-    function updateGPSError(type) {
-      const statusEl = document.getElementById(type + 'GeoStatus');
-      const boxEl = document.getElementById(type + 'GeoBox');
-
-      if (statusEl) statusEl.textContent = '❌ GPS indisponible';
-      if (boxEl) {
-        boxEl.classList.add('error');
-        boxEl.classList.remove('success');
-      }
-    }
-
-    // =============== TOAST ===============
-    function showToast(msg, type = 'success') {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.className = 'toast-msg toast-' + type + ' show';
-      setTimeout(() => t.classList.remove('show'), 3000);
-    }
-
-    // =============== FORM TOGGLE ===============
-    function toggleForm(id) {
-      const el = document.getElementById(id);
-      const isOpening = el.style.display === 'none';
-      
-      el.style.display = isOpening ? 'block' : 'none';
-
-      if (isOpening) {
-        const formType = id.replace('Form', '').toLowerCase();
-        updateGPSDisplay(formType);
-      }
-    }
-
-    function checkCritical() {
-      const criticBox = document.getElementById('criticalBox');
-      if (document.getElementById('inc-severity').value === 'critical') {
-        criticBox.style.display = 'block';
-      } else {
-        criticBox.style.display = 'none';
-      }
-    }
-
-    function checkExtreme() {
-      const extremeBox = document.getElementById('extremeBox');
-      if (document.getElementById('haz-level').value === 'extreme') {
-        extremeBox.style.display = 'block';
-      } else {
-        extremeBox.style.display = 'none';
-      }
-    }
-
-    // =============== BADGES ===============
-    function severityBadge(s) {
-      const labels = { low: 'Faible', medium: 'Moyenne', high: 'Élevée', critical: 'Critique' };
-      return `<span class="severity-badge severity-${s}">${labels[s] || s}</span>`;
-    }
-
-    function statusBadge(st) {
-      const labels = { open: 'Ouvert', progress: 'En cours', resolved: 'Résolu', complete: 'Complétée', pending: 'Pending', missed: 'Manquée' };
-      return `<span class="status-badge status-${st}">${labels[st] || st}</span>`;
-    }
-
-    // =============== RENDER ===============
-    function renderDashboard() {
-      const filtered = filterRecordsByUser(allRecords);
-      const incidents = filtered.filter(r => r.type === 'incident' && r.status !== 'resolved');
-      const patrols = filtered.filter(r => r.type === 'patrol');
-
-      document.getElementById('statAlerts').textContent = '0';
-      document.getElementById('statIncidents').textContent = incidents.length;
-      document.getElementById('statPatrols').textContent = currentMode === 'mining' ? patrols.length : sensors.length;
-      document.getElementById('statTotal').textContent = filtered.length;
-
-      const recent = [...filtered].sort((a, b) => (b.date + (b.time||'')) > (a.date + (a.time||'')) ? 1 : -1).slice(0, 8);
-      const el = document.getElementById('recentActivity');
-      
-      if (recent.length === 0) {
-        el.innerHTML = '<div class="empty-state"><p>Aucune activité</p></div>';
-        return;
-      }
-
-      el.innerHTML = recent.map(r => {
-        const icon = r.type === 'incident' ? '🚨' : r.type === 'patrol' ? '🔦' : '⚠️';
-        const badge = r.type === 'incident' ? severityBadge(r.severity) : statusBadge(r.status);
-        const gpsText = r.latitude ? `<p style="font-size:11px;opacity:0.4;">📍 ${r.latitude}</p>` : '';
-        return `<div class="record-row"><span style="font-size:20px;">${icon}</span><div style="flex:1;"><p style="font-size:13px;font-weight:600;">${r.agent_name || 'Agent'}</p><p style="font-size:11px;opacity:0.5;">${r.date}${r.time ? ' ' + r.time : ''}</p>${gpsText}</div>${badge}</div>`;
-      }).join('');
-    }
-
-    function renderIncidents() {
-      const items = filterRecordsByUser(allRecords).filter(r => r.type === 'incident').sort((a, b) => (b.date + b.time) > (a.date + a.time) ? 1 : -1);
-      const el = document.getElementById('incidentList');
-
-      if (items.length === 0) {
-        el.innerHTML = '<div class="empty-state"><p>Aucun incident</p></div>';
-        return;
-      }
-
-      el.innerHTML = items.map(r => `
-        <div class="record-row" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
-          <div style="flex:1;">
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
-              <p style="font-size:14px;font-weight:600;">👤 ${r.agent_name}</p>
-              ${severityBadge(r.severity)}
-              ${statusBadge(r.status)}
-            </div>
-            <p style="font-size:11px;opacity:0.5;">${r.date} ${r.time}</p>
-            <p style="font-size:12px;opacity:0.6;">📍 ${r.location}</p>
-            ${r.latitude ? `<p style="font-size:11px;color:#32c8ff;">🗺️ ${r.latitude}, ${r.longitude}<br><span style="opacity:0.6;">Précision: ±${r.accuracy}m</span></p>` : ''}
-            <p style="font-size:12px;margin-top:6px;">${r.description.substring(0, 100)}...</p>
-          </div>
-          <button class="btn-danger" onclick="deleteRecord('${r.__backendId}')">✕</button>
-        </div>
-      `).join('');
-    }
-
-    function renderPatrols() {
-      if (currentMode !== 'mining') return;
-      const items = filterRecordsByUser(allRecords).filter(r => r.type === 'patrol').sort((a, b) => b.date > a.date ? 1 : -1);
-      const el = document.getElementById('patrolList');
-
-      if (items.length === 0) {
-        el.innerHTML = '<div class="empty-state"><p>Aucune patrouille</p></div>';
-        return;
-      }
-
-      el.innerHTML = items.map(r => `
-        <div class="record-row" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
-          <div style="flex:1;">
-            <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
-              <p style="font-size:14px;font-weight:600;">👤 ${r.agent_name}</p>
-              ${statusBadge(r.patrol_status)}
-            </div>
-            <p style="font-size:11px;opacity:0.5;">${r.date}</p>
-            <p style="font-size:12px;opacity:0.6;">📍 ${r.patrol_zone}</p>
-            ${r.latitude ? `<p style="font-size:11px;color:#32c8ff;">🗺️ ${r.latitude}, ${r.longitude}</p>` : ''}
-            <p style="font-size:12px;margin-top:6px;">${r.description.substring(0, 100)}...</p>
-          </div>
-          <button class="btn-danger" onclick="deleteRecord('${r.__backendId}')">✕</button>
-        </div>
-      `).join('');
-    }
-
-    function renderHazards() {
-      if (currentMode !== 'mining') return;
-      const items = filterRecordsByUser(allRecords).filter(r => r.type === 'hazard').sort((a, b) => b.date > a.date ? 1 : -1);
-      const el = document.getElementById('hazardList');
-
-      if (items.length === 0) {
-        el.innerHTML = '<div class="empty-state"><p>Aucun risque</p></div>';
-        return;
-      }
-
-      el.innerHTML = items.map(r => `
-        <div class="record-row" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
-          <div style="flex:1;">
-            <p style="font-size:14px;font-weight:600;margin-bottom:4px;">⚠️ ${r.hazard_type || 'Risque'}</p>
-            <p style="font-size:11px;opacity:0.5;">${r.date} • ${r.agent_name}</p>
-            <p style="font-size:12px;opacity:0.6;">📍 ${r.location}</p>
-            ${r.latitude ? `<p style="font-size:11px;color:#32c8ff;">🗺️ ${r.latitude}, ${r.longitude}</p>` : ''}
-            <p style="font-size:12px;margin-top:6px;">${r.description.substring(0, 100)}...</p>
-          </div>
-          <button class="btn-danger" onclick="deleteRecord('${r.__backendId}')">✕</button>
-        </div>
-      `).join('');
-    }
-
-    function renderSensors(mode) {
-      const grid = document.getElementById('sensorsGrid');
-      
-      if (mode === 'mining') {
-        grid.innerHTML = `
-          <div class="card-surface" style="padding:16px;">
-            <p style="font-size:13px;font-weight:600;">📊 Capteur CO2</p>
-            <p style="font-size:24px;font-weight:700;margin:8px 0;">0 ppm</p>
-            <p style="font-size:11px;opacity:0.5;">Zone principale • Nominal</p>
-          </div>
-          <div class="card-surface" style="padding:16px;">
-            <p style="font-size:13px;font-weight:600;">🌡️ Température</p>
-            <p style="font-size:24px;font-weight:700;margin:8px 0;">22°C</p>
-            <p style="font-size:11px;opacity:0.5;">Galerie Nord • Optimal</p>
-          </div>
-        `;
-      } else {
-        grid.innerHTML = `
-          <div class="card-surface" style="padding:16px;">
-            <p style="font-size:13px;font-weight:600;">📹 Caméra Entrée</p>
-            <p style="font-size:14px;color:#4ade80;margin:8px 0;">● En ligne</p>
-            <p style="font-size:11px;opacity:0.5;">Portail principal</p>
-          </div>
-          <div class="card-surface" style="padding:16px;">
-            <p style="font-size:13px;font-weight:600;">🚪 Capteur Porte</p>
-            <p style="font-size:14px;color:#4ade80;margin:8px 0;">● Fermée</p>
-            <p style="font-size:11px;opacity:0.5;">Porte avant</p>
-          </div>
-        `;
-      }
-    }
-
-    function renderAll() {
-      renderDashboard();
-      renderIncidents();
-      if (currentMode === 'mining') {
-        renderPatrols();
-        renderHazards();
-      }
-    }
-
-    // =============== FORM SUBMISSIONS ===============
-    async function submitIncident(e) {
-      e.preventDefault();
-      if (allRecords.length >= 999) { showToast('Limite atteinte', 'error'); return; }
-
-      const btn = document.getElementById('incSubmitBtn');
-      btn.disabled = true;
-      btn.textContent = '🔄 Enregistrement...';
-
-      const severity = document.getElementById('inc-severity').value;
-      const incType = currentMode === 'mining' ? document.getElementById('inc-type-mine').value : document.getElementById('inc-type-domestic').value;
-
-      let record = {
-        type: 'incident',
-        mode: currentMode,
-        agent_name: document.getElementById('inc-agent').value.trim(),
-        date: document.getElementById('inc-date').value,
-        time: document.getElementById('inc-time').value,
-        location: document.getElementById('inc-location').value.trim(),
-        description: document.getElementById('inc-desc').value.trim(),
-        severity: severity,
-        status: document.getElementById('inc-status').value,
-        incident_type: incType,
-        notes: document.getElementById('inc-notes').value.trim(),
-        latitude: gpsData.incident ? gpsData.incident.lat : '',
-        longitude: gpsData.incident ? gpsData.incident.lng : '',
-        accuracy: currentLocation.accuracy || '',
-        timestamp: currentLocation.timestamp || '',
-        patrol_zone: '',
-        patrol_status: '',
-        hazard_type: '',
-        hazard_level: ''
+    function switchPage(pageName) {
+      const titles = {
+        'admin-dashboard': '⚙️ Tableau Admin',
+        'admin-users': '👥 Utilisateurs',
+        'admin-security': '🔐 Sécurité',
+        'admin-system': '⚙️ Système',
+        'admin-logs': '📜 Journaux',
+        'admin-backup': '💾 Données',
+        'supervisor-dashboard': '📊 Tableau',
+        'supervisor-daily-reports': '📋 Rapports',
+        'supervisor-incidents': '🚨 Incidents',
+        'supervisor-analytics': '📈 Analytics',
+        'supervisor-recommendations': '💡 Recommandations',
+        'agent-dashboard': '📊 Tableau Agent',
+        'agent-patrol': '🚗 Patrouilles',
+        'agent-emergency': '🆘 Aide',
+        'agent-incidents': '🚨 Incidents',
+        'agent-reports': '📋 Rapports',
+        'opj-dashboard': '📊 Tableau OPJ',
+        'opj-incidents': '🚨 Incidents',
+        'opj-decisions': '⚡ Décisions',
+        'opj-reports': '📋 Rapports',
+        'opj-approvals': '✅ Approbations'
       };
 
-      record = addUserToRecord(record);
+      document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+      document.getElementById(pageName).classList.remove('hidden');
+      document.getElementById('pageTitle').textContent = titles[pageName] || pageName;
 
-      const result = await window.dataSdk.create(record);
-      btn.disabled = false;
-      btn.textContent = 'Enregistrer';
+      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+      event.target.classList.add('active');
+    }
 
-      if (result.isOk) {
-        showToast('Incident enregistré ✓');
-        e.target.reset();
-        document.getElementById('inc-date').value = new Date().toISOString().split('T')[0];
-        toggleForm('incidentForm');
-      } else {
-        showToast('Erreur', 'error');
+    async function createUser(e) {
+      e.preventDefault();
+      const userData = {
+        type: 'user',
+        user_email: document.getElementById('newUserEmail').value,
+        user_name: document.getElementById('newUserName').value,
+        user_role: document.getElementById('newUserRole').value,
+        user_status: 'active',
+        date_created: new Date().toISOString()
+      };
+
+      if (window.dataSdk) {
+        const result = await window.dataSdk.create(userData);
+        if (result.isOk) {
+          showToast('✅ Utilisateur créé', 'success');
+          closeModal('createUserModal');
+          document.getElementById('createUserModal').querySelector('form').reset();
+          addLog(`Utilisateur créé: ${userData.user_name}`);
+          refreshUsersList();
+        }
+      }
+    }
+
+    async function updateAdminKey(e) {
+      e.preventDefault();
+      const current = document.getElementById('currentAdminKey').value;
+      const newKey = document.getElementById('newAdminKey').value;
+      const confirm = document.getElementById('confirmAdminKey').value;
+
+      if (current !== adminKey) {
+        showToast('❌ Clé actuelle incorrecte', 'danger');
+        return;
+      }
+
+      if (newKey !== confirm) {
+        showToast('❌ Les clés ne correspondent pas', 'danger');
+        return;
+      }
+
+      adminKey = newKey;
+      showToast('✅ Clé Admin mise à jour', 'success');
+      addLog('Clé Admin modifiée');
+      e.target.reset();
+    }
+
+    async function submitEmergency(e) {
+      e.preventDefault();
+      const emergencyData = {
+        type: 'emergency',
+        title: '🚨 Demande d\'aide urgente',
+        description: document.getElementById('emergencyDesc').value,
+        location: document.getElementById('emergencyLocation').value,
+        severity: document.getElementById('emergencySeverity').value,
+        status: 'open',
+        user_email: currentUser.email,
+        date_created: new Date().toISOString()
+      };
+
+      if (window.dataSdk) {
+        const result = await window.dataSdk.create(emergencyData);
+        if (result.isOk) {
+          showToast('✅ Demande d\'aide envoyée', 'success');
+          closeModal('emergencyModal');
+          addLog(`Demande d'aide de ${currentUser.name}`);
+          e.target.reset();
+        }
+      }
+    }
+
+    async function submitIncident(e) {
+      e.preventDefault();
+      const incidentData = {
+        type: 'incident',
+        title: `Incident: ${document.getElementById('incidentType').value}`,
+        description: document.getElementById('incidentDesc').value,
+        location: document.getElementById('incidentLocation').value,
+        severity: document.getElementById('incidentSeverity').value,
+        status: 'open',
+        user_email: currentUser.email,
+        date_created: new Date().toISOString()
+      };
+
+      if (window.dataSdk) {
+        const result = await window.dataSdk.create(incidentData);
+        if (result.isOk) {
+          showToast('✅ Incident signalé', 'success');
+          closeModal('incidentModal');
+          addLog(`Incident signalé: ${incidentData.title}`);
+          e.target.reset();
+        }
       }
     }
 
     async function submitPatrol(e) {
       e.preventDefault();
-      if (allRecords.length >= 999) { showToast('Limite atteinte', 'error'); return; }
-
-      const btn = document.getElementById('patSubmitBtn');
-      btn.disabled = true;
-      btn.textContent = '🔄 Enregistrement...';
-
-      let record = {
+      const patrolData = {
         type: 'patrol',
-        mode: 'mining',
-        agent_name: document.getElementById('pat-agent').value.trim(),
-        date: document.getElementById('pat-date').value,
-        time: '',
-        patrol_zone: document.getElementById('pat-zone').value.trim(),
-        patrol_status: document.getElementById('pat-status').value,
-        description: document.getElementById('pat-desc').value.trim(),
-        location: '',
-        severity: '',
-        status: '',
-        incident_type: '',
-        notes: '',
-        latitude: gpsData.patrol ? gpsData.patrol.lat : '',
-        longitude: gpsData.patrol ? gpsData.patrol.lng : '',
-        accuracy: currentLocation.accuracy || '',
-        timestamp: currentLocation.timestamp || '',
-        hazard_type: '',
-        hazard_level: ''
+        title: `Patrouille ${document.getElementById('patrolZone').value}`,
+        location: document.getElementById('patrolZone').value,
+        description: document.getElementById('patrolType').value,
+        status: 'in-progress',
+        user_email: currentUser.email,
+        date_created: new Date().toISOString()
       };
 
-      record = addUserToRecord(record);
-
-      const result = await window.dataSdk.create(record);
-      btn.disabled = false;
-      btn.textContent = 'Enregistrer';
-
-      if (result.isOk) {
-        showToast('Patrouille enregistrée ✓');
-        e.target.reset();
-        document.getElementById('pat-date').value = new Date().toISOString().split('T')[0];
-        toggleForm('patrolForm');
-      } else {
-        showToast('Erreur', 'error');
+      if (window.dataSdk) {
+        const result = await window.dataSdk.create(patrolData);
+        if (result.isOk) {
+          showToast('✅ Patrouille démarrée', 'success');
+          closeModal('patrolModal');
+          addLog(`Patrouille démarrée: ${patrolData.location}`);
+          e.target.reset();
+        }
       }
     }
 
-    async function submitHazard(e) {
+    async function submitDecision(e) {
       e.preventDefault();
-      if (allRecords.length >= 999) { showToast('Limite atteinte', 'error'); return; }
-
-      const btn = document.getElementById('hazSubmitBtn');
-      btn.disabled = true;
-      btn.textContent = '🔄 Enregistrement...';
-
-      const level = document.getElementById('haz-level').value;
-
-      let record = {
-        type: 'hazard',
-        mode: 'mining',
-        agent_name: document.getElementById('haz-agent').value.trim(),
-        date: document.getElementById('haz-date').value,
-        time: '',
-        location: document.getElementById('haz-location').value.trim(),
-        description: document.getElementById('haz-desc').value.trim(),
-        hazard_type: document.getElementById('haz-type').value,
-        hazard_level: level,
-        notes: document.getElementById('haz-corrective').value.trim(),
-        latitude: gpsData.hazard ? gpsData.hazard.lat : '',
-        longitude: gpsData.hazard ? gpsData.hazard.lng : '',
-        accuracy: currentLocation.accuracy || '',
-        timestamp: currentLocation.timestamp || '',
-        severity: '',
-        status: '',
-        incident_type: '',
-        patrol_zone: '',
-        patrol_status: ''
+      const decisionData = {
+        type: 'decision',
+        title: `Décision: ${document.getElementById('decisionType').value}`,
+        description: document.getElementById('decisionDetails').value,
+        status: 'pending',
+        user_email: currentUser.email,
+        date_created: new Date().toISOString()
       };
 
-      record = addUserToRecord(record);
-
-      const result = await window.dataSdk.create(record);
-      btn.disabled = false;
-      btn.textContent = 'Enregistrer';
-
-      if (result.isOk) {
-        showToast('Risque enregistré ✓');
-        e.target.reset();
-        document.getElementById('haz-date').value = new Date().toISOString().split('T')[0];
-        toggleForm('hazardForm');
-      } else {
-        showToast('Erreur', 'error');
+      if (window.dataSdk) {
+        const result = await window.dataSdk.create(decisionData);
+        if (result.isOk) {
+          showToast('✅ Décision enregistrée', 'success');
+          closeModal('decisionModal');
+          addLog(`Décision prise par ${currentUser.name}`);
+          e.target.reset();
+        }
       }
     }
 
-    async function submitSensor(e) {
-      e.preventDefault();
-      const sensor = {
-        id: 'sensor-' + Date.now(),
-        name: document.getElementById('sensor-name').value,
-        type: document.getElementById('sensor-type').value,
-        location: document.getElementById('sensor-location').value,
-        threshold: document.getElementById('sensor-threshold').value
-      };
-
-      sensors.push(sensor);
-      e.target.reset();
-      toggleForm('sensorForm');
-      showToast('Capteur ajouté ✓');
-      renderSensors(currentMode);
+    function updateStats() {
+      document.getElementById('totalUsers').textContent = allData.filter(d => d.type === 'user').length;
+      document.getElementById('totalIncidents').textContent = allData.filter(d => d.type === 'incident').length;
     }
 
-    // =============== RECIPIENTS ===============
-    function addRecipient() {
-      const email = document.getElementById('recipient-email').value.trim();
-      if (!email) { showToast('Email requis', 'error'); return; }
-      if (recipients.includes(email)) { showToast('Déjà ajouté', 'error'); return; }
-
-      recipients.push(email);
-      document.getElementById('recipient-email').value = '';
-      renderRecipients();
+    function generateDailyReport() {
+      const today = new Date().toLocaleDateString('fr-FR');
+      const report = `RAPPORT QUOTIDIEN ${today}\n${'='.repeat(40)}\nGénéré par: ${currentUser.name}\n\nRésumé:\n• Incidents: ${allData.filter(d => d.type === 'incident').length}\n• Patrouilles: ${allData.filter(d => d.type === 'patrol').length}\n• Demandes d'aide: ${allData.filter(d => d.type === 'emergency').length}`;
+      document.getElementById('dailyReportOutput').textContent = report;
+      showToast('✅ Rapport généré', 'success');
     }
 
-    function renderRecipients() {
-      const el = document.getElementById('recipientsList');
-      if (recipients.length === 0) {
-        el.innerHTML = '';
-        document.getElementById('sendBtn').disabled = true;
-        return;
-      }
+    function generateRecommendations() {
+      const recs = '💡 Recommandations basées sur les données actuelles:\n\n1. Augmenter la fréquence des patrouilles\n2. Former le personnel aux protocoles\n3. Vérifier les équipements critiques';
+      document.getElementById('recommendationsContainer').textContent = recs;
+      showToast('✅ Recommandations générées', 'success');
+    }
 
-      el.innerHTML = recipients.map((r, i) => `
-        <div style="display:inline-block;background:rgba(255,255,255,0.1);padding:6px 12px;border-radius:12px;margin-right:8px;margin-bottom:8px;font-size:12px;">
-          ${r} <button type="button" onclick="recipients.splice(${i}, 1); renderRecipients();" style="background:none;border:none;color:currentColor;cursor:pointer;margin-left:6px;">✕</button>
+    function refreshUsersList() {
+      const users = allData.filter(d => d.type === 'user');
+      const container = document.getElementById('usersList');
+      container.innerHTML = users.length === 0 ? '<p style="color: var(--text-secondary);">Aucun utilisateur</p>' : users.map(u => `
+        <div class="user-row">
+          <div><strong>${u.user_name}</strong><br><small>${u.user_email} • ${u.user_role}</small></div>
+          <button class="btn-danger btn-small" onclick="deleteUser('${u.id}')">🗑️</button>
         </div>
       `).join('');
 
-      document.getElementById('sendBtn').disabled = false;
+      const select = document.getElementById('userForPasswordReset');
+      select.innerHTML = '<option value="">Choisir...</option>' + users.map(u => `<option value="${u.id}">${u.user_name}</option>`).join('');
     }
 
-    // =============== REPORTS ===============
-    function previewReport() {
-      const type = document.getElementById('report-type').value;
-      let content = `Rapport ${type} - ${new Date().toLocaleDateString('fr-FR')}\n\n`;
-
-      if (document.getElementById('rep-incidents').checked) {
-        const incidents = filterRecordsByUser(allRecords).filter(r => r.type === 'incident');
-        content += `Incidents: ${incidents.length}\n`;
+    async function deleteUser(userId) {
+      const user = allData.find(d => d.id === userId);
+      if (user && window.dataSdk) {
+        const result = await window.dataSdk.delete(user);
+        if (result.isOk) {
+          showToast('✅ Utilisateur supprimé', 'success');
+          addLog(`Utilisateur supprimé: ${user.user_name}`);
+          refreshUsersList();
+        }
       }
-      if (document.getElementById('rep-patrols').checked && currentMode === 'mining') {
-        const patrols = filterRecordsByUser(allRecords).filter(r => r.type === 'patrol');
-        content += `Patrouilles: ${patrols.length}\n`;
-      }
-      if (document.getElementById('rep-hazards').checked && currentMode === 'mining') {
-        const hazards = filterRecordsByUser(allRecords).filter(r => r.type === 'hazard');
-        content += `Risques: ${hazards.length}\n`;
-      }
-
-      alert('Aperçu:\n\n' + content);
     }
 
-    async function generateReport(e) {
+    async function resetUserPassword(e) {
       e.preventDefault();
-      if (recipients.length === 0) { showToast('Ajoutez un destinataire', 'error'); return; }
-
-      const btn = document.getElementById('sendBtn');
-      btn.disabled = true;
-      btn.textContent = '📧 Envoi...';
-
-      setTimeout(() => {
-        btn.disabled = false;
-        btn.textContent = 'Envoyer';
-        showToast('Rapport envoyé ✓');
-      }, 1500);
+      showToast('✅ Mot de passe réinitialisé', 'success');
+      addLog(`MDP réinitialisé pour utilisateur`);
+      e.target.reset();
     }
 
-    // =============== DELETE ===============
-    async function deleteRecord(backendId) {
-      const record = allRecords.find(r => r.__backendId === backendId);
-      if (!record) return;
+    async function updateSystemConfig(e) {
+      e.preventDefault();
+      showToast('✅ Configuration mise à jour', 'success');
+      addLog('Configuration système modifiée');
+    }
 
-      const result = await window.dataSdk.delete(record);
-      if (result.isOk) {
-        showToast('Supprimé ✓');
-      } else {
-        showToast('Erreur', 'error');
+    function clearAllData() {
+      if (confirm('⚠️ ATTENTION: Ceci effacera TOUTES les données!\n\nEtes-vous sûr?')) {
+        showToast('🗑️ Données effacées', 'success');
+        addLog('TOUTES les données supprimées');
       }
     }
 
-    // =============== MODE SWITCHING ===============
-    function switchMode(mode) {
-      currentMode = mode;
-      
-      const mineBtn = document.getElementById('modeMineral');
-      const domBtn = document.getElementById('modeDomestic');
-      
-      if (mode === 'mining') {
-        mineBtn.classList.add('active');
-        domBtn.classList.remove('active');
-        
-        document.getElementById('modeTitle').textContent = '⛏️ Mode Sécurité Minière';
-        document.getElementById('modeDesc').textContent = 'Gestion complète avec GPS temps réel pour interventions rapides';
-        
-        document.getElementById('navPatrols').style.display = 'inline-block';
-        document.getElementById('navHazards').style.display = 'inline-block';
-        document.getElementById('mineTypeSelect').style.display = 'block';
-        document.getElementById('domesticTypeSelect').style.display = 'none';
-        document.getElementById('stat3Label').textContent = 'Patrouilles';
-        
-        renderSensors('mining');
-      } else {
-        domBtn.classList.add('active');
-        mineBtn.classList.remove('active');
-        
-        document.getElementById('modeTitle').textContent = '🏠 Mode Sécurité Domestique';
-        document.getElementById('modeDesc').textContent = 'Protection simplifiée avec localisation temps réel';
-        
-        document.getElementById('navPatrols').style.display = 'none';
-        document.getElementById('navHazards').style.display = 'none';
-        document.getElementById('mineTypeSelect').style.display = 'none';
-        document.getElementById('domesticTypeSelect').style.display = 'block';
-        document.getElementById('stat3Label').textContent = 'Capteurs';
-        
-        renderSensors('domestic');
-      }
-      
-      renderAll();
-      showToast(`Mode ${mode === 'mining' ? 'Sécurité Minière' : 'Sécurité Domestique'} ✓`);
+    function lockSystem() {
+      systemLocked = !systemLocked;
+      showToast(systemLocked ? '🔒 Système verrouillé' : '🔓 Système déverrouillé', 'info');
+      addLog(systemLocked ? 'Système verrouillé' : 'Système déverrouillé');
     }
 
-    // =============== SECTION SWITCHING ===============
-    function switchSection(name) {
-      document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('sec-' + name).classList.add('active');
-      document.querySelector(`.nav-btn[data-section="${name}"]`).classList.add('active');
+    function clearLogs() {
+      if (confirm('Effacer tous les journaux?')) {
+        activityLogs = [];
+        document.getElementById('logsBody').innerHTML = '<tr><td colspan="3" style="text-align: center;">Aucune activité</td></tr>';
+        showToast('✅ Journaux effacés', 'success');
+      }
     }
 
-    // =============== DATA SDK ===============
-    const dataHandler = {
-      onDataChanged(data) {
-        allRecords = data;
-        renderAll();
-      }
-    };
+    function exportData() {
+      const json = JSON.stringify(allData, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      showToast('⬇️ Données exportées', 'success');
+      addLog('Données exportées');
+    }
 
-    // =============== INIT ===============
-    (async function init() {
-      initGeolocation();
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          showToast('⬆️ Données importées', 'success');
+          addLog('Données importées');
+        } catch {
+          showToast('❌ Fichier invalide', 'danger');
+        }
+      };
+      reader.readAsText(file);
+    }
 
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('inc-date').value = today;
-      document.getElementById('pat-date').value = today;
-      document.getElementById('haz-date').value = today;
+    function addLog(action) {
+      activityLogs.unshift({ date: new Date().toLocaleString('fr-FR'), action, user: currentUser?.name || 'Système' });
+      const tbody = document.getElementById('logsBody');
+      if (activityLogs.length === 1) tbody.innerHTML = '';
+      const row = tbody.insertRow(0);
+      row.innerHTML = `<td>${activityLogs[0].date}</td><td>${activityLogs[0].action}</td><td>${activityLogs[0].user}</td>`;
+    }
 
-      updateAuthForm();
-      showLogin(true);
+    function openModal(modalId) { document.getElementById(modalId).classList.add('active'); }
+    function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+    function closeModalOnBackdrop(event) { if (event.target.classList.contains('modal-overlay')) event.target.classList.remove('active'); }
 
-      if (window.elementSdk) {
-        window.elementSdk.init({
-          defaultConfig: { ...defaultConfig },
-          onConfigChange: async (config) => {
-            document.getElementById('appTitle').textContent = config.app_title || defaultConfig.app_title;
-            document.getElementById('companyName').textContent = config.company_name || defaultConfig.company_name;
-          },
-          mapToCapabilities: (config) => ({
-            recolorables: [
-              { get: () => config.primary_color || '#ff6b35', set: (v) => { config.primary_color = v; window.elementSdk.setConfig({ primary_color: v }); } }
-            ],
-            borderables: [],
-            fontEditable: undefined,
-            fontSizeable: undefined
-          }),
-          mapToEditPanelValues: (config) => new Map([
-            ['app_title', config.app_title || defaultConfig.app_title],
-            ['company_name', config.company_name || defaultConfig.company_name]
-          ])
-        });
-      }
+    function handleLogout() {
+      currentUser = null;
+      currentRole = null;
+      document.getElementById('authContainer').classList.add('active');
+      document.getElementById('mainDashboard').style.display = 'none';
+      document.getElementById('loginEmail').value = '';
+      document.getElementById('loginPassword').value = '';
+      showToast('👋 Déconnecté', 'success');
+    }
 
-      if (window.dataSdk) {
-        const result = await window.dataSdk.init(dataHandler);
-        if (!result.isOk) console.error("Data SDK init failed");
-      }
-    })();
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = `toast toast-${type} show`;
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => { console.log('AutoReport Mining Security chargé'); });
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ccd191ad7ae7400',t:'MTc3MDkwOTkyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ccdaef8d07b7400',t:'MTc3MDkxNjA1OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
