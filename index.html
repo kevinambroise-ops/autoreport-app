@@ -1342,21 +1342,12 @@
     </form>
     <div class="login-info">
      💡 Entrez le code d'accès fourni par votre administrateur
-   <html>
- <head>
-  <style>body { box-sizing: border-box; }</style>
-  <script src="https://cdn.tailwindcss.com/3.4.17" type="text/javascript"></script>
-  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
-  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
- </head>
- <body>
-  <button type="button" class="btn btn-secondary" style="width: 100%; margin-top: 15px; cursor: pointer;" onclick="toggleAdminLogin()">Connexion Admin</button>
-  <form class="login-form" id="admin-login-form" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;" onsubmit="handleAdminLogin(event)">
-   <h3 style="font-size: 14px; margin-bottom: 15px; color: #333; text-align: center;">Accès Administrateur</h3><input type="password" id="admin-password-input" placeholder="Mot de passe administrateur" autocomplete="off" required> <button type="submit" class="login-btn">Se Connecter</button>
-   <div class="login-error" id="admin-login-error"></div>
-  </form>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ccc3f1f35b08a42',t:'MTc3MDkwMDk5Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
-</html>
+    </div><button type="button" class="btn btn-secondary" style="width: 100%; margin-top: 15px; cursor: pointer;" id="toggle-admin-btn">Connexion Admin</button>
+    <form class="login-form" id="admin-login-form" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+     <h3 style="font-size: 14px; margin-bottom: 15px; color: #333; text-align: center;">Accès Administrateur</h3><input type="password" id="admin-password-input" placeholder="Mot de passe administrateur" autocomplete="off" required> <button type="submit" class="login-btn">Se Connecter</button>
+     <div class="login-error" id="admin-login-error"></div>
+    </form>
+   </div>
   </div><!-- EMERGENCY BANNER -->
   <div class="emergency-banner" id="emergency-banner">
    <div class="emergency-banner-content"><span class="emergency-blink"></span> 🚨 ALERTE URGENTE - INTERVENTION REQUISE IMMÉDIATEMENT <span class="emergency-blink"></span>
@@ -3903,33 +3894,7 @@ Rapport généré par AUTOREPORT - Plateforme de Sécurité
       if (e.target === modal) {
         closeModal();
       }
-     function toggleAdminLogin() {
-  const adminForm = document.getElementById('admin-login-form');
-  const loginForm = document.getElementById('login-form');
-  
-  if (adminForm.style.display === 'none' || adminForm.style.display === '') {
-    adminForm.style.display = 'block';
-    loginForm.style.display = 'none';
-    document.getElementById('admin-password-input').focus();
-  } else {
-    adminForm.style.display = 'none';
-    loginForm.style.display = 'block';
-  }
-}
-
-function handleAdminLogin(event) {
-  event.preventDefault();
-  const password = document.getElementById('admin-password-input').value;
-  const errorDiv = document.getElementById('admin-login-error');
-  
-  if (password === 'admin123') {
-    sessionStorage.setItem('adminLoggedIn', 'true');
-    window.location.href = '/admin';
-  } else {
-    errorDiv.textContent = '❌ Mot de passe incorrect';
-  }
-}
     });
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cc25e9e87a27400',t:'MTc3MDc5NzQyNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ccca15944268a42',t:'MTc3MDkwNTAxNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
