@@ -3,1210 +3,1095 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AutoReport Mining Security</title>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <title>AutoReport — Plateforme de Sécurité</title>
   <script src="/_sdk/element_sdk.js"></script>
   <script src="/_sdk/data_sdk.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; font-family: 'Inter', sans-serif; }
+    html, body { height: 100%; font-family: 'Outfit', sans-serif; }
 
     :root {
-      --dark-bg: #0f1419;
-      --dark-surface: #1a202c;
-      --dark-accent: #2d3748;
-      --text-primary: #e2e8f0;
-      --text-secondary: #a0aec0;
-      --danger: #f56565;
-      --warning: #ed8936;
-      --success: #48bb78;
-      --info: #4299e1;
-      --mining-orange: #ff6b35;
-      --admin-purple: #9f7aea;
+      --bg-primary: #0a0e1a;
+      --bg-surface: #111827;
+      --text-main: #e2e8f0;
+      --accent-primary: #3b82f6;
+      --accent-danger: #ef4444;
     }
 
-    .wrapper {
+    body {
+      background: var(--bg-primary);
+      color: var(--text-main);
+    }
+
+    .container-app {
       height: 100%;
       width: 100%;
-      background: var(--dark-bg);
-      color: var(--text-primary);
-      overflow: hidden;
-      display: flex;
+      overflow: auto;
     }
 
-    .auth-container {
-      height: 100%;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, var(--dark-bg) 0%, var(--dark-accent) 100%);
-      flex-direction: column;
+    .glass-card {
+      background: rgba(17, 24, 39, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      border-radius: 16px;
     }
 
-    .auth-container.active {
-      display: flex;
+    .glow-border {
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255,255,255,0.05);
     }
 
-    .auth-card {
-      background: var(--dark-surface);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      padding: 40px;
-      width: 100%;
-      max-width: 420px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    .fade-in {
+      animation: fadeSlide 0.4s ease-out forwards;
+      opacity: 0;
     }
-
-    .form-input {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(0, 0, 0, 0.3);
-      color: var(--text-primary);
-      font-family: 'Inter', sans-serif;
-      margin-bottom: 14px;
-      font-size: 14px;
-      transition: all 0.2s;
-    }
-
-    .form-input:focus {
-      outline: none;
-      border-color: var(--mining-orange);
-      background: rgba(0, 0, 0, 0.5);
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .btn-primary {
-      background: var(--mining-orange);
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
       color: white;
-      font-weight: 600;
-      padding: 12px 24px;
-      border-radius: 8px;
       border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
       cursor: pointer;
+      font-family: 'Outfit', sans-serif;
       font-size: 14px;
-      font-family: 'Inter', sans-serif;
-      transition: all 0.2s;
-      width: 100%;
+      transition: all 0.2s ease;
     }
-
-    .btn-primary:hover { filter: brightness(1.1); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(59,130,246,0.4); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
     .btn-secondary {
-      background: var(--dark-accent);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: var(--text-primary);
+      background: rgba(59,130,246,0.15);
+      color: #93c5fd;
+      border: 1px solid rgba(59,130,246,0.3);
       padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
+      border-radius: 10px;
       font-weight: 500;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
       font-size: 14px;
-      font-family: 'Inter', sans-serif;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
     }
+    .btn-secondary:hover { background: rgba(59,130,246,0.25); }
 
-    .btn-admin {
-      background: var(--admin-purple);
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
       color: white;
-      padding: 10px 20px;
-      border-radius: 8px;
       border: none;
-      cursor: pointer;
+      padding: 12px 24px;
+      border-radius: 10px;
       font-weight: 600;
-      font-size: 14px;
-    }
-
-    .btn-danger { background: var(--danger); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; font-size: 14px; }
-    .btn-warning { background: var(--warning); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; font-size: 14px; }
-    .btn-success { background: var(--success); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; font-size: 14px; }
-
-    .sidebar {
-      width: 240px;
-      background: var(--dark-surface);
-      border-right: 1px solid rgba(255, 255, 255, 0.05);
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-    }
-
-    .sidebar-header {
-      padding: 20px 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      font-weight: 700;
-      font-size: 16px;
-      color: var(--mining-orange);
-    }
-
-    .sidebar-menu { flex: 1; padding: 12px 8px; }
-    .menu-item {
-      padding: 12px 16px;
-      margin-bottom: 6px;
-      border-radius: 8px;
       cursor: pointer;
+      font-family: 'Outfit', sans-serif;
       font-size: 14px;
-      color: var(--text-secondary);
-      transition: all 0.2s;
-      border-left: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .btn-danger:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(239,68,68,0.4); }
+
+    .form-input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: #e2e8f0;
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus { border-color: #3b82f6; box-shadow: 0 0 12px rgba(59,130,246,0.2); }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0.8;
+      margin-bottom: 6px;
     }
 
-    .menu-item:hover { background: rgba(255, 107, 53, 0.1); color: var(--mining-orange); }
-    .menu-item.active { background: rgba(255, 107, 53, 0.2); color: var(--mining-orange); border-left-color: var(--mining-orange); }
-
-    .sidebar-footer { padding: 12px 8px; border-top: 1px solid rgba(255, 255, 255, 0.05); }
-
-    .main-content {
-      flex: 1;
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      gap: 8px;
     }
-
-    .header-bar {
-      background: var(--dark-surface);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      padding: 16px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .toast {
+      padding: 14px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      animation: fadeSlide 0.3s ease-out;
+      max-width: 360px;
     }
-
-    .header-title { font-size: 20px; font-weight: 700; }
-    .user-badge { display: flex; align-items: center; gap: 12px; }
-    .user-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--mining-orange), #ff8800);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 16px;
-    }
-
-    .content-area { flex: 1; overflow-y: auto; padding: 24px; }
-    .card {
-      background: var(--dark-surface);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-
-    .card-header { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-
-    .stat-box {
-      background: rgba(255, 107, 53, 0.1);
-      border: 1px solid rgba(255, 107, 53, 0.2);
-      border-radius: 8px;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .stat-value { font-size: 32px; font-weight: 700; color: var(--mining-orange); margin: 10px 0; }
-    .stat-label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+    .toast-success { background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.4); color: #86efac; }
+    .toast-error { background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; }
 
     .modal-overlay {
-      display: none;
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
-      z-index: 1000;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
       align-items: center;
       justify-content: center;
+      padding: 20px;
+      overflow-y: auto;
     }
-
     .modal-overlay.active { display: flex; }
     .modal-content {
-      background: var(--dark-surface);
-      border-radius: 12px;
-      padding: 32px;
-      max-width: 600px;
-      width: 90%;
-      max-height: 90vh;
+      background: #111827;
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 16px;
+      padding: 28px;
+      max-width: 520px;
+      width: 100%;
+      max-height: 80%;
       overflow-y: auto;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-    }
-
-    .modal-header { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
-    .modal-close {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      font-size: 24px;
-      cursor: pointer;
-      padding: 0;
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      margin: auto;
     }
 
     .badge {
-      display: inline-block;
-      padding: 6px 12px;
-      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-active { background: rgba(34,197,94,0.2); color: #86efac; }
+    .badge-expired { background: rgba(239,68,68,0.2); color: #fca5a5; }
+    .badge-pending { background: rgba(234,179,8,0.2); color: #fde047; }
+
+    .login-container {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 50%, #0a0e1a 100%);
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .logo-brand {
+      font-size: 32px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .header-bar {
+      background: rgba(17,24,39,0.95);
+      border-bottom: 1px solid rgba(59,130,246,0.15);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(59,130,246,0.15);
+      border-radius: 20px;
       font-size: 12px;
       font-weight: 600;
     }
 
-    .badge-admin { background: rgba(159, 122, 234, 0.2); color: var(--admin-purple); }
-    .badge-supervisor { background: rgba(66, 153, 225, 0.2); color: var(--info); }
-    .badge-agent { background: rgba(72, 187, 120, 0.2); color: var(--success); }
-    .badge-opj { background: rgba(237, 137, 54, 0.2); color: var(--warning); }
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-    .user-row {
-      background: rgba(159, 122, 234, 0.05);
-      border: 1px solid rgba(159, 122, 234, 0.2);
+    .loading-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-box {
+      background: rgba(15,23,42,0.6);
+      border: 1px solid rgba(59,130,246,0.15);
+      border-radius: 12px;
       padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      text-align: center;
     }
 
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      padding: 14px 20px;
-      border-radius: 8px;
-      font-weight: 500;
-      z-index: 2000;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.3s ease;
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
     }
 
-    .toast.show { opacity: 1; transform: translateY(0); }
-    .toast-success { background: var(--dark-surface); border: 1px solid rgba(72, 187, 120, 0.3); color: var(--success); }
-    .toast-danger { background: var(--dark-surface); border: 1px solid rgba(245, 101, 101, 0.3); color: var(--danger); }
-    .toast-info { background: var(--dark-surface); border: 1px solid rgba(66, 153, 225, 0.3); color: var(--info); }
-
-    .hidden { display: none !important; }
-    .page { display: block; }
-    .page.hidden { display: none; }
-
-    .admin-warning {
-      background: rgba(159, 122, 234, 0.15);
-      border: 2px solid var(--admin-purple);
-      padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 16px;
-      color: var(--admin-purple);
+    .stat-label {
+      font-size: 12px;
+      opacity: 0.6;
     }
 
-    .data-table {
+    .table-container {
+      overflow-x: auto;
+    }
+
+    .table {
       width: 100%;
       border-collapse: collapse;
       font-size: 13px;
     }
 
-    .data-table th {
-      background: rgba(159, 122, 234, 0.1);
+    .table th {
+      background: rgba(59,130,246,0.1);
       padding: 12px;
       text-align: left;
       font-weight: 600;
-      border-bottom: 1px solid rgba(159, 122, 234, 0.3);
+      border-bottom: 1px solid rgba(59,130,246,0.2);
     }
 
-    .data-table td {
+    .table td {
       padding: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(59,130,246,0.1);
+    }
+
+    .table tr:hover { background: rgba(59,130,246,0.05); }
+
+    .btn-sm {
+      padding: 4px 10px;
+      font-size: 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      font-family: 'Outfit', sans-serif;
+      transition: all 0.2s;
+      margin-right: 4px;
+    }
+
+    .btn-sm-primary { background: rgba(59,130,246,0.3); color: #93c5fd; }
+    .btn-sm-primary:hover { background: rgba(59,130,246,0.5); }
+
+    .btn-sm-danger { background: rgba(239,68,68,0.3); color: #fca5a5; }
+    .btn-sm-danger:hover { background: rgba(239,68,68,0.5); }
+
+    .pending-verification {
+      background: linear-gradient(135deg, rgba(234,179,8,0.1), rgba(249,115,22,0.1));
+      border: 1px solid rgba(234,179,8,0.3);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .pending-verification p {
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .admin-tab-content { display: none; }
+    .admin-tab-content.active { display: block; }
+
+    .tab-nav { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .tab-btn { padding: 10px 16px; border-radius: 8px; background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); cursor: pointer; font-weight: 500; font-family: 'Outfit', sans-serif; transition: all 0.2s; }
+    .tab-btn.active { background: rgba(59,130,246,0.3); }
+    .tab-btn:hover { background: rgba(59,130,246,0.25); }
+
+    .invitation-box {
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 12px;
+      margin-bottom: 8px;
     }
   </style>
   <style>body { box-sizing: border-box; }</style>
  </head>
  <body class="h-full">
-  <div class="wrapper"><!-- AUTH SCREEN -->
-   <div id="authContainer" class="auth-container active">
-    <div class="auth-card">
-     <div style="text-align: center; margin-bottom: 32px;">
-      <div style="font-size: 48px; margin-bottom: 16px;">
-       ⛏️
+  <div class="container-app" id="appContainer">
+   <div class="toast-container" id="toastContainer"></div>
+   <div class="modal-overlay" id="modalOverlay"></div><!-- LOGIN PAGE -->
+   <div id="loginPage" class="login-container fade-in">
+    <div class="login-card">
+     <div class="glass-card glow-border p-8">
+      <div class="logo-brand">
+       🔐 AutoReport
       </div>
-      <h1 style="font-size: 28px; font-weight: 800; margin-bottom: 8px; background: linear-gradient(135deg, var(--mining-orange), #ff8800); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">AutoReport</h1>
-      <p style="font-size: 13px; opacity: 0.6;">Sécurité Minière Intelligente</p>
-     </div>
-     <p style="font-size: 12px; font-weight: 600; margin-bottom: 16px; text-align: center; opacity: 0.7;">Sélectionnez votre rôle</p>
-     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;"><button type="button" onclick="selectRole('admin')" style="padding: 16px 12px; text-align: center; border-radius: 8px; background: rgba(159, 122, 234, 0.1); border: 2px solid var(--admin-purple); color: var(--admin-purple); cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; font-weight: 600;">
-       <div style="font-size: 28px; margin-bottom: 8px;">
-        🛡️
+      <p class="text-sm opacity-60 mb-6">Plateforme de Gestion de Sécurité Confidentielle</p>
+      <div id="loginTabs" class="tab-nav mb-6"><button class="tab-btn active" id="loginTab">🔓 Connexion</button> <button class="tab-btn" id="invitationTab">📧 Invitation</button>
+      </div><!-- Login Form -->
+      <form id="loginForm" class="flex flex-col gap-4">
+       <div><label class="form-label">Email de l'entreprise</label> <input type="email" id="emailInput" class="form-input" placeholder="contact@entreprise.com" required>
        </div>
-       <div style="font-size: 13px;">
-        Admin
-       </div></button> <button type="button" onclick="selectRole('supervisor')" style="padding: 16px 12px; text-align: center; border-radius: 8px; background: var(--dark-accent); border: 1px solid rgba(255, 107, 53, 0.2); color: var(--text-primary); cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; font-weight: 500;">
-       <div style="font-size: 28px; margin-bottom: 8px;">
-        👨‍💼
+       <div><label class="form-label">Mot de passe</label> <input type="password" id="passwordInput" class="form-input" placeholder="••••••••" required>
+       </div><button type="submit" class="btn-primary flex items-center justify-center gap-2 mt-2"> <span id="loginText">🔓 Connexion</span> <span id="loginSpinner" class="loading-spinner" style="display:none;"></span> </button>
+      </form><!-- Invitation Form -->
+      <form id="invitationForm" class="flex flex-col gap-4" style="display:none;">
+       <p class="text-sm opacity-70 mb-2">Vous avez reçu une invitation AutoReport ? Entrez vos informations :</p>
+       <div><label class="form-label">Token d'invitation</label> <input type="text" id="invitationToken" class="form-input" placeholder="Collez votre token d'invitation" required>
        </div>
-       <div style="font-size: 13px;">
-        Superviseur
-       </div></button> <button type="button" onclick="selectRole('agent')" style="padding: 16px 12px; text-align: center; border-radius: 8px; background: var(--dark-accent); border: 1px solid rgba(255, 107, 53, 0.2); color: var(--text-primary); cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; font-weight: 500;">
-       <div style="font-size: 28px; margin-bottom: 8px;">
-        👷
+       <div><label class="form-label">Email</label> <input type="email" id="invitationEmail" class="form-input" placeholder="contact@entreprise.com" required>
        </div>
-       <div style="font-size: 13px;">
-        Agent
-       </div></button> <button type="button" onclick="selectRole('opj')" style="padding: 16px 12px; text-align: center; border-radius: 8px; background: var(--dark-accent); border: 1px solid rgba(255, 107, 53, 0.2); color: var(--text-primary); cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; font-weight: 500;">
-       <div style="font-size: 28px; margin-bottom: 8px;">
-        📋
+       <div><label class="form-label">Créer un mot de passe</label> <input type="password" id="invitationPassword" class="form-input" placeholder="••••••••" required>
        </div>
-       <div style="font-size: 13px;">
-        OPJ
-       </div></button>
-     </div>
-     <form onsubmit="handleLogin(event)"><input class="form-input" type="email" id="loginEmail" placeholder="Email" required> <input class="form-input" type="password" id="loginPassword" placeholder="Mot de passe" required>
-      <div id="adminKeyContainer" class="hidden"><input class="form-input" type="password" id="adminKey" placeholder="Clé Admin" required>
-      </div><button type="submit" class="btn-primary">🔓 Se connecter</button>
-     </form>
-    </div>
-   </div><!-- MAIN DASHBOARD -->
-   <div id="mainDashboard" style="width: 100%; display: none; flex-direction: column;">
-    <div style="display: flex; height: 100%; gap: 0;"><!-- SIDEBAR -->
-     <div class="sidebar">
-      <div class="sidebar-header">
-       ⛏️ AutoReport
-      </div>
-      <div class="sidebar-menu">
-       <div id="adminMenu" class="hidden">
-        <div class="menu-item active" onclick="switchPage('admin-dashboard')">
-         ⚙️ Tableau Admin
-        </div>
-        <div class="menu-item" onclick="switchPage('admin-users')">
-         👥 Utilisateurs
-        </div>
-        <div class="menu-item" onclick="switchPage('admin-security')">
-         🔐 Sécurité
-        </div>
-        <div class="menu-item" onclick="switchPage('admin-system')">
-         ⚙️ Système
-        </div>
-        <div class="menu-item" onclick="switchPage('admin-logs')">
-         📜 Journaux
-        </div>
-        <div class="menu-item" onclick="switchPage('admin-backup')">
-         💾 Données
-        </div>
-       </div>
-       <div id="supervisorMenu" class="hidden">
-        <div class="menu-item active" onclick="switchPage('supervisor-dashboard')">
-         📊 Tableau
-        </div>
-        <div class="menu-item" onclick="switchPage('supervisor-daily-reports')">
-         📋 Rapports
-        </div>
-        <div class="menu-item" onclick="switchPage('supervisor-incidents')">
-         🚨 Incidents
-        </div>
-        <div class="menu-item" onclick="switchPage('supervisor-analytics')">
-         📈 Analytics
-        </div>
-        <div class="menu-item" onclick="switchPage('supervisor-recommendations')">
-         💡 Recommandations
-        </div>
-       </div>
-       <div id="agentMenu" class="hidden">
-        <div class="menu-item active" onclick="switchPage('agent-dashboard')">
-         📊 Tableau
-        </div>
-        <div class="menu-item" onclick="switchPage('agent-patrol')">
-         🚗 Patrouilles
-        </div>
-        <div class="menu-item" onclick="switchPage('agent-emergency')">
-         🆘 Aide
-        </div>
-        <div class="menu-item" onclick="switchPage('agent-incidents')">
-         🚨 Incidents
-        </div>
-        <div class="menu-item" onclick="switchPage('agent-reports')">
-         📋 Rapports
-        </div>
-       </div>
-       <div id="opjMenu" class="hidden">
-        <div class="menu-item active" onclick="switchPage('opj-dashboard')">
-         📊 Tableau
-        </div>
-        <div class="menu-item" onclick="switchPage('opj-incidents')">
-         🚨 Incidents
-        </div>
-        <div class="menu-item" onclick="switchPage('opj-decisions')">
-         ⚡ Décisions
-        </div>
-        <div class="menu-item" onclick="switchPage('opj-reports')">
-         📋 Rapports
-        </div>
-        <div class="menu-item" onclick="switchPage('opj-approvals')">
-         ✅ Approbations
-        </div>
-       </div>
-      </div>
-      <div class="sidebar-footer"><button class="btn-secondary" onclick="handleLogout()" style="width: 100%; text-align: center;">👋 Déconnexion</button>
-      </div>
-     </div><!-- MAIN CONTENT -->
-     <div class="main-content">
-      <div class="header-bar">
-       <div class="header-title" id="pageTitle">
-        Tableau de Bord
-       </div>
-       <div class="user-badge">
+       <div><label class="form-label">Confirmer le mot de passe</label> <input type="password" id="invitationPasswordConfirm" class="form-input" placeholder="••••••••" required>
+       </div><button type="submit" class="btn-primary flex items-center justify-center gap-2 mt-2"> <span id="invitationText">✅ Accepter l'invitation</span> <span id="invitationSpinner" class="loading-spinner" style="display:none;"></span> </button>
+      </form>
+      <div class="mt-6 p-4 rounded-lg" style="background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);">
+       <p class="text-xs opacity-70 mb-3"><strong>🧪 Comptes de test:</strong></p>
+       <div class="mono text-xs space-y-1 opacity-60">
         <div>
-         <div id="userName" style="font-weight: 600;">
-          Utilisateur
-         </div>
-         <div style="font-size: 12px; color: var(--text-secondary);" id="userRole">
-          Rôle
-         </div>
+         <strong>Admin:</strong> admin@autoreport.com / admin123
         </div>
-        <div class="user-avatar" id="userAvatar">
-         U
+        <div>
+         <strong>Entreprise 1:</strong> secure1@test.com / pass123
         </div>
-       </div>
-      </div>
-      <div class="content-area"><!-- ADMIN PAGES -->
-       <div id="admin-dashboard" class="page">
-        <div class="admin-warning">
-         🛡️ Panel d'Administration - Contrôle Total du Système
-        </div>
-        <div class="card">
-         <div class="card-header">
-          ⚙️ Tableau de Bord Admin
-         </div>
-         <div class="grid-3">
-          <div class="stat-box">
-           <div class="stat-label">
-            Utilisateurs
-           </div>
-           <div class="stat-value" id="totalUsers">
-            0
-           </div>
-          </div>
-          <div class="stat-box">
-           <div class="stat-label">
-            Incidents
-           </div>
-           <div class="stat-value" id="totalIncidents">
-            0
-           </div>
-          </div>
-          <div class="stat-box">
-           <div class="stat-label">
-            Système
-           </div>
-           <div class="stat-value" id="systemStatus">
-            ✅
-           </div>
-          </div>
-         </div>
-        </div>
-        <div class="card">
-         <div class="card-header">
-          🔔 Alertes Système
-         </div>
-         <div id="systemAlerts" style="color: var(--text-secondary); text-align: center; padding: 20px;">
-          Aucune alerte
-         </div>
-        </div>
-       </div>
-       <div id="admin-users" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          👥 Gestion des Utilisateurs
-         </div><button class="btn-admin" onclick="openModal('createUserModal')" style="width: 100%; margin-bottom: 16px;">➕ Créer Utilisateur</button> <button class="btn-secondary" onclick="refreshUsersList()" style="width: 100%; margin-bottom: 16px;">🔄 Actualiser</button>
-         <div id="usersList" style="margin-top: 16px;"></div>
-        </div>
-       </div>
-       <div id="admin-security" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          🔐 Gestion Sécurité
-         </div>
-         <div style="margin-bottom: 20px;">
-          <h3 style="font-weight: 600; margin-bottom: 12px;">🔑 Clé Admin</h3>
-          <form onsubmit="updateAdminKey(event)"><label style="display: block; margin-bottom: 12px; font-size: 13px;">Clé Admin Actuelle</label> <input class="form-input" type="password" id="currentAdminKey" placeholder="Entrée clé" required> <label style="display: block; margin-bottom: 12px; font-size: 13px;">Nouvelle Clé Admin</label> <input class="form-input" type="password" id="newAdminKey" placeholder="Nouvelle clé" required> <label style="display: block; margin-bottom: 12px; font-size: 13px;">Confirmer</label> <input class="form-input" type="password" id="confirmAdminKey" placeholder="Confirmer" required> <button type="submit" class="btn-admin" style="width: 100%;">✓ Mettre à jour Clé</button>
-          </form>
-         </div>
-         <div>
-          <h3 style="font-weight: 600; margin-bottom: 12px;">🔒 Mots de Passe Utilisateurs</h3>
-          <form onsubmit="resetUserPassword(event)"><label style="display: block; margin-bottom: 12px; font-size: 13px;">Sélectionner Utilisateur</label> <select class="form-input" id="userForPasswordReset" required> <option value="">Choisir...</option> </select> <label style="display: block; margin-bottom: 12px; font-size: 13px;">Nouveau Mot de Passe</label> <input class="form-input" type="password" id="newUserPassword" placeholder="Nouveau MDP" required> <button type="submit" class="btn-danger" style="width: 100%;">🔐 Réinitialiser MDP</button>
-          </form>
-         </div>
-        </div>
-       </div>
-       <div id="admin-system" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          ⚙️ Paramètres Système
-         </div>
-         <div style="margin-bottom: 20px;">
-          <h3 style="font-weight: 600; margin-bottom: 12px; color: var(--admin-purple);">🛠️ Configuration</h3>
-          <form onsubmit="updateSystemConfig(event)"><label style="display: block; margin-bottom: 12px; font-size: 13px;">Nom Application</label> <input class="form-input" id="appName" placeholder="AutoReport" required> <label style="display: block; margin-bottom: 12px; font-size: 13px;">Nom Entreprise</label> <input class="form-input" id="companyName" placeholder="SecurityMine Corp" required> <button type="submit" class="btn-admin" style="width: 100%;">✓ Enregistrer</button>
-          </form>
-         </div>
-         <div style="margin-bottom: 20px;">
-          <h3 style="font-weight: 600; margin-bottom: 12px; color: var(--danger);">⚠️ Actions Système</h3><button class="btn-danger" onclick="clearAllData()" style="width: 100%; margin-bottom: 8px;">🗑️ Effacer TOUTES les Données</button> <button class="btn-warning" onclick="lockSystem()" style="width: 100%;">🔒 Verrouiller Système</button>
-         </div>
-        </div>
-       </div>
-       <div id="admin-logs" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          📜 Journaux d'Activité
-         </div><button class="btn-secondary" onclick="clearLogs()" style="width: 100%; margin-bottom: 16px;">🗑️ Effacer Journaux</button>
-         <div style="overflow-x: auto;">
-          <table class="data-table">
-           <thead>
-            <tr>
-             <th>Date</th>
-             <th>Action</th>
-             <th>Utilisateur</th>
-            </tr>
-           </thead>
-           <tbody id="logsBody">
-            <tr>
-             <td colspan="3" style="text-align: center;">Aucune activité</td>
-            </tr>
-           </tbody>
-          </table>
-         </div>
-        </div>
-       </div>
-       <div id="admin-backup" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          💾 Gestion des Données
-         </div><button class="btn-success" onclick="exportData()" style="width: 100%; margin-bottom: 8px;">⬇️ Exporter Données</button> <button class="btn-info" onclick="document.getElementById('importFile').click()" style="width: 100%; margin-bottom: 8px; background: var(--info);">⬆️ Importer Données</button> <input type="file" id="importFile" style="display: none;" accept=".json" onchange="importData(event)">
-         <div id="backupStatus" style="margin-top: 16px; color: var(--text-secondary); text-align: center;">
-          Prêt pour sauvegarde
-         </div>
-        </div>
-       </div><!-- SUPERVISOR PAGES -->
-       <div id="supervisor-dashboard" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          📊 Tableau de Bord
-         </div>
-         <div class="grid-2">
-          <div class="stat-box">
-           <div class="stat-label">
-            Incidents Aujourd'hui
-           </div>
-           <div class="stat-value" id="todayIncidents">
-            0
-           </div>
-          </div>
-          <div class="stat-box">
-           <div class="stat-label">
-            Agents Actifs
-           </div>
-           <div class="stat-value" id="activeAgents">
-            0
-           </div>
-          </div>
-         </div>
-        </div>
-       </div>
-       <div id="supervisor-daily-reports" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          📋 Rapports Quotidiens
-         </div><button class="btn-primary" onclick="generateDailyReport()" style="width: 100%; margin-bottom: 16px;">📄 Générer Rapport</button>
-         <div id="dailyReportOutput"></div>
-        </div>
-       </div>
-       <div id="supervisor-incidents" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          🚨 Incidents
-         </div>
-         <div id="incidentsListContainer"></div>
-        </div>
-       </div>
-       <div id="supervisor-analytics" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          📈 Analytics
-         </div>
-         <div class="grid-2">
-          <div style="padding: 16px; background: rgba(72, 187, 120, 0.1); border-radius: 8px;">
-           <div style="font-size: 12px; color: var(--text-secondary);">
-            Incidents Mensuels
-           </div>
-           <div style="font-size: 24px; font-weight: 700; color: var(--success); margin-top: 8px;" id="monthlyIncidents">
-            0
-           </div>
-          </div>
-         </div>
-        </div>
-       </div>
-       <div id="supervisor-recommendations" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          💡 Recommandations
-         </div><button class="btn-primary" onclick="generateRecommendations()" style="width: 100%; margin-bottom: 16px;">🧠 Analyser</button>
-         <div id="recommendationsContainer"></div>
-        </div>
-       </div><!-- AGENT PAGES -->
-       <div id="agent-dashboard" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          📊 Tableau de Bord Agent
-         </div>
-         <div class="grid-2">
-          <div class="stat-box">
-           <div class="stat-label">
-            Mes Patrouilles
-           </div>
-           <div class="stat-value" id="myPatrols">
-            0
-           </div>
-          </div>
-          <div class="stat-box">
-           <div class="stat-label">
-            Incidents
-           </div>
-           <div class="stat-value" id="myIncidents">
-            0
-           </div>
-          </div>
-         </div>
-        </div>
-       </div>
-       <div id="agent-patrol" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          🚗 Patrouilles
-         </div><button class="btn-primary" onclick="openModal('patrolModal')" style="width: 100%; margin-bottom: 16px;">➕ Démarrer</button>
-         <div id="patrolesList"></div>
-        </div>
-       </div>
-       <div id="agent-emergency" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          🆘 Demandes d'Aide
-         </div><button class="btn-danger" onclick="openModal('emergencyModal')" style="width: 100%; margin-bottom: 16px;">🚨 Aide Urgente</button>
-         <div id="emergencyList"></div>
-        </div>
-       </div>
-       <div id="agent-incidents" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          🚨 Incidents
-         </div><button class="btn-warning" onclick="openModal('incidentModal')" style="width: 100%; margin-bottom: 16px;">📍 Signaler</button>
-         <div id="agentIncidentsList"></div>
-        </div>
-       </div>
-       <div id="agent-reports" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          📋 Mes Rapports
-         </div>
-         <div id="agentReportsList"></div>
-        </div>
-       </div><!-- OPJ PAGES -->
-       <div id="opj-dashboard" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          📊 Tableau de Bord OPJ
-         </div>
-         <div class="grid-2">
-          <div class="stat-box">
-           <div class="stat-label">
-            Incidents Urgents
-           </div>
-           <div class="stat-value" id="urgentIncidents">
-            0
-           </div>
-          </div>
-          <div class="stat-box">
-           <div class="stat-label">
-            Décisions Attente
-           </div>
-           <div class="stat-value" id="pendingDecisions">
-            0
-           </div>
-          </div>
-         </div>
-        </div>
-       </div>
-       <div id="opj-incidents" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          🚨 Incidents Critiques
-         </div>
-         <div id="opjIncidentsContainer"></div>
-        </div>
-       </div>
-       <div id="opj-decisions" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          ⚡ Prendre Décision
-         </div><button class="btn-success" onclick="openModal('decisionModal')" style="width: 100%; margin-bottom: 16px;">➕ Nouvelle</button>
-         <div id="decisionsList"></div>
-        </div>
-       </div>
-       <div id="opj-reports" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          📋 Rapports
-         </div>
-         <div id="opjReportsList"></div>
-        </div>
-       </div>
-       <div id="opj-approvals" class="page hidden">
-        <div class="card">
-         <div class="card-header">
-          ✅ Approbations
-         </div>
-         <div id="approvalsContainer"></div>
+        <div>
+         <strong>Entreprise 2:</strong> secure2@test.com / pass123
         </div>
        </div>
       </div>
      </div>
     </div>
-   </div>
-  </div><!-- MODALS --> <!-- Create User Modal -->
-  <div id="createUserModal" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
-   <div class="modal-content"><button class="modal-close" onclick="closeModal('createUserModal')">✕</button>
-    <div class="modal-header">
-     👥 Créer Utilisateur
+   </div><!-- DASHBOARD PAGE -->
+   <div id="dashboardPage" class="hidden" style="display:none; height: 100%; overflow: auto;">
+    <div class="header-bar">
+     <div class="flex items-center gap-3">
+      <div class="logo-brand" style="font-size: 20px;">
+       AutoReport
+      </div>
+      <div id="headerEnterprise" class="text-sm font-semibold opacity-80">
+       Entreprise
+      </div>
+     </div>
+     <div class="flex items-center gap-4">
+      <div id="subscriptionStatus" class="status-pill">
+       <div class="pulse-dot"></div><span id="subStatusText">Actif</span>
+      </div><button id="logoutBtn" class="btn-secondary text-sm">🚪 Déconnexion</button>
+     </div>
     </div>
-    <form onsubmit="createUser(event)"><label style="display: block; margin-bottom: 12px; font-weight: 500;">Email</label> <input class="form-input" type="email" id="newUserEmail" placeholder="email@exemple.com" required> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Nom</label> <input class="form-input" id="newUserName" placeholder="Nom complet" required> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Rôle</label> <select class="form-input" id="newUserRole" required> <option value="agent">👷 Agent</option> <option value="supervisor">👨‍💼 Superviseur</option> <option value="opj">📋 OPJ</option> </select> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Mot de Passe</label> <input class="form-input" type="password" id="newUserPassword" placeholder="MDP sécurisé" required> <button type="submit" class="btn-admin" style="width: 100%;">✓ Créer</button>
-    </form>
-   </div>
-  </div><!-- Emergency Modal -->
-  <div id="emergencyModal" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
-   <div class="modal-content"><button class="modal-close" onclick="closeModal('emergencyModal')">✕</button>
-    <div class="modal-header">
-     🚨 Demande d'Aide
+    <main class="p-6" id="mainContent">
+     <div class="flex items-center justify-center py-12">
+      <div class="loading-spinner" style="width: 32px; height: 32px;"></div>
+     </div>
+    </main>
+   </div><!-- ADMIN PAGE -->
+   <div id="adminPage" class="hidden" style="display:none; height: 100%; overflow: auto;">
+    <div class="header-bar">
+     <div class="logo-brand" style="font-size: 20px;">
+      AutoReport — Admin
+     </div><button id="adminLogoutBtn" class="btn-secondary text-sm">🚪 Déconnexion</button>
     </div>
-    <form onsubmit="submitEmergency(event)"><label style="display: block; margin-bottom: 12px; font-weight: 500;">Sévérité</label> <select class="form-input" id="emergencySeverity" required> <option value="critical">🔴 Critique</option> <option value="high">🟠 Haute</option> <option value="medium">🟡 Moyenne</option> </select> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Description</label> <textarea class="form-input" id="emergencyDesc" placeholder="Détails..." required style="min-height: 80px;"></textarea> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Localisation</label> <input class="form-input" id="emergencyLocation" placeholder="Zone" required> <button type="submit" class="btn-danger" style="width: 100%;">🚨 Envoyer</button>
-    </form>
-   </div>
-  </div><!-- Incident Modal -->
-  <div id="incidentModal" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
-   <div class="modal-content"><button class="modal-close" onclick="closeModal('incidentModal')">✕</button>
-    <div class="modal-header">
-     📍 Signaler Incident
-    </div>
-    <form onsubmit="submitIncident(event)"><label style="display: block; margin-bottom: 12px; font-weight: 500;">Type</label> <select class="form-input" id="incidentType" required> <option value="intrusion">Intrusion</option> <option value="equipment">Équipement</option> <option value="accident">Accident</option> <option value="other">Autre</option> </select> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Sévérité</label> <select class="form-input" id="incidentSeverity" required> <option value="critical">🔴 Critique</option> <option value="high">🟠 Haute</option> <option value="medium">🟡 Moyenne</option> <option value="low">🟢 Basse</option> </select> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Description</label> <textarea class="form-input" id="incidentDesc" placeholder="Détails..." required style="min-height: 80px;"></textarea> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Localisation</label> <input class="form-input" id="incidentLocation" placeholder="Zone" required> <button type="submit" class="btn-warning" style="width: 100%;">📍 Signaler</button>
-    </form>
-   </div>
-  </div><!-- Patrol Modal -->
-  <div id="patrolModal" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
-   <div class="modal-content"><button class="modal-close" onclick="closeModal('patrolModal')">✕</button>
-    <div class="modal-header">
-     🚗 Démarrer Patrouille
-    </div>
-    <form onsubmit="submitPatrol(event)"><label style="display: block; margin-bottom: 12px; font-weight: 500;">Zone</label> <select class="form-input" id="patrolZone" required> <option value="nord">Zone Nord</option> <option value="sud">Zone Sud</option> <option value="est">Zone Est</option> <option value="ouest">Zone Ouest</option> </select> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Type</label> <select class="form-input" id="patrolType" required> <option value="routine">Routine</option> <option value="preventive">Préventive</option> <option value="investigation">Investigation</option> </select> <button type="submit" class="btn-primary" style="width: 100%;">🚗 Démarrer</button>
-    </form>
-   </div>
-  </div><!-- Decision Modal -->
-  <div id="decisionModal" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
-   <div class="modal-content"><button class="modal-close" onclick="closeModal('decisionModal')">✕</button>
-    <div class="modal-header">
-     ⚡ Enregistrer Décision
-    </div>
-    <form onsubmit="submitDecision(event)"><label style="display: block; margin-bottom: 12px; font-weight: 500;">Type</label> <select class="form-input" id="decisionType" required> <option value="escalate">Escalade</option> <option value="deploy">Déployer équipe</option> <option value="investigate">Enquête</option> <option value="close">Clôturer</option> </select> <label style="display: block; margin-bottom: 12px; font-weight: 500;">Détails</label> <textarea class="form-input" id="decisionDetails" placeholder="Actions..." required style="min-height: 100px;"></textarea> <button type="submit" class="btn-success" style="width: 100%;">✅ Enregistrer</button>
-    </form>
+    <main class="p-6" id="adminContent"><!-- Will be populated -->
+    </main>
    </div>
   </div>
-  <div id="toast" class="toast"></div>
   <script>
-    let currentUser = null;
-    let currentRole = null;
-    let adminKey = 'admin123';
-    let systemLocked = false;
-    let allData = [];
-    let activityLogs = [];
+(async function() {
+  // ==================== STATE ====================
+  let allRecords = [];
+  let currentUser = null;
+  const ADMIN_EMAIL = 'admin@autoreport.com';
+  const ADMIN_PASSWORD = 'admin123';
 
-    const defaultConfig = { app_title: "AutoReport Mining Security", company_name: "SecurityMine Corp" };
+  const testAccounts = [
+    { email: ADMIN_EMAIL, password: ADMIN_PASSWORD, role: 'admin' },
+    { email: 'secure1@test.com', password: 'pass123', role: 'user', enterprise_name: 'Sécurité Pro SA' },
+    { email: 'secure2@test.com', password: 'pass123', role: 'user', enterprise_name: 'Vigilance Express' },
+  ];
 
-    const elementHandler = {
-      onConfigChange: async (config) => {
-        document.querySelector('.sidebar-header').textContent = `⛏️ ${config.app_title}`;
-      },
-      mapToCapabilities: () => ({ recolorables: [], borderables: [], fontEditable: undefined, fontSizeable: undefined }),
-      mapToEditPanelValues: (config) => new Map([["app_title", config.app_title], ["company_name", config.company_name]])
+  // ==================== HELPERS ====================
+  function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity 0.3s';
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+  function showModal(html) {
+    const overlay = document.getElementById('modalOverlay');
+    overlay.classList.add('active');
+    overlay.innerHTML = `<div class="modal-content fade-in">${html}</div>`;
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeModal();
+    });
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('active');
+  }
+
+  function formatDate(isoStr) {
+    if (!isoStr) return '—';
+    const d = new Date(isoStr);
+    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function generateInvitationToken() {
+    return 'INV-' + Math.random().toString(36).substring(2, 15).toUpperCase() + '-' + Date.now().toString(36).toUpperCase();
+  }
+
+  function generateAccessKey() {
+    return 'ARK-' + Math.random().toString(36).substring(2, 15).toUpperCase() + '-' + Date.now().toString(36).toUpperCase();
+  }
+
+  window.closeModal = closeModal;
+
+  // ==================== AUTHENTICATION ====================
+  function login(email, password) {
+    const account = testAccounts.find(a => a.email === email && a.password === password);
+    if (!account) return null;
+    
+    // Check if user accepted invitation in database
+    const userRecord = allRecords.find(r => 
+      r.record_type === 'user' && 
+      r.user_email === email && 
+      r.invitation_accepted === true
+    );
+    
+    if (!account.role === 'admin' && !userRecord) return null;
+    
+    return {
+      email,
+      role: account.role,
+      enterprise_name: userRecord?.enterprise_name || account.enterprise_name || 'AutoReport Admin',
+      enterprise_id: account.role === 'admin' ? 'admin' : userRecord?.enterprise_id,
+      created_at: new Date().toISOString()
     };
+  }
 
-    const dataHandler = {
-      onDataChanged(data) {
-        allData = data;
-        updateStats();
-      }
-    };
+  function logout() {
+    currentUser = null;
+    document.getElementById('loginPage').style.display = 'flex';
+    document.getElementById('dashboardPage').style.display = 'none';
+    document.getElementById('adminPage').style.display = 'none';
+    document.getElementById('loginForm').reset();
+    document.getElementById('invitationForm').reset();
+    showToast('👋 Déconnecté avec succès.', 'success');
+  }
 
-    async function initSDKs() {
-      if (window.elementSdk) window.elementSdk.init(elementHandler);
-      if (window.dataSdk) await window.dataSdk.init(dataHandler);
-    }
+  // ==================== DATA FILTERING ====================
+  function getCompanyRecords() {
+    return allRecords.filter(r => r.record_type === 'enterprise');
+  }
 
-    initSDKs();
+  function getSubscriptionRecords() {
+    return allRecords.filter(r => r.record_type === 'subscription');
+  }
 
-    function selectRole(role) {
-      currentRole = role;
-      if (role === 'admin') {
-        document.getElementById('adminKeyContainer').classList.remove('hidden');
-      } else {
-        document.getElementById('adminKeyContainer').classList.add('hidden');
-      }
-    }
+  function getAccessRecords() {
+    return allRecords.filter(r => r.record_type === 'access_key');
+  }
 
-    function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
+  function getInvitationRecords() {
+    return allRecords.filter(r => r.record_type === 'invitation');
+  }
 
-      if (currentRole === 'admin') {
-        const key = document.getElementById('adminKey').value;
-        if (key !== adminKey) {
-          showToast('❌ Clé Admin incorrecte', 'danger');
-          return;
-        }
-      }
+  function getEnterpriseData() {
+    if (!currentUser) return [];
+    if (currentUser.role === 'admin') return allRecords;
+    return allRecords.filter(r => r.enterprise_id === currentUser.enterprise_id);
+  }
 
-      currentUser = { email, name: email.split('@')[0], role: currentRole, avatar: email.charAt(0).toUpperCase() };
+  // ==================== DASHBOARD ====================
+  function renderDashboard() {
+    const data = getEnterpriseData();
+    const alerts = data.filter(r => r.record_type === 'alert');
+    const patrols = data.filter(r => r.record_type === 'patrol');
+    const reports = data.filter(r => r.record_type === 'report');
 
-      document.getElementById('userName').textContent = currentUser.name;
-      document.getElementById('userRole').textContent = getRoleLabel(currentRole);
-      document.getElementById('userAvatar').textContent = currentUser.avatar;
+    const subRecord = allRecords.find(r => r.record_type === 'subscription' && r.enterprise_id === currentUser.enterprise_id);
+    const isSubscriptionActive = subRecord && new Date(subRecord.subscription_end_date) > new Date();
 
-      document.getElementById('authContainer').classList.remove('active');
-      document.getElementById('mainDashboard').style.display = 'flex';
+    document.getElementById('headerEnterprise').textContent = currentUser.enterprise_name;
+    document.getElementById('subStatusText').textContent = isSubscriptionActive ? '✅ Actif' : '❌ Expiré';
 
-      showRoleMenu(currentRole);
-      switchPage(`${currentRole}-dashboard`);
-      addLog(`${currentUser.name} (${currentRole}) connecté`);
-      showToast(`✅ Bienvenue ${currentUser.name}`, 'success');
-    }
-
-    function getRoleLabel(role) {
-      return { admin: '🛡️ Admin', supervisor: '👨‍💼 Superviseur', agent: '👷 Agent', opj: '📋 OPJ' }[role] || role;
-    }
-
-    function showRoleMenu(role) {
-      document.querySelectorAll('[id$="Menu"]').forEach(m => m.classList.add('hidden'));
-      document.getElementById(`${role}Menu`).classList.remove('hidden');
-    }
-
-    function switchPage(pageName) {
-      const titles = {
-        'admin-dashboard': '⚙️ Tableau Admin',
-        'admin-users': '👥 Utilisateurs',
-        'admin-security': '🔐 Sécurité',
-        'admin-system': '⚙️ Système',
-        'admin-logs': '📜 Journaux',
-        'admin-backup': '💾 Données',
-        'supervisor-dashboard': '📊 Tableau',
-        'supervisor-daily-reports': '📋 Rapports',
-        'supervisor-incidents': '🚨 Incidents',
-        'supervisor-analytics': '📈 Analytics',
-        'supervisor-recommendations': '💡 Recommandations',
-        'agent-dashboard': '📊 Tableau Agent',
-        'agent-patrol': '🚗 Patrouilles',
-        'agent-emergency': '🆘 Aide',
-        'agent-incidents': '🚨 Incidents',
-        'agent-reports': '📋 Rapports',
-        'opj-dashboard': '📊 Tableau OPJ',
-        'opj-incidents': '🚨 Incidents',
-        'opj-decisions': '⚡ Décisions',
-        'opj-reports': '📋 Rapports',
-        'opj-approvals': '✅ Approbations'
-      };
-
-      document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
-      document.getElementById(pageName).classList.remove('hidden');
-      document.getElementById('pageTitle').textContent = titles[pageName] || pageName;
-
-      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-      event.target.classList.add('active');
-    }
-
-    async function createUser(e) {
-      e.preventDefault();
-      const userData = {
-        type: 'user',
-        user_email: document.getElementById('newUserEmail').value,
-        user_name: document.getElementById('newUserName').value,
-        user_role: document.getElementById('newUserRole').value,
-        user_status: 'active',
-        date_created: new Date().toISOString()
-      };
-
-      if (window.dataSdk) {
-        const result = await window.dataSdk.create(userData);
-        if (result.isOk) {
-          showToast('✅ Utilisateur créé', 'success');
-          closeModal('createUserModal');
-          document.getElementById('createUserModal').querySelector('form').reset();
-          addLog(`Utilisateur créé: ${userData.user_name}`);
-          refreshUsersList();
-        }
-      }
-    }
-
-    async function updateAdminKey(e) {
-      e.preventDefault();
-      const current = document.getElementById('currentAdminKey').value;
-      const newKey = document.getElementById('newAdminKey').value;
-      const confirm = document.getElementById('confirmAdminKey').value;
-
-      if (current !== adminKey) {
-        showToast('❌ Clé actuelle incorrecte', 'danger');
-        return;
-      }
-
-      if (newKey !== confirm) {
-        showToast('❌ Les clés ne correspondent pas', 'danger');
-        return;
-      }
-
-      adminKey = newKey;
-      showToast('✅ Clé Admin mise à jour', 'success');
-      addLog('Clé Admin modifiée');
-      e.target.reset();
-    }
-
-    async function submitEmergency(e) {
-      e.preventDefault();
-      const emergencyData = {
-        type: 'emergency',
-        title: '🚨 Demande d\'aide urgente',
-        description: document.getElementById('emergencyDesc').value,
-        location: document.getElementById('emergencyLocation').value,
-        severity: document.getElementById('emergencySeverity').value,
-        status: 'open',
-        user_email: currentUser.email,
-        date_created: new Date().toISOString()
-      };
-
-      if (window.dataSdk) {
-        const result = await window.dataSdk.create(emergencyData);
-        if (result.isOk) {
-          showToast('✅ Demande d\'aide envoyée', 'success');
-          closeModal('emergencyModal');
-          addLog(`Demande d'aide de ${currentUser.name}`);
-          e.target.reset();
-        }
-      }
-    }
-
-    async function submitIncident(e) {
-      e.preventDefault();
-      const incidentData = {
-        type: 'incident',
-        title: `Incident: ${document.getElementById('incidentType').value}`,
-        description: document.getElementById('incidentDesc').value,
-        location: document.getElementById('incidentLocation').value,
-        severity: document.getElementById('incidentSeverity').value,
-        status: 'open',
-        user_email: currentUser.email,
-        date_created: new Date().toISOString()
-      };
-
-      if (window.dataSdk) {
-        const result = await window.dataSdk.create(incidentData);
-        if (result.isOk) {
-          showToast('✅ Incident signalé', 'success');
-          closeModal('incidentModal');
-          addLog(`Incident signalé: ${incidentData.title}`);
-          e.target.reset();
-        }
-      }
-    }
-
-    async function submitPatrol(e) {
-      e.preventDefault();
-      const patrolData = {
-        type: 'patrol',
-        title: `Patrouille ${document.getElementById('patrolZone').value}`,
-        location: document.getElementById('patrolZone').value,
-        description: document.getElementById('patrolType').value,
-        status: 'in-progress',
-        user_email: currentUser.email,
-        date_created: new Date().toISOString()
-      };
-
-      if (window.dataSdk) {
-        const result = await window.dataSdk.create(patrolData);
-        if (result.isOk) {
-          showToast('✅ Patrouille démarrée', 'success');
-          closeModal('patrolModal');
-          addLog(`Patrouille démarrée: ${patrolData.location}`);
-          e.target.reset();
-        }
-      }
-    }
-
-    async function submitDecision(e) {
-      e.preventDefault();
-      const decisionData = {
-        type: 'decision',
-        title: `Décision: ${document.getElementById('decisionType').value}`,
-        description: document.getElementById('decisionDetails').value,
-        status: 'pending',
-        user_email: currentUser.email,
-        date_created: new Date().toISOString()
-      };
-
-      if (window.dataSdk) {
-        const result = await window.dataSdk.create(decisionData);
-        if (result.isOk) {
-          showToast('✅ Décision enregistrée', 'success');
-          closeModal('decisionModal');
-          addLog(`Décision prise par ${currentUser.name}`);
-          e.target.reset();
-        }
-      }
-    }
-
-    function updateStats() {
-      document.getElementById('totalUsers').textContent = allData.filter(d => d.type === 'user').length;
-      document.getElementById('totalIncidents').textContent = allData.filter(d => d.type === 'incident').length;
-    }
-
-    function generateDailyReport() {
-      const today = new Date().toLocaleDateString('fr-FR');
-      const report = `RAPPORT QUOTIDIEN ${today}\n${'='.repeat(40)}\nGénéré par: ${currentUser.name}\n\nRésumé:\n• Incidents: ${allData.filter(d => d.type === 'incident').length}\n• Patrouilles: ${allData.filter(d => d.type === 'patrol').length}\n• Demandes d'aide: ${allData.filter(d => d.type === 'emergency').length}`;
-      document.getElementById('dailyReportOutput').textContent = report;
-      showToast('✅ Rapport généré', 'success');
-    }
-
-    function generateRecommendations() {
-      const recs = '💡 Recommandations basées sur les données actuelles:\n\n1. Augmenter la fréquence des patrouilles\n2. Former le personnel aux protocoles\n3. Vérifier les équipements critiques';
-      document.getElementById('recommendationsContainer').textContent = recs;
-      showToast('✅ Recommandations générées', 'success');
-    }
-
-    function refreshUsersList() {
-      const users = allData.filter(d => d.type === 'user');
-      const container = document.getElementById('usersList');
-      container.innerHTML = users.length === 0 ? '<p style="color: var(--text-secondary);">Aucun utilisateur</p>' : users.map(u => `
-        <div class="user-row">
-          <div><strong>${u.user_name}</strong><br><small>${u.user_email} • ${u.user_role}</small></div>
-          <button class="btn-danger btn-small" onclick="deleteUser('${u.id}')">🗑️</button>
+    if (!isSubscriptionActive) {
+      document.getElementById('mainContent').innerHTML = `
+        <div class="pending-verification fade-in">
+          <div class="text-2xl mb-3">⏰ Abonnement Expiré</div>
+          <p>Votre abonnement AutoReport a expiré le <strong>${formatDate(subRecord?.subscription_end_date)}</strong>.</p>
+          <p class="mt-3">Veuillez <strong>contacter l'administrateur</strong> pour renouveler votre accès.</p>
+          <p class="text-xs opacity-50 mt-4">Email admin: ${ADMIN_EMAIL}</p>
         </div>
-      `).join('');
-
-      const select = document.getElementById('userForPasswordReset');
-      select.innerHTML = '<option value="">Choisir...</option>' + users.map(u => `<option value="${u.id}">${u.user_name}</option>`).join('');
+      `;
+      return;
     }
 
-    async function deleteUser(userId) {
-      const user = allData.find(d => d.id === userId);
-      if (user && window.dataSdk) {
-        const result = await window.dataSdk.delete(user);
-        if (result.isOk) {
-          showToast('✅ Utilisateur supprimé', 'success');
-          addLog(`Utilisateur supprimé: ${user.user_name}`);
-          refreshUsersList();
+    document.getElementById('mainContent').innerHTML = `
+      <div class="fade-in">
+        <h1 class="text-2xl font-bold mb-2">Bienvenue, ${currentUser.enterprise_name}</h1>
+        <p class="text-sm opacity-60 mb-6">Centre de commandement pour la gestion de vos incidents et patrouilles</p>
+
+        <div class="stat-grid">
+          <div class="stat-box">
+            <div class="stat-value" style="color: #ef4444;">${alerts.length}</div>
+            <div class="stat-label">Alertes Totales</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" style="color: #3b82f6;">${patrols.length}</div>
+            <div class="stat-label">Patrouilles</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" style="color: #eab308;">${reports.length}</div>
+            <div class="stat-label">Rapports OPJ</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" style="color: #22c55e;">${alerts.filter(r=>r.status==='resolved').length}</div>
+            <div class="stat-label">Résolus</div>
+          </div>
+        </div>
+
+        <div class="glass-card glow-border p-5">
+          <h2 class="font-bold text-lg mb-4">📋 Données Confidentiales</h2>
+          <p class="text-sm opacity-60 mb-4">Vos données sont isolées et sécurisées dans une base de données dédiée à <strong>${currentUser.enterprise_name}</strong>.</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-4 rounded-lg" style="background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);">
+              <div class="font-semibold text-sm mb-2">🔐 Entreprise ID</div>
+              <div class="mono text-xs opacity-70 break-all">${currentUser.enterprise_id}</div>
+            </div>
+            <div class="p-4 rounded-lg" style="background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);">
+              <div class="font-semibold text-sm mb-2">📧 Email d'accès</div>
+              <div class="mono text-xs opacity-70 break-all">${currentUser.email}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card glow-border p-5 mt-4">
+          <h2 class="font-bold text-lg mb-3">ℹ️ À propos d'AutoReport</h2>
+          <p class="text-sm opacity-70 leading-relaxed">AutoReport est une plateforme SaaS sécurisée pour la gestion des incidents de sécurité. Chaque entreprise dispose d'une base de données confidentielle isolée. L'accès est contrôlé par abonnement mensuel pour garantir la sécurité et la confidentialité de vos données.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  // ==================== ADMIN PANEL ====================
+  function renderAdminPanel() {
+    const companies = getCompanyRecords();
+    const subscriptions = getSubscriptionRecords();
+    const accessKeys = getAccessRecords();
+    const invitations = getInvitationRecords();
+
+    let html = `
+      <div class="fade-in">
+        <h1 class="text-2xl font-bold mb-6">🛡️ Panneau d'Administration</h1>
+
+        <div class="tab-nav">
+          <button class="tab-btn active" data-tab="companies">📋 Entreprises (${companies.length})</button>
+          <button class="tab-btn" data-tab="invitations">📧 Invitations (${invitations.length})</button>
+          <button class="tab-btn" data-tab="subscriptions">💳 Abonnements (${subscriptions.length})</button>
+          <button class="tab-btn" data-tab="access">🔑 Accès (${accessKeys.length})</button>
+        </div>
+
+        <!-- Companies -->
+        <div id="companies" class="admin-tab-content active">
+          <div class="glass-card glow-border p-5 mb-4">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="font-bold text-lg">Entreprises Enregistrées</h2>
+              <button class="btn-primary text-sm flex items-center gap-2" id="addCompanyBtn">
+                <span>➕ Ajouter</span>
+              </button>
+            </div>
+            <div class="table-container">
+              <table class="table">
+                <thead><tr><th>Nom</th><th>Email Admin</th><th>Plan</th><th>Créée</th><th>BD</th><th>Actions</th></tr></thead>
+                <tbody>
+                  ${companies.length === 0 ? '<tr><td colspan="6" class="text-center opacity-50 py-4">Aucune entreprise</td></tr>' :
+                    companies.map(c => `<tr>
+                      <td><strong>${c.enterprise_name || '—'}</strong></td>
+                      <td class="mono text-xs">${c.user_email || '—'}</td>
+                      <td>${c.plan_type || '—'}</td>
+                      <td>${formatDate(c.created_at)}</td>
+                      <td><span class="badge badge-active">✅ BD</span></td>
+                      <td><button class="btn-sm btn-sm-danger" onclick="deleteCompany('${c.__backendId}')">🗑️</button></td>
+                    </tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Invitations -->
+        <div id="invitations" class="admin-tab-content">
+          <div class="glass-card glow-border p-5 mb-4">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="font-bold text-lg">📧 Invitations Envoyées</h2>
+              <button class="btn-primary text-sm flex items-center gap-2" id="sendInvitationBtn">
+                <span>➕ Envoyer Invitation</span>
+              </button>
+            </div>
+            <div class="table-container">
+              <table class="table">
+                <thead><tr><th>Entreprise</th><th>Email</th><th>Plan</th><th>Token</th><th>Statut</th><th>Créée</th><th>Actions</th></tr></thead>
+                <tbody>
+                  ${invitations.length === 0 ? '<tr><td colspan="7" class="text-center opacity-50 py-4">Aucune invitation</td></tr>' :
+                    invitations.map(inv => `<tr>
+                      <td><strong>${inv.enterprise_name || '—'}</strong></td>
+                      <td class="mono text-xs text-wrap">${inv.user_email || '—'}</td>
+                      <td>${inv.plan_type || '—'}</td>
+                      <td class="mono text-xs">${inv.invitation_token.substring(0, 20)}...</td>
+                      <td><span class="badge ${inv.invitation_accepted ? 'badge-active' : 'badge-pending'}">${inv.invitation_accepted ? '✅ Acceptée' : '⏳ Attente'}</span></td>
+                      <td>${formatDate(inv.created_at)}</td>
+                      <td>
+                        <button class="btn-sm btn-sm-primary" onclick="copyInvitationLink('${inv.invitation_token}')">📋</button>
+                        <button class="btn-sm btn-sm-danger" onclick="revokeInvitation('${inv.__backendId}')">🚫</button>
+                      </td>
+                    </tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subscriptions -->
+        <div id="subscriptions" class="admin-tab-content">
+          <div class="glass-card glow-border p-5">
+            <h2 class="font-bold text-lg mb-4">💳 Gestion des Abonnements</h2>
+            <div class="table-container">
+              <table class="table">
+                <thead><tr><th>Entreprise</th><th>Plan</th><th>Statut</th><th>Fin</th><th>Jours Restants</th><th>Actions</th></tr></thead>
+                <tbody>
+                  ${subscriptions.length === 0 ? '<tr><td colspan="6" class="text-center opacity-50 py-4">Aucun abonnement</td></tr>' :
+                    subscriptions.map(s => {
+                      const isActive = new Date(s.subscription_end_date) > new Date();
+                      const daysLeft = Math.ceil((new Date(s.subscription_end_date) - new Date()) / (1000 * 60 * 60 * 24));
+                      return `<tr>
+                        <td><strong>${s.enterprise_name || '—'}</strong></td>
+                        <td>${s.plan_type || 'Pro'}</td>
+                        <td><span class="badge ${isActive ? 'badge-active' : 'badge-expired'}">${isActive ? '✅ Actif' : '❌ Expiré'}</span></td>
+                        <td>${formatDate(s.subscription_end_date)}</td>
+                        <td>${isActive ? daysLeft + ' j' : '0 j'}</td>
+                        <td><button class="btn-sm btn-sm-primary" onclick="renewSubscription('${s.__backendId}')">🔄 +1 mois</button></td>
+                      </tr>`;
+                    }).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Access Keys -->
+        <div id="access" class="admin-tab-content">
+          <div class="glass-card glow-border p-5">
+            <h2 class="font-bold text-lg mb-4">🔑 Clés d'Accès Sécurisées</h2>
+            <div class="table-container">
+              <table class="table">
+                <thead><tr><th>Entreprise</th><th>Clé</th><th>Créée</th><th>Actions</th></tr></thead>
+                <tbody>
+                  ${accessKeys.length === 0 ? '<tr><td colspan="4" class="text-center opacity-50 py-4">Aucune clé</td></tr>' :
+                    accessKeys.map(k => `<tr>
+                      <td><strong>${k.enterprise_name || '—'}</strong></td>
+                      <td class="mono text-xs">${k.access_token}</td>
+                      <td>${formatDate(k.created_at)}</td>
+                      <td>
+                        <button class="btn-sm btn-sm-primary" onclick="copyToClipboard('${k.access_token}')">📋</button>
+                        <button class="btn-sm btn-sm-danger" onclick="revokeAccess('${k.__backendId}')">🚫</button>
+                      </td>
+                    </tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('adminContent').innerHTML = html;
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.admin-tab-content').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    document.getElementById('addCompanyBtn').addEventListener('click', showAddCompanyModal);
+    document.getElementById('sendInvitationBtn').addEventListener('click', showSendInvitationModal);
+  }
+
+  function showAddCompanyModal() {
+    showModal(`
+      <h2 class="font-bold text-lg mb-4">➕ Nouvelle Entreprise</h2>
+      <form id="addCompanyForm" class="flex flex-col gap-3">
+        <div>
+          <label class="form-label">Nom de l'entreprise</label>
+          <input type="text" id="companyName" class="form-input" placeholder="SecureMax SA" required>
+        </div>
+        <div>
+          <label class="form-label">Email administrateur</label>
+          <input type="email" id="companyEmail" class="form-input" placeholder="contact@secure.com" required>
+        </div>
+        <div>
+          <label class="form-label">Plan d'abonnement</label>
+          <select id="planType" class="form-input">
+            <option value="Starter - 99€/mois">🟢 Starter - 99€/mois</option>
+            <option value="Professional - 299€/mois" selected>🔵 Professional - 299€/mois</option>
+            <option value="Enterprise - 699€/mois">🟣 Enterprise - 699€/mois</option>
+          </select>
+        </div>
+        <div class="flex gap-3">
+          <button type="submit" class="btn-primary flex-1">✅ Créer</button>
+          <button type="button" class="btn-secondary" onclick="closeModal()">Annuler</button>
+        </div>
+      </form>
+    `);
+
+    document.getElementById('addCompanyForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('companyName').value;
+      const email = document.getElementById('companyEmail').value;
+      const plan = document.getElementById('planType').value;
+
+      if (allRecords.length >= 999) {
+        showToast('Limite atteinte.', 'error');
+        return;
+      }
+
+      const entId = 'ent-' + email.split('@')[0];
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + 1);
+
+      // Create enterprise record
+      const r1 = await window.dataSdk.create({
+        record_type: 'enterprise',
+        enterprise_id: entId,
+        enterprise_name: name,
+        user_email: email,
+        user_role: 'admin',
+        created_at: new Date().toISOString(),
+        subscription_status: 'active',
+        subscription_end_date: endDate.toISOString(),
+        plan_type: plan,
+        payment_status: 'paid',
+        title: name, description: '', severity: '', status: '', agent_name: '', location: '', lat: 0, lng: 0, resolved_at: '', category: '', access_token: '', invitation_token: '', invitation_accepted: false, invitation_accepted_at: '', user_password: ''
+      });
+
+      if (r1.isOk) {
+        // Create subscription record
+        const r2 = await window.dataSdk.create({
+          record_type: 'subscription',
+          enterprise_id: entId,
+          enterprise_name: name,
+          user_email: email,
+          plan_type: plan,
+          subscription_status: 'active',
+          subscription_end_date: endDate.toISOString(),
+          payment_status: 'paid',
+          created_at: new Date().toISOString(),
+          user_role: 'admin',
+          title: `Sub ${name}`, description: '', severity: '', status: '', agent_name: '', location: '', lat: 0, lng: 0, resolved_at: '', category: '', access_token: '', invitation_token: '', invitation_accepted: false, invitation_accepted_at: '', user_password: ''
+        });
+
+        if (r2.isOk) {
+          const key = generateAccessKey();
+          const r3 = await window.dataSdk.create({
+            record_type: 'access_key',
+            enterprise_id: entId,
+            enterprise_name: name,
+            user_email: email,
+            access_token: key,
+            created_at: new Date().toISOString(),
+            user_role: 'admin',
+            title: `Key ${name}`, description: '', subscription_status: 'active', subscription_end_date: endDate.toISOString(), severity: '', status: '', agent_name: '', location: '', lat: 0, lng: 0, resolved_at: '', category: '', payment_status: '', invitation_token: '', invitation_accepted: false, invitation_accepted_at: '', user_password: ''
+          });
+
+          if (r3.isOk) {
+            showToast(`✅ Entreprise créée!`, 'success');
+            closeModal();
+          }
         }
       }
-    }
+    });
+  }
 
-    async function resetUserPassword(e) {
+  function showSendInvitationModal() {
+    showModal(`
+      <h2 class="font-bold text-lg mb-4">📧 Envoyer une Invitation</h2>
+      <form id="sendInvitationForm" class="flex flex-col gap-3">
+        <div>
+          <label class="form-label">Nom de l'entreprise</label>
+          <input type="text" id="invEntName" class="form-input" placeholder="SecureMax SA" required>
+        </div>
+        <div>
+          <label class="form-label">Email du destinataire</label>
+          <input type="email" id="invDestEmail" class="form-input" placeholder="contact@secure.com" required>
+        </div>
+        <div>
+          <label class="form-label">Plan d'abonnement</label>
+          <select id="invPlanType" class="form-input">
+            <option value="Starter - 99€/mois">🟢 Starter - 99€/mois</option>
+            <option value="Professional - 299€/mois" selected>🔵 Professional - 299€/mois</option>
+            <option value="Enterprise - 699€/mois">🟣 Enterprise - 699€/mois</option>
+          </select>
+        </div>
+        <p class="text-xs opacity-60">⚠️ L'utilisateur recevra un token pour accepter l'invitation et créer un compte.</p>
+        <div class="flex gap-3">
+          <button type="submit" class="btn-primary flex-1">✅ Envoyer</button>
+          <button type="button" class="btn-secondary" onclick="closeModal()">Annuler</button>
+        </div>
+      </form>
+    `);
+
+    document.getElementById('sendInvitationForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      showToast('✅ Mot de passe réinitialisé', 'success');
-      addLog(`MDP réinitialisé pour utilisateur`);
-      e.target.reset();
+      const name = document.getElementById('invEntName').value;
+      const email = document.getElementById('invDestEmail').value;
+      const plan = document.getElementById('invPlanType').value;
+
+      if (allRecords.length >= 999) {
+        showToast('Limite atteinte.', 'error');
+        return;
+      }
+
+      const entId = 'ent-' + email.split('@')[0];
+      const token = generateInvitationToken();
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + 1);
+
+      // Create invitation record
+      const result = await window.dataSdk.create({
+        record_type: 'invitation',
+        enterprise_id: entId,
+        enterprise_name: name,
+        user_email: email,
+        plan_type: plan,
+        invitation_token: token,
+        invitation_accepted: false,
+        created_at: new Date().toISOString(),
+        subscription_status: 'pending',
+        subscription_end_date: endDate.toISOString(),
+        user_role: 'user',
+        title: `Invitation ${name}`, description: '', severity: '', status: '', agent_name: '', location: '', lat: 0, lng: 0, resolved_at: '', category: '', access_token: '', payment_status: '', invitation_accepted_at: '', user_password: ''
+      });
+
+      if (result.isOk) {
+        showToast(`✅ Invitation envoyée à ${email}!`, 'success');
+        closeModal();
+      }
+    });
+  }
+
+  window.deleteCompany = async function(id) {
+    const rec = allRecords.find(r => r.__backendId === id);
+    if (rec) {
+      const res = await window.dataSdk.delete(rec);
+      if (res.isOk) showToast('🗑️ Supprimée.', 'success');
+    }
+  };
+
+  window.copyInvitationLink = function(token) {
+    navigator.clipboard.writeText(token);
+    showToast('📋 Token copié! Partagez-le avec l\'utilisateur.', 'success');
+  };
+
+  window.revokeInvitation = async function(id) {
+    const rec = allRecords.find(r => r.__backendId === id);
+    if (rec) {
+      const res = await window.dataSdk.delete(rec);
+      if (res.isOk) showToast('🚫 Invitation révoquée.', 'success');
+    }
+  };
+
+  window.renewSubscription = async function(id) {
+    const rec = allRecords.find(r => r.__backendId === id);
+    if (rec) {
+      const d = new Date();
+      d.setMonth(d.getMonth() + 1);
+      const res = await window.dataSdk.update({ ...rec, subscription_status: 'active', subscription_end_date: d.toISOString(), payment_status: 'paid' });
+      if (res.isOk) showToast('✅ Abonnement renouvelé d\'1 mois.', 'success');
+    }
+  };
+
+  window.copyToClipboard = function(t) {
+    navigator.clipboard.writeText(t);
+    showToast('📋 Copié!', 'success');
+  };
+
+  window.revokeAccess = async function(id) {
+    const rec = allRecords.find(r => r.__backendId === id);
+    if (rec) {
+      const res = await window.dataSdk.delete(rec);
+      if (res.isOk) showToast('🚫 Clé révoquée.', 'success');
+    }
+  };
+
+  // ==================== LOGIN TABS ====================
+  document.getElementById('loginTab').addEventListener('click', () => {
+    document.getElementById('loginForm').style.display = 'flex';
+    document.getElementById('invitationForm').style.display = 'none';
+  });
+
+  document.getElementById('invitationTab').addEventListener('click', () => {
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('invitationForm').style.display = 'flex';
+  });
+
+  // ==================== LOGIN FORM ====================
+  document.getElementById('loginForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('emailInput').value;
+    const pwd = document.getElementById('passwordInput').value;
+    const user = login(email, pwd);
+
+    if (!user) {
+      showToast('❌ Identifiants incorrects.', 'error');
+      return;
     }
 
-    async function updateSystemConfig(e) {
-      e.preventDefault();
-      showToast('✅ Configuration mise à jour', 'success');
-      addLog('Configuration système modifiée');
+    currentUser = user;
+    document.getElementById('loginPage').style.display = 'none';
+
+    if (user.role === 'admin') {
+      document.getElementById('adminPage').style.display = 'block';
+      renderAdminPanel();
+    } else {
+      document.getElementById('dashboardPage').style.display = 'block';
+      renderDashboard();
     }
 
-    function clearAllData() {
-      if (confirm('⚠️ ATTENTION: Ceci effacera TOUTES les données!\n\nEtes-vous sûr?')) {
-        showToast('🗑️ Données effacées', 'success');
-        addLog('TOUTES les données supprimées');
+    showToast(`✅ Bienvenue ${user.enterprise_name}!`, 'success');
+  });
+
+  // ==================== INVITATION FORM ====================
+  document.getElementById('invitationForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const token = document.getElementById('invitationToken').value;
+    const email = document.getElementById('invitationEmail').value;
+    const pwd1 = document.getElementById('invitationPassword').value;
+    const pwd2 = document.getElementById('invitationPasswordConfirm').value;
+
+    if (pwd1 !== pwd2) {
+      showToast('❌ Les mots de passe ne correspondent pas.', 'error');
+      return;
+    }
+
+    if (pwd1.length < 6) {
+      showToast('❌ Le mot de passe doit avoir au moins 6 caractères.', 'error');
+      return;
+    }
+
+    // Find invitation record
+    const invitation = allRecords.find(r => 
+      r.record_type === 'invitation' && 
+      r.invitation_token === token && 
+      r.user_email === email
+    );
+
+    if (!invitation) {
+      showToast('❌ Token d\'invitation invalide ou expiré.', 'error');
+      return;
+    }
+
+    if (invitation.invitation_accepted) {
+      showToast('❌ Cette invitation a déjà été acceptée.', 'error');
+      return;
+    }
+
+    document.getElementById('invitationText').textContent = 'Activation...';
+    document.getElementById('invitationSpinner').style.display = 'inline-block';
+
+    // Mark invitation as accepted
+    const updateResult = await window.dataSdk.update({
+      ...invitation,
+      invitation_accepted: true,
+      invitation_accepted_at: new Date().toISOString(),
+      user_password: pwd1
+    });
+
+    if (updateResult.isOk) {
+      // Create user record for future logins
+      const userResult = await window.dataSdk.create({
+        record_type: 'user',
+        enterprise_id: invitation.enterprise_id,
+        enterprise_name: invitation.enterprise_name,
+        user_email: email,
+        user_role: 'user',
+        user_password: pwd1,
+        invitation_accepted: true,
+        invitation_accepted_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        subscription_status: 'active',
+        subscription_end_date: invitation.subscription_end_date,
+        plan_type: invitation.plan_type,
+        title: '', description: '', severity: '', status: '', agent_name: '', location: '', lat: 0, lng: 0, resolved_at: '', category: '', access_token: '', invitation_token: '', payment_status: ''
+      });
+
+      if (userResult.isOk) {
+        showToast('✅ Invitation acceptée! Vous pouvez maintenant vous connecter.', 'success');
+        document.getElementById('invitationForm').reset();
+        document.getElementById('loginTab').click();
+        setTimeout(() => {
+          document.getElementById('emailInput').value = email;
+          document.getElementById('passwordInput').value = pwd1;
+        }, 100);
       }
     }
 
-    function lockSystem() {
-      systemLocked = !systemLocked;
-      showToast(systemLocked ? '🔒 Système verrouillé' : '🔓 Système déverrouillé', 'info');
-      addLog(systemLocked ? 'Système verrouillé' : 'Système déverrouillé');
-    }
+    document.getElementById('invitationText').textContent = '✅ Accepter l\'invitation';
+    document.getElementById('invitationSpinner').style.display = 'none';
+  });
 
-    function clearLogs() {
-      if (confirm('Effacer tous les journaux?')) {
-        activityLogs = [];
-        document.getElementById('logsBody').innerHTML = '<tr><td colspan="3" style="text-align: center;">Aucune activité</td></tr>';
-        showToast('✅ Journaux effacés', 'success');
+  document.getElementById('logoutBtn').addEventListener('click', logout);
+  document.getElementById('adminLogoutBtn').addEventListener('click', logout);
+
+  // ==================== DATA SDK ====================
+  const dataHandler = {
+    onDataChanged(data) {
+      allRecords = data;
+      if (currentUser?.role === 'user') {
+        renderDashboard();
+      } else if (currentUser?.role === 'admin') {
+        renderAdminPanel();
       }
     }
+  };
 
-    function exportData() {
-      const json = JSON.stringify(allData, null, 2);
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `backup-${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-      showToast('⬇️ Données exportées', 'success');
-      addLog('Données exportées');
-    }
-
-    function importData(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const data = JSON.parse(reader.result);
-          showToast('⬆️ Données importées', 'success');
-          addLog('Données importées');
-        } catch {
-          showToast('❌ Fichier invalide', 'danger');
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    function addLog(action) {
-      activityLogs.unshift({ date: new Date().toLocaleString('fr-FR'), action, user: currentUser?.name || 'Système' });
-      const tbody = document.getElementById('logsBody');
-      if (activityLogs.length === 1) tbody.innerHTML = '';
-      const row = tbody.insertRow(0);
-      row.innerHTML = `<td>${activityLogs[0].date}</td><td>${activityLogs[0].action}</td><td>${activityLogs[0].user}</td>`;
-    }
-
-    function openModal(modalId) { document.getElementById(modalId).classList.add('active'); }
-    function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
-    function closeModalOnBackdrop(event) { if (event.target.classList.contains('modal-overlay')) event.target.classList.remove('active'); }
-
-    function handleLogout() {
-      currentUser = null;
-      currentRole = null;
-      document.getElementById('authContainer').classList.add('active');
-      document.getElementById('mainDashboard').style.display = 'none';
-      document.getElementById('loginEmail').value = '';
-      document.getElementById('loginPassword').value = '';
-      showToast('👋 Déconnecté', 'success');
-    }
-
-    function showToast(msg, type = 'info') {
-      const toast = document.getElementById('toast');
-      toast.textContent = msg;
-      toast.className = `toast toast-${type} show`;
-      setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => { console.log('AutoReport Mining Security chargé'); });
-  </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ccdaef8d07b7400',t:'MTc3MDkxNjA1OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+  const res = await window.dataSdk.init(dataHandler);
+  if (!res.isOk) console.error('Data SDK init failed');
+})();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd38b2a717d8a3d',t:'MTc3MDk3NzUwNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
