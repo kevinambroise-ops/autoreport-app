@@ -200,6 +200,7 @@
     let supplierSearchQuery = '';
     let orderSearchQuery = '';
     let orderStatusFilter = '';
+    let isInitializing = false;
 
     // ---- Default Config ----
     const defaultConfig = {
@@ -303,12 +304,29 @@
       }
     };
 
-    (async () => {
-      if (window.dataSdk) {
-        const res = await window.dataSdk.init(dataHandler);
-        if (!res.isOk) console.error('Data SDK init failed', res.error);
+    async function initDataSdk() {
+      if (isInitializing) return;
+      isInitializing = true;
+      
+      if (!window.dataSdk) {
+        console.warn('Data SDK not available');
+        isInitializing = false;
+        return;
       }
-    })();
+      
+      try {
+        const res = await window.dataSdk.init(dataHandler);
+        if (!res.isOk) {
+          console.error('Data SDK init failed:', res.error);
+        }
+      } catch (err) {
+        console.error('Data SDK init error:', err);
+      } finally {
+        isInitializing = false;
+      }
+    }
+
+    initDataSdk();
 
     // ---- Tab Switching ----
     function switchTab(tab) {
@@ -344,7 +362,10 @@
       }
 
       const name = document.getElementById('s-name').value.trim();
-      if (!name) { showSupplierError('Le nom est obligatoire.'); return; }
+      if (!name) { 
+        showSupplierError('Le nom est obligatoire.'); 
+        return; 
+      }
 
       setSupplierSubmitting(true);
       const record = {
@@ -355,18 +376,30 @@
         phone: document.getElementById('s-phone').value.trim(),
         category: document.getElementById('s-category').value.trim(),
         notes: document.getElementById('s-notes').value.trim(),
+        supplier_id: '',
+        article_name: '',
+        quantity: 0,
+        unit_price: 0,
+        order_date: '',
+        status: '',
         created_at: new Date().toISOString()
       };
 
-      const result = await window.dataSdk.create(record);
-      setSupplierSubmitting(false);
-
-      if (result.isOk) {
-        showSupplierSuccess('Fournisseur ajouté !');
-        document.getElementById('supplier-form').reset();
-        setTimeout(() => { toggleSupplierForm(); }, 800);
-      } else {
-        showSupplierError('Erreur: ' + (result.error?.message || 'Réessayez'));
+      try {
+        const result = await window.dataSdk.create(record);
+        if (result.isOk) {
+          showSupplierSuccess('Fournisseur ajouté !');
+          document.getElementById('supplier-form').reset();
+          setTimeout(() => { 
+            toggleSupplierForm(); 
+          }, 800);
+        } else {
+          showSupplierError('Erreur: ' + (result.error?.message || 'Réessayez'));
+        }
+      } catch (err) {
+        showSupplierError('Erreur réseau: ' + err.message);
+      } finally {
+        setSupplierSubmitting(false);
       }
     }
 
@@ -391,15 +424,24 @@
       }
 
       const supplierId = document.getElementById('o-supplier').value;
-      if (!supplierId) { showOrderError('Sélectionnez un fournisseur.'); return; }
+      if (!supplierId) { 
+        showOrderError('Sélectionnez un fournisseur.'); 
+        return; 
+      }
 
       const article = document.getElementById('o-article').value.trim();
-      if (!article) { showOrderError('Entrez un article.'); return; }
+      if (!article) { 
+        showOrderError('Entrez un article.'); 
+        return; 
+      }
 
       const quantity = parseFloat(document.getElementById('o-quantity').value);
       const price = parseFloat(document.getElementById('o-price').value);
       const date = document.getElementById('o-date').value;
-      if (!date) { showOrderError('Sélectionnez une date.'); return; }
+      if (!date) { 
+        showOrderError('Sélectionnez une date.'); 
+        return; 
+      }
 
       setOrderSubmitting(true);
       const record = {
@@ -419,15 +461,21 @@
         created_at: new Date().toISOString()
       };
 
-      const result = await window.dataSdk.create(record);
-      setOrderSubmitting(false);
-
-      if (result.isOk) {
-        showOrderSuccess('Commande ajoutée !');
-        document.getElementById('order-form').reset();
-        setTimeout(() => { toggleOrderForm(); }, 800);
-      } else {
-        showOrderError('Erreur: ' + (result.error?.message || 'Réessayez'));
+      try {
+        const result = await window.dataSdk.create(record);
+        if (result.isOk) {
+          showOrderSuccess('Commande ajoutée !');
+          document.getElementById('order-form').reset();
+          setTimeout(() => { 
+            toggleOrderForm(); 
+          }, 800);
+        } else {
+          showOrderError('Erreur: ' + (result.error?.message || 'Réessayez'));
+        }
+      } catch (err) {
+        showOrderError('Erreur réseau: ' + err.message);
+      } finally {
+        setOrderSubmitting(false);
       }
     }
 
@@ -793,5 +841,5 @@
       return d.innerHTML;
     }
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd4aa6081fc8a3d',t:'MTc3MDk4OTI3MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd4b22fd22e93cf',t:'MTc3MDk4OTU5MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
