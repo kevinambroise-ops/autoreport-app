@@ -212,9 +212,7 @@
       font_family: 'DM Sans',
       font_size: 15,
       page_title: 'Gestionnaire de Stock Mag House International',
-      subtitle_text: 'Gérez vos fournisseurs et suivez vos commandes en temps réel',
-      add_supplier_text: 'Ajouter un fournisseur',
-      add_order_text: 'Ajouter une commande'
+      subtitle_text: 'Gérez vos fournisseurs et suivez vos commandes en temps réel'
     };
 
     // ---- Element SDK ----
@@ -291,8 +289,8 @@
     // ---- Data SDK Init ----
     const dataHandler = {
       onDataChanged(data) {
-        allSuppliers = data.filter(d => d.record_type === 'supplier');
-        allOrders = data.filter(d => d.record_type === 'order');
+        allSuppliers = data.filter(d => d.record_type === 'supplier') || [];
+        allOrders = data.filter(d => d.record_type === 'order') || [];
         populateSupplierSelect();
         renderSupplierList();
         renderOrderList();
@@ -300,37 +298,27 @@
       }
     };
 
-    // Wait for SDK and initialize
-    async function waitForSdkAndInit() {
+    // Wait for SDK with fallback
+    async function initializeApp() {
       let attempts = 0;
-      const maxAttempts = 200; // 20 seconds
-      
-      while (!window.dataSdk && attempts < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+      while (!window.dataSdk && attempts < 300) {
+        await new Promise(r => setTimeout(r, 50));
         attempts++;
       }
 
-      if (!window.dataSdk) {
-        console.error('Data SDK not available');
-        return false;
-      }
-
-      try {
-        const result = await window.dataSdk.init(dataHandler);
-        if (result.isOk) {
-          dataSdkReady = true;
-          return true;
-        } else {
-          console.error('SDK init failed:', result.error);
-          return false;
+      if (window.dataSdk) {
+        try {
+          const result = await window.dataSdk.init(dataHandler);
+          if (result.isOk) {
+            dataSdkReady = true;
+          }
+        } catch (e) {
+          console.error('SDK init error:', e);
         }
-      } catch (err) {
-        console.error('SDK init error:', err);
-        return false;
       }
     }
 
-    waitForSdkAndInit();
+    initializeApp();
 
     // ---- Tab Switching ----
     function switchTab(tab) {
@@ -858,5 +846,5 @@
       return d.innerHTML;
     }
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd4f533b73e8a3d',t:'MTc3MDk5MjMzNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd4fc1635668a3d',t:'MTc3MDk5MjYxOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
