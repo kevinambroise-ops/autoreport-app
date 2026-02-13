@@ -3,1238 +3,249 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SecureGuard Pro</title>
+  <title>Gestion Fournisseurs &amp; Commandes</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="/_sdk/element_sdk.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+  <script src="/_sdk/data_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet">
   <style>
-    html, body { height: 100%; margin: 0; padding: 0; }
     * { box-sizing: border-box; }
-    body { font-family: 'DM Sans', sans-serif; }
-    .font-mono { font-family: 'Space Mono', monospace; }
 
-    /* Custom scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #2a3a4a; border-radius: 3px; }
-
-    /* Animations */
-    @keyframes fadeSlideUp {
+    @keyframes fadeUp {
       from { opacity: 0; transform: translateY(16px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    @keyframes fadeSlideRight {
+    @keyframes slideIn {
       from { opacity: 0; transform: translateX(-12px); }
       to { opacity: 1; transform: translateX(0); }
     }
-    @keyframes pulseGlow {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.3); }
-      50% { box-shadow: 0 0 12px 4px rgba(0, 255, 136, 0.15); }
-    }
-    @keyframes countUp {
-      from { opacity: 0; transform: scale(0.8); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    @keyframes radarSweep {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-    .animate-fade-up { animation: fadeSlideUp 0.5s ease-out both; }
-    .animate-fade-right { animation: fadeSlideRight 0.4s ease-out both; }
-    .animate-pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
-    .animate-count { animation: countUp 0.6s ease-out both; }
-    .animate-radar { animation: radarSweep 4s linear infinite; }
-    .animate-blink { animation: blink 1.5s ease-in-out infinite; }
-
-    .delay-1 { animation-delay: 0.1s; }
-    .delay-2 { animation-delay: 0.2s; }
-    .delay-3 { animation-delay: 0.3s; }
-    .delay-4 { animation-delay: 0.4s; }
-    .delay-5 { animation-delay: 0.5s; }
-    .delay-6 { animation-delay: 0.6s; }
-
-    /* Map grid pattern */
-    .map-grid {
-      background-image:
-        linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
     }
 
-    /* SOS button pulse */
-    .sos-pulse {
-      animation: sosPulse 1.2s ease-in-out infinite;
+    .fade-up { animation: fadeUp 0.5s ease forwards; }
+    .slide-in { animation: slideIn 0.35s ease forwards; }
+
+    .card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    @keyframes sosPulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.5); }
-      50% { box-shadow: 0 0 20px 8px rgba(255, 59, 48, 0.2); }
-    }
-
-    /* Nav item hover */
-    .nav-item { transition: all 0.2s ease; position: relative; }
-    .nav-item::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 3px;
-      background: #00ff88;
-      border-radius: 0 2px 2px 0;
-      transform: scaleY(0);
-      transition: transform 0.2s ease;
-    }
-    .nav-item:hover::before, .nav-item.active::before { transform: scaleY(1); }
-    .nav-item:hover, .nav-item.active { background: rgba(0, 255, 136, 0.06); }
-
-    /* Status dot */
-    .status-online { background: #00ff88; box-shadow: 0 0 6px rgba(0,255,136,0.5); }
-    .status-offline { background: #ff3b30; }
-    .status-idle { background: #ffd60a; }
-
-    /* Card hover */
-    .card-hover { transition: all 0.25s ease; }
-    .card-hover:hover { transform: translateY(-2px); }
-
-    /* Toast */
-    .toast {
-      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-      padding: 12px 20px; border-radius: 8px; font-size: 14px;
-      animation: fadeSlideUp 0.3s ease-out;
-      max-width: 360px;
-    }
-    .toast-success { background: #0a2e1a; border: 1px solid #00ff88; color: #00ff88; }
-    .toast-error { background: #2e0a0a; border: 1px solid #ff3b30; color: #ff3b30; }
-    .toast-warning { background: #2e2a0a; border: 1px solid #ffd60a; color: #ffd60a; }
-
-    /* Tab active indicator */
-    .tab-active { border-bottom: 2px solid #00ff88; color: #00ff88; }
-
-    /* Modal overlay */
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(4px); z-index: 1000;
-      display: flex; align-items: center; justify-content: center;
-      animation: fadeSlideUp 0.2s ease-out;
+    .card:hover {
+      transform: translateY(-2px);
     }
 
-    /* Confirmation inline */
-    .confirm-inline {
-      background: rgba(255, 59, 48, 0.1);
-      border: 1px solid rgba(255, 59, 48, 0.3);
-      border-radius: 8px; padding: 8px 12px;
-      animation: fadeSlideUp 0.2s ease-out;
+    .form-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--primary-action);
     }
 
-    /* Progress bar */
-    .progress-bar {
-      height: 4px; border-radius: 2px; overflow: hidden;
-      background: rgba(255,255,255,0.1);
+    .btn-primary {
+      transition: all 0.2s ease;
     }
-    .progress-fill {
-      height: 100%; border-radius: 2px;
-      transition: width 0.6s ease;
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
     }
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .loading-dot {
+      animation: pulse-dot 1.2s ease infinite;
+    }
+    .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    .tab-btn {
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active {
+      border-bottom-color: var(--primary-action);
+      color: var(--primary-action);
+    }
+
+    :root {
+      --bg-color: #0f1729;
+      --surface-color: #1a2540;
+      --text-color: #e8ecf4;
+      --primary-action: #f0943a;
+      --secondary-action: #3b5998;
+    }
+
+    .status-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+    .status-pending { background: #92400e; color: #fef3c7; }
+    .status-confirmed { background: #0f2e50; color: #93c5fd; }
+    .status-shipped { background: #1e3a1f; color: #86efac; }
+    .status-delivered { background: #1e2d2d; color: #a3e4d7; }
   </style>
   <style>body { box-sizing: border-box; }</style>
-  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
  </head>
- <body class="h-full">
-  <div id="app-root" class="h-full w-full flex overflow-hidden" style="background: #0b1120; color: #e0e6ed;"><!-- Sidebar -->
-   <aside id="sidebar" class="w-64 flex-shrink-0 flex flex-col" style="background: #0f1729; border-right: 1px solid rgba(255,255,255,0.06);"><!-- Logo -->
-    <div class="p-5 flex items-center gap-3" style="border-bottom: 1px solid rgba(255,255,255,0.06);">
-     <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, #00ff88, #00cc6a);">
-      <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#0b1120" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+ <body class="h-full" style="margin:0; font-family:'DM Sans',sans-serif; background:var(--bg-color); color:var(--text-color);">
+  <div id="app-wrapper" class="h-full w-full overflow-auto" style="background:var(--bg-color);">
+   <div class="w-full max-w-5xl mx-auto px-4 py-8"><!-- Header -->
+    <header class="mb-8 fade-up">
+     <div class="flex items-center gap-3 mb-2">
+      <svg width="36" height="36" viewbox="0 0 36 36" fill="none" style="flex-shrink:0;"><rect width="36" height="36" rx="10" fill="var(--primary-action)" opacity="0.15" /> <path d="M12 14h12M12 18h8M12 22h10" stroke="var(--primary-action)" stroke-width="2" stroke-linecap="round" /> <circle cx="26" cy="24" r="4" fill="var(--primary-action)" opacity="0.6" /> <path d="M25 24h2M26 23v2" stroke="var(--bg-color)" stroke-width="1.2" stroke-linecap="round" />
       </svg>
+      <h1 id="page-title" style="font-family:'Playfair Display',serif; font-size:32px; font-weight:700; color:var(--text-color); margin:0;">Gestion Fournisseurs &amp; Commandes</h1>
      </div>
-     <div>
-      <div id="sidebar-platform-name" class="font-bold text-sm" style="color: #ffffff;">
-       SecureGuard Pro
-      </div>
-      <div class="text-xs" style="color: #5a6a7a;">
-       Super Admin
-      </div>
-     </div>
-    </div><!-- Nav -->
-    <nav class="flex-1 py-3 px-2 space-y-1 overflow-auto"><button onclick="switchView('dashboard')" class="nav-item active w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left" data-nav="dashboard">
-      <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-       <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
-      </svg><span>Tableau de bord</span> </button> <button onclick="switchView('companies')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left" data-nav="companies">
-      <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-       <path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-4" /><path d="M9 9h1" /><path d="M9 13h1" /><path d="M9 17h1" />
-      </svg><span id="nav-companies">Entreprises</span> </button> <button onclick="switchView('agents')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left" data-nav="agents">
-      <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-       <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
-      </svg><span id="nav-agents">Agents</span> </button> <button onclick="switchView('geolocation')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left" data-nav="geolocation">
-      <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-       <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /><path d="M12 2v4" /><path d="M12 18v4" /><path d="M2 12h4" /><path d="M18 12h4" />
-      </svg><span>Géolocalisation</span> </button> <button onclick="switchView('incidents')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left" data-nav="incidents">
-      <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-       <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
-      </svg><span>Incidents</span> <span class="ml-auto text-xs px-1.5 py-0.5 rounded-full" style="background: rgba(255,59,48,0.2); color: #ff3b30;">3</span> </button> <button onclick="switchView('subscriptions')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left" data-nav="subscriptions">
-      <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-       <rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" />
-      </svg><span>Abonnements</span> </button> <button onclick="switchView('reports')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left" data-nav="reports">
-      <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-       <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
-      </svg><span>Rapports</span> </button>
-    </nav><!-- Sidebar footer -->
-    <div class="p-4" style="border-top: 1px solid rgba(255,255,255,0.06);">
-     <div class="flex items-center gap-3">
-      <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style="background: linear-gradient(135deg, #00ff88, #00cc6a); color: #0b1120;">
-       KA
-      </div>
-      <div class="flex-1 min-w-0">
-       <div class="text-xs font-medium truncate">
-        Kevin Ambroise
+     <p id="subtitle-text" style="color:var(--text-color); opacity:0.6; margin:0; font-size:15px;">Gérez vos contacts et suivez vos commandes en un seul endroit</p>
+    </header><!-- Tabs -->
+    <div class="flex gap-1 mb-6 border-b" style="border-color:rgba(255,255,255,0.08);"><button id="tab-suppliers" class="tab-btn px-4 py-3 font-semibold text-sm active" onclick="switchTab('suppliers')" style="border-bottom:2px solid var(--primary-action); color:var(--primary-action);"> 📋 Fournisseurs </button> <button id="tab-orders" class="tab-btn px-4 py-3 font-semibold text-sm" onclick="switchTab('orders')" style="border-bottom:2px solid transparent; color:var(--text-color); opacity:0.6;"> 📦 Commandes </button>
+    </div><!-- ====== SUPPLIERS TAB ====== -->
+    <div id="suppliers-section" class="fade-up">
+     <div class="mb-6 fade-up" style="animation-delay:0.1s;"><button id="toggle-supplier-form-btn" class="btn-primary flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm" style="background:var(--primary-action); color:var(--bg-color);" onclick="toggleSupplierForm()">
+       <svg width="18" height="18" viewbox="0 0 18 18" fill="none">
+        <path d="M9 4v10M4 9h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+       </svg><span id="add-supplier-label">Ajouter un fournisseur</span> </button>
+     </div><!-- Supplier Form -->
+     <div id="supplier-form-panel" class="mb-6 rounded-2xl p-6" style="display:none; background:var(--surface-color); border:1px solid rgba(255,255,255,0.06);">
+      <h2 style="font-family:'Playfair Display',serif; font-size:20px; font-weight:600; margin:0 0 20px 0; color:var(--text-color);">Nouveau fournisseur</h2>
+      <form id="supplier-form" onsubmit="handleSupplierSubmit(event)">
+       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div><label for="s-name" class="block text-xs font-medium mb-1.5" style="color:var(--text-color); opacity:0.7;">Nom de l'entreprise *</label> <input id="s-name" type="text" required class="form-input w-full rounded-lg px-3.5 py-2.5 text-sm" style="background:var(--bg-color); border:1px solid rgba(255,255,255,0.1); color:var(--text-color);" placeholder="Ex: Fournitures Express">
+        </div>
+        <div><label for="s-contact" class="block text-xs font-medium mb-1.5" style="color:var(--text-color); opacity:0.7;">Personne de contact</label> <input id="s-contact" type="text" class="form-input w-full rounded-lg px-3.5 py-2.5 text-sm" style="background:var(--bg-color); border:1px solid rgba(255,255,255,0.1); color:var(--text-color);" placeholder="Ex: Jean Dupont">
+        </div>
+        <div><label for="s-email" class="block text-xs font-medium mb-1.5" style="color:var(--text-color); opacity:0.7;">Email</label> <input id="s-email" type="email" class="form-input w-full rounded-lg px-3.5 py-2.5 text-sm" style="background:var(--bg-color); border:1px solid rgba(255,255,255,0.1); color:var(--text-color);" placeholder="contact@exemple.fr">
+        </div>
+        <div><label for="s-phone" class="block text-xs font-medium mb-1.5" style="color:var(--text-color); opacity:0.7;">Téléphone</label> <input id="s-phone" type="tel" class="form-input w-full rounded-lg px-3.5 py-2.5 text-sm" style="background:var(--bg-color); border:1px solid rgba(255,255,255,0.1); color:var(--text-color);" placeholder="01 23 45 67 89">
+        </div>
+        <div><label for="s-category" class="block text-xs font-medium mb-1.5" style="color:var(--text-color); opacity:0.7;">Catégorie</label> <input id="s-category" type="text" class="form-input w-full rounded-lg px-3.5 py-2.5 text-sm" style="background:var(--bg-color); border:1px solid rgba(255,255,255,0.1); color:var(--text-color);" placeholder="Ex: Matières premières">
+        </div>
+        <div><label for="s-notes" class="block text-xs font-medium mb-1.5" style="color:var(--text-color); opacity:0.7;">Notes</label> <input id="s-notes" type="text" class="form-input w-full rounded-lg px-3.5 py-2.5 text-sm" style="background:var(--bg-color); border:1px solid rgba(255,255,255,0.1); color:var(--text-color);" placeholder="Remarques...">
+        </div>
        </div>
-       <div class="text-xs" style="color: #5a6a7a;">
-        Super Admin
+       <div class="flex gap-3"><button type="submit" id="supplier-submit-btn" class="btn-primary px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2" style="background:var(--primary-action); color:var(--bg-color);"> <span id="supplier-submit-label">Enregistrer</span> <span id="supplier-submit-spinner" style="display:none;" class="flex gap-1"> <span class="loading-dot inline-block w-1.5 h-1.5 rounded-full" style="background:var(--bg-color);"></span> <span class="loading-dot inline-block w-1.5 h-1.5 rounded-full" style="background:var(--bg-color);"></span> <span class="loading-dot inline-block w-1.5 h-1.5 rounded-full" style="background:var(--bg-color);"></span> </span> </button> <button type="button" onclick="toggleSupplierForm()" class="px-5 py-2.5 rounded-lg font-semibold text-sm" style="background:transparent; border:1px solid rgba(255,255,255,0.15); color:var(--text-color);"> Annuler </button>
        </div>
-      </div>
-     </div>
-    </div>
-   </aside><!-- Main Content -->
-   <main class="flex-1 flex flex-col overflow-hidden"><!-- Top Bar -->
-    <header class="flex items-center justify-between px-6 py-4 flex-shrink-0" style="border-bottom: 1px solid rgba(255,255,255,0.06);">
-     <div>
-      <h1 id="page-title" class="text-lg font-bold" style="color: #ffffff;">Tableau de bord</h1>
-      <p id="welcome-msg" class="text-xs mt-0.5" style="color: #5a6a7a;">Bienvenue, Super Admin</p>
-     </div>
-     <div class="flex items-center gap-4"><!-- Search -->
-      <div class="relative hidden md:block"><label for="global-search" class="sr-only">Rechercher</label> <input id="global-search" type="text" placeholder="Rechercher..." class="text-sm rounded-lg pl-9 pr-4 py-2 w-56 focus:outline-none focus:ring-1" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #e0e6ed; --tw-ring-color: #00ff88;">
-       <svg class="absolute left-3 top-2.5" width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#5a6a7a" stroke-width="2">
-        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+       <p id="supplier-form-error" class="mt-3 text-xs" style="color:#ef4444; display:none;"></p>
+       <p id="supplier-form-success" class="mt-3 text-xs" style="color:#22c55e; display:none;"></p>
+      </form>
+     </div><!-- Search & Count -->
+     <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-5 fade-up" style="animation-delay:0.15s;">
+      <div class="relative flex-1">
+       <svg class="absolute left-3 top-1/2 -translate-y-1/2" width="16" height="16" viewbox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="var(--text-color)" stroke-opacity="0.4" stroke-width="1.5" /> <path d="M11 11l3 3" stroke="var(--text-color)" stroke-opacity="0.4" stroke-width="1.5" stroke-linecap="round" />
+       </svg><input id="supplier-search" type="text" class="form-input w-full rounded-lg pl-9 pr-3.5 py-2.5 text-sm" style="background:var(--surface-color); border:1px solid rgba(255,255,255,0.08); color:var(--text-color);" placeholder="Rechercher un fournisseur..." oninput="filterSuppliers()">
+      </div><span id="supplier-count" class="text-xs font-medium px-3 py-1.5 rounded-full whitespace-nowrap" style="background:var(--secondary-action); color:var(--text-color); opacity:0.9;"> 0 fournisseur(s) </span>
+     </div><!-- Supplier List -->
+     <main id="supplier-list" class="flex flex-col gap-3">
+      <div id="suppliers-empty" class="text-center py-16 fade-up" style="animation-delay:0.2s;">
+       <svg class="mx-auto mb-4" width="56" height="56" viewbox="0 0 56 56" fill="none"><rect width="56" height="56" rx="16" fill="var(--surface-color)" /> <path d="M20 24h16M20 30h10" stroke="var(--primary-action)" stroke-width="2" stroke-linecap="round" opacity="0.5" /> <circle cx="38" cy="36" r="6" fill="var(--primary-action)" opacity="0.2" /> <path d="M37 36h2M38 35v2" stroke="var(--primary-action)" stroke-width="1.4" stroke-linecap="round" />
        </svg>
-      </div><!-- Notifications --> <button onclick="toggleNotifications()" class="relative p-2 rounded-lg" style="background: rgba(255,255,255,0.05);" aria-label="Notifications">
-       <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#e0e6ed" stroke-width="1.8">
-        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" />
-       </svg><span class="absolute top-1 right-1 w-2 h-2 rounded-full animate-blink" style="background: #ff3b30;"></span> </button> <!-- Time -->
-      <div class="font-mono text-xs px-3 py-1.5 rounded-lg" style="background: rgba(0,255,136,0.06); color: #00ff88;" id="live-clock">
-       --:--:--
+       <p class="font-semibold text-base mb-1" style="color:var(--text-color);">Aucun fournisseur</p>
+       <p class="text-sm" style="color:var(--text-color); opacity:0.5;">Ajoutez votre premier fournisseur pour commencer</p>
       </div>
-     </div>
-    </header><!-- Content Area -->
-    <div class="flex-1 overflow-auto p-6" id="content-area"><!-- DASHBOARD VIEW -->
-     <div id="view-dashboard" class="view-panel"><!-- Stats Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-       <div class="rounded-xl p-4 card-hover animate-fade-up delay-1" style="background: linear-gradient(135deg, rgba(0,255,136,0.08), rgba(0,204,106,0.03)); border: 1px solid rgba(0,255,136,0.12);">
-        <div class="flex items-center justify-between mb-3"><span class="text-xs font-medium" style="color: #5a6a7a;">Entreprises Actives</span>
-         <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(0,255,136,0.1);">
-          <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2">
-           <path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-4" />
-          </svg>
-         </div>
+     </main>
+    </div><!-- ====== ORDERS TAB ====== -->
+    <div id="orders-section" class="fade-up" style="display:none;">
+     <div class="mb-6 fade-up" style="animation-delay:0.1s;"><button id="toggle-order-form-btn" class="btn-primary flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm" style="background:var(--primary-action); color:var(--bg-color);" onclick="toggleOrderForm()">
+       <svg width="18" height="18" viewbox="0 0 18 18" fill="none">
+        <path d="M9 4v10M4 9h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+       </svg><span id="add-order-label">Ajouter une commande</span> </button>
+     </div><!-- Order Form -->
+     <div id="order-form-panel" class="mb-6 rounded-2xl p-6" style="display:none; background:var(--surface-color); border:1px solid rgba(255,255,255,0.06);">
+      <h2 style="font-family:'Playfair Display',serif; font-size:20px; font-weight:600; margin:0 0 20px 0; color:var(--text-color);">Nouvelle commande</h2>
+      <form id="order-form" onsubmit="handleOrderSubmit(event)">
+       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div><label for="o-supplier" class="block text-xs font-medium mb-1.5" style="color:var(--text-color); opacity:0.7;">Fournisseur *</label> <select id="o-supplier" required class="form-input w-full rounded-lg px-3.5 py-2.5 text-sm" style="background:var(--bg-color); border:1px solid rgba(255,255,255,0.1); color:var(--text-color);"> <option value="">-- Sélectionner un fournisseur --</option> </select>
         </div>
-        <div class="text-2xl font-bold animate-count" style="color: #ffffff;">
-         12
+        <div><label for="o-article" class="block text-xs font-medium mb-1.5" style="color:var(--text-color); opacity:0.7;">Article *</label> <input id="o-article" type="text" required class="form-input w-full rounded-lg px-3.5 py-2.5 text-sm" style="background:var(--bg-color); border:1px solid rgba(255,255,255,0.1); color:var(--text-color);" placeholder="Ex: Vis M6">
         </div>
-        <div class="text-xs mt-1" style="color: #00ff88;">
-         +2 ce mois
+        <div><label for="o-quantity" class="block text-xs font-medium mb-1.5" style="color:var(--text-color); opacity:0.7;">Quantité *</label> <input id="o-quantity" type="number" required min="1" class="form-input w-full rounded-lg px-3.5 py-2.5 text-sm" style="background:var(--bg-color); border:1px solid rgba(255,255,255,0.1); color:var(--text-color);" placeholder="100">
         </div>
-       </div>
-       <div class="rounded-xl p-4 card-hover animate-fade-up delay-2" style="background: linear-gradient(135deg, rgba(0,122,255,0.08), rgba(0,122,255,0.03)); border: 1px solid rgba(0,122,255,0.12);">
-        <div class="flex items-center justify-between mb-3"><span class="text-xs font-medium" style="color: #5a6a7a;">Agents en Service</span>
-         <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(0,122,255,0.1);">
-          <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#007aff" stroke-width="2">
-           <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
-          </svg>
-         </div>
+        <div><label for="o-price" class="block text-xs font-medium mb-1.5" style="color:var(--text-color); opacity:0.7;">Prix unitaire (€) *</label> <input id="o-price" type="number" required min="0" step="0.01" class="form-input w-full rounded-lg px-3.5 py-2.5 text-sm" style="background:var(--bg-color); border:1px solid rgba(255,255,255,0.1); color:var(--text-color);" placeholder="15.50">
         </div>
-        <div class="text-2xl font-bold animate-count delay-1" style="color: #ffffff;">
-         247
+        <div><label for="o-date" class="block text-xs font-medium mb-1.5" style="color:var(--text-color); opacity:0.7;">Date de commande *</label> <input id="o-date" type="date" required class="form-input w-full rounded-lg px-3.5 py-2.5 text-sm" style="background:var(--bg-color); border:1px solid rgba(255,255,255,0.1); color:var(--text-color);">
         </div>
-        <div class="text-xs mt-1" style="color: #007aff;">
-         189 en ligne
+        <div><label for="o-status" class="block text-xs font-medium mb-1.5" style="color:var(--text-color); opacity:0.7;">Statut</label> <select id="o-status" class="form-input w-full rounded-lg px-3.5 py-2.5 text-sm" style="background:var(--bg-color); border:1px solid rgba(255,255,255,0.1); color:var(--text-color);"> <option value="pending">En attente</option> <option value="confirmed">Confirmée</option> <option value="shipped">Expédiée</option> <option value="delivered">Livrée</option> </select>
         </div>
        </div>
-       <div class="rounded-xl p-4 card-hover animate-fade-up delay-3" style="background: linear-gradient(135deg, rgba(255,214,10,0.08), rgba(255,214,10,0.03)); border: 1px solid rgba(255,214,10,0.12);">
-        <div class="flex items-center justify-between mb-3"><span class="text-xs font-medium" style="color: #5a6a7a;">Sites Protégés</span>
-         <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(255,214,10,0.1);">
-          <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#ffd60a" stroke-width="2">
-           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
-          </svg>
-         </div>
-        </div>
-        <div class="text-2xl font-bold animate-count delay-2" style="color: #ffffff;">
-         58
-        </div>
-        <div class="text-xs mt-1" style="color: #ffd60a;">
-         5 alertes actives
-        </div>
+       <div class="flex gap-3"><button type="submit" id="order-submit-btn" class="btn-primary px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2" style="background:var(--primary-action); color:var(--bg-color);"> <span id="order-submit-label">Enregistrer</span> <span id="order-submit-spinner" style="display:none;" class="flex gap-1"> <span class="loading-dot inline-block w-1.5 h-1.5 rounded-full" style="background:var(--bg-color);"></span> <span class="loading-dot inline-block w-1.5 h-1.5 rounded-full" style="background:var(--bg-color);"></span> <span class="loading-dot inline-block w-1.5 h-1.5 rounded-full" style="background:var(--bg-color);"></span> </span> </button> <button type="button" onclick="toggleOrderForm()" class="px-5 py-2.5 rounded-lg font-semibold text-sm" style="background:transparent; border:1px solid rgba(255,255,255,0.15); color:var(--text-color);"> Annuler </button>
        </div>
-       <div class="rounded-xl p-4 card-hover animate-fade-up delay-4" style="background: linear-gradient(135deg, rgba(255,59,48,0.08), rgba(255,59,48,0.03)); border: 1px solid rgba(255,59,48,0.12);">
-        <div class="flex items-center justify-between mb-3"><span class="text-xs font-medium" style="color: #5a6a7a;">Incidents Ouverts</span>
-         <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(255,59,48,0.1);">
-          <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#ff3b30" stroke-width="2">
-           <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" />
-          </svg>
-         </div>
-        </div>
-        <div class="text-2xl font-bold animate-count delay-3" style="color: #ffffff;">
-         3
-        </div>
-        <div class="text-xs mt-1" style="color: #ff3b30;">
-         1 critique
-        </div>
-       </div>
-      </div><!-- Revenue + Activity -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6"><!-- Revenue Chart -->
-       <div class="lg:col-span-2 rounded-xl p-5 animate-fade-up delay-3" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
-        <div class="flex items-center justify-between mb-4">
-         <h3 class="text-sm font-semibold" style="color: #ffffff;">Revenus Mensuels</h3>
-         <div class="flex gap-2"><button class="text-xs px-3 py-1 rounded-md" style="background: rgba(0,255,136,0.1); color: #00ff88;">6 mois</button> <button class="text-xs px-3 py-1 rounded-md" style="background: rgba(255,255,255,0.05); color: #5a6a7a;">12 mois</button>
-         </div>
-        </div>
-        <div class="flex items-end gap-3 h-40" id="revenue-chart"><!-- bars rendered by JS -->
-        </div>
-        <div class="flex justify-between mt-3 text-xs" style="color: #5a6a7a;"><span>Juil</span><span>Août</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Déc</span>
-        </div>
-       </div><!-- Recent Activity -->
-       <div class="rounded-xl p-5 animate-fade-up delay-4" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
-        <h3 class="text-sm font-semibold mb-4" style="color: #ffffff;">Activité Récente</h3>
-        <div class="space-y-3" id="activity-feed"><!-- rendered by JS -->
-        </div>
-       </div>
-      </div><!-- Active Alerts + Quick Map -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4"><!-- Active Alerts -->
-       <div class="rounded-xl p-5 animate-fade-up delay-5" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
-        <h3 class="text-sm font-semibold mb-4" style="color: #ffffff;">🚨 Alertes Actives</h3>
-        <div class="space-y-3" id="alerts-list"><!-- rendered by JS -->
-        </div>
-       </div><!-- Quick Map Preview -->
-       <div class="rounded-xl p-5 animate-fade-up delay-6 map-grid relative overflow-hidden" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
-        <h3 class="text-sm font-semibold mb-4" style="color: #ffffff;">📍 Aperçu Géolocalisation</h3>
-        <div class="relative" style="height: 180px;"><!-- Simulated Map -->
-         <div class="absolute inset-0 rounded-lg overflow-hidden" style="background: #0a1628;"><!-- Grid -->
-          <svg class="w-full h-full absolute inset-0" viewbox="0 0 400 200"><!-- Grid lines --> <g stroke="rgba(0,255,136,0.05)" stroke-width="0.5">
-            <line x1="0" y1="40" x2="400" y2="40" />
-            <line x1="0" y1="80" x2="400" y2="80" />
-            <line x1="0" y1="120" x2="400" y2="120" />
-            <line x1="0" y1="160" x2="400" y2="160" />
-            <line x1="80" y1="0" x2="80" y2="200" />
-            <line x1="160" y1="0" x2="160" y2="200" />
-            <line x1="240" y1="0" x2="240" y2="200" />
-            <line x1="320" y1="0" x2="320" y2="200" />
-           </g> <!-- Roads --> <g stroke="rgba(255,255,255,0.04)" stroke-width="2">
-            <path d="M0,100 Q100,80 200,100 T400,90" />
-            <path d="M200,0 Q180,100 200,200" />
-            <path d="M50,30 L350,170" />
-           </g> <!-- Agent dots --> <circle cx="120" cy="70" r="4" fill="#00ff88" opacity="0.9">
-            <animate attributename="r" values="4;6;4" dur="2s" repeatcount="indefinite" />
-           </circle> <circle cx="250" cy="110" r="4" fill="#00ff88" opacity="0.9">
-            <animate attributename="r" values="4;6;4" dur="2s" begin="0.5s" repeatcount="indefinite" />
-           </circle> <circle cx="180" cy="150" r="4" fill="#007aff" opacity="0.9">
-            <animate attributename="r" values="4;6;4" dur="2s" begin="1s" repeatcount="indefinite" />
-           </circle> <circle cx="310" cy="60" r="4" fill="#00ff88" opacity="0.9">
-            <animate attributename="r" values="4;6;4" dur="2s" begin="1.5s" repeatcount="indefinite" />
-           </circle> <circle cx="80" cy="140" r="4" fill="#ffd60a" opacity="0.9">
-            <animate attributename="r" values="4;6;4" dur="2s" begin="0.7s" repeatcount="indefinite" />
-           </circle> <!-- SOS marker --> <circle cx="340" cy="150" r="6" fill="#ff3b30" opacity="0.8">
-            <animate attributename="r" values="6;10;6" dur="1s" repeatcount="indefinite" />
-            <animate attributename="opacity" values="0.8;0.3;0.8" dur="1s" repeatcount="indefinite" />
-           </circle> <!-- Zone circle --> <circle cx="200" cy="100" r="50" fill="none" stroke="rgba(0,255,136,0.15)" stroke-width="1" stroke-dasharray="4,4" />
-          </svg><!-- Radar sweep -->
-          <div class="absolute animate-radar" style="width: 120px; height: 120px; top: 40px; left: 140px;">
-           <div style="width: 100%; height: 100%; background: conic-gradient(from 0deg, transparent 0deg, rgba(0,255,136,0.08) 30deg, transparent 31deg); border-radius: 50%;"></div>
-          </div>
-         </div><!-- Legend -->
-         <div class="absolute bottom-2 right-2 flex gap-3 text-xs p-2 rounded-md" style="background: rgba(11,17,32,0.9);"><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full status-online"></span> En ligne</span> <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full status-idle"></span> Inactif</span> <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full status-offline animate-blink"></span> SOS</span>
-         </div>
-        </div>
-       </div>
+       <p id="order-form-error" class="mt-3 text-xs" style="color:#ef4444; display:none;"></p>
+       <p id="order-form-success" class="mt-3 text-xs" style="color:#22c55e; display:none;"></p>
+      </form>
+     </div><!-- Search & Filters -->
+     <div class="flex flex-col sm:flex-row gap-3 mb-5 fade-up" style="animation-delay:0.15s;">
+      <div class="relative flex-1">
+       <svg class="absolute left-3 top-1/2 -translate-y-1/2" width="16" height="16" viewbox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="var(--text-color)" stroke-opacity="0.4" stroke-width="1.5" /> <path d="M11 11l3 3" stroke="var(--text-color)" stroke-opacity="0.4" stroke-width="1.5" stroke-linecap="round" />
+       </svg><input id="order-search" type="text" class="form-input w-full rounded-lg pl-9 pr-3.5 py-2.5 text-sm" style="background:var(--surface-color); border:1px solid rgba(255,255,255,0.08); color:var(--text-color);" placeholder="Rechercher une commande..." oninput="filterOrders()">
+      </div><select id="status-filter" class="form-input rounded-lg px-3.5 py-2.5 text-sm" style="background:var(--surface-color); border:1px solid rgba(255,255,255,0.08); color:var(--text-color); min-width:150px;" onchange="filterOrders()"> <option value="">Tous les statuts</option> <option value="pending">En attente</option> <option value="confirmed">Confirmée</option> <option value="shipped">Expédiée</option> <option value="delivered">Livrée</option> </select> <span id="order-count" class="text-xs font-medium px-3 py-1.5 rounded-full whitespace-nowrap" style="background:var(--secondary-action); color:var(--text-color); opacity:0.9;"> 0 commande(s) </span>
+     </div><!-- Order List -->
+     <main id="order-list" class="flex flex-col gap-3">
+      <div id="orders-empty" class="text-center py-16 fade-up" style="animation-delay:0.2s;">
+       <svg class="mx-auto mb-4" width="56" height="56" viewbox="0 0 56 56" fill="none"><rect width="56" height="56" rx="16" fill="var(--surface-color)" /> <path d="M20 20h16v14H20z" stroke="var(--primary-action)" stroke-width="1.5" stroke-opacity="0.5" /> <circle cx="28" cy="27" r="2.5" fill="var(--primary-action)" opacity="0.5" />
+       </svg>
+       <p class="font-semibold text-base mb-1" style="color:var(--text-color);">Aucune commande</p>
+       <p class="text-sm" style="color:var(--text-color); opacity:0.5;">Ajoutez votre première commande pour commencer</p>
       </div>
-     </div><!-- COMPANIES VIEW -->
-     <div id="view-companies" class="view-panel hidden">
-      <div class="flex items-center justify-between mb-5">
-       <div>
-        <h2 id="companies-title" class="text-lg font-bold" style="color: #ffffff;">Entreprises</h2>
-        <p class="text-xs" style="color: #5a6a7a;">Gestion des entreprises clientes</p>
-       </div><button onclick="openCompanyModal()" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium" style="background: #00ff88; color: #0b1120;">
-        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-         <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-        </svg> Nouvelle Entreprise </button>
-      </div>
-      <div class="rounded-xl overflow-hidden" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
-       <table class="w-full text-sm">
-        <thead>
-         <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
-          <th class="text-left px-5 py-3 text-xs font-medium" style="color: #5a6a7a;">Entreprise</th>
-          <th class="text-left px-5 py-3 text-xs font-medium hidden md:table-cell" style="color: #5a6a7a;">Plan</th>
-          <th class="text-left px-5 py-3 text-xs font-medium hidden lg:table-cell" style="color: #5a6a7a;">Agents</th>
-          <th class="text-left px-5 py-3 text-xs font-medium" style="color: #5a6a7a;">Statut</th>
-          <th class="text-left px-5 py-3 text-xs font-medium" style="color: #5a6a7a;">Actions</th>
-         </tr>
-        </thead>
-        <tbody id="companies-table-body"><!-- rendered by JS -->
-        </tbody>
-       </table>
-      </div>
-     </div><!-- AGENTS VIEW -->
-     <div id="view-agents" class="view-panel hidden">
-      <div class="flex items-center justify-between mb-5">
-       <div>
-        <h2 id="agents-title" class="text-lg font-bold" style="color: #ffffff;">Agents</h2>
-        <p class="text-xs" style="color: #5a6a7a;">Suivi et gestion des agents de sécurité</p>
-       </div><button onclick="openAgentModal()" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium" style="background: #00ff88; color: #0b1120;">
-        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-         <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-        </svg> Nouvel Agent </button>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="agents-grid"><!-- rendered by JS -->
-      </div>
-     </div><!-- GEOLOCATION VIEW -->
-     <div id="view-geolocation" class="view-panel hidden">
-      <div class="flex items-center justify-between mb-5">
-       <h2 class="text-lg font-bold" style="color: #ffffff;">Géolocalisation Temps Réel</h2>
-       <div class="flex items-center gap-3"><span class="flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg" style="background: rgba(0,255,136,0.08); color: #00ff88;"> <span class="w-2 h-2 rounded-full status-online animate-pulse-glow"></span> 189 agents en ligne </span>
-       </div>
-      </div>
-      <div class="grid grid-cols-1 lg:grid-cols-4 gap-4"><!-- Large Map -->
-       <div class="lg:col-span-3 rounded-xl overflow-hidden map-grid relative" style="background: #0a1628; border: 1px solid rgba(255,255,255,0.06); height: 500px;">
-        <svg class="w-full h-full" viewbox="0 0 800 500"><!-- Grid --> <g stroke="rgba(0,255,136,0.04)" stroke-width="0.5">
-          <line x1="0" y1="100" x2="800" y2="100" />
-          <line x1="0" y1="200" x2="800" y2="200" />
-          <line x1="0" y1="300" x2="800" y2="300" />
-          <line x1="0" y1="400" x2="800" y2="400" />
-          <line x1="160" y1="0" x2="160" y2="500" />
-          <line x1="320" y1="0" x2="320" y2="500" />
-          <line x1="480" y1="0" x2="480" y2="500" />
-          <line x1="640" y1="0" x2="640" y2="500" />
-         </g> <!-- Roads --> <g stroke="rgba(255,255,255,0.06)" stroke-width="3" fill="none">
-          <path d="M0,250 Q200,200 400,250 T800,230" />
-          <path d="M400,0 Q380,250 400,500" />
-          <path d="M100,50 Q400,200 700,350" />
-          <path d="M0,400 Q300,350 600,420 T800,380" />
-          <path d="M200,0 L600,500" />
-         </g> <!-- Zones --> <circle cx="300" cy="200" r="80" fill="rgba(0,255,136,0.04)" stroke="rgba(0,255,136,0.15)" stroke-width="1" stroke-dasharray="6,4" /> <circle cx="550" cy="320" r="60" fill="rgba(0,122,255,0.04)" stroke="rgba(0,122,255,0.15)" stroke-width="1" stroke-dasharray="6,4" /> <text x="300" y="205" text-anchor="middle" fill="rgba(0,255,136,0.25)" font-size="10" font-family="DM Sans">
-          Zone A - Centre Commercial
-         </text> <text x="550" y="325" text-anchor="middle" fill="rgba(0,122,255,0.25)" font-size="10" font-family="DM Sans">
-          Zone B - Entrepôt
-         </text> <!-- Agents --> <g id="map-agents">
-          <g>
-           <circle cx="280" cy="180" r="5" fill="#00ff88">
-            <animate attributename="r" values="5;7;5" dur="2s" repeatcount="indefinite" />
-           </circle>
-           <text x="290" y="175" fill="#00ff88" font-size="9" font-family="DM Sans">
-            M. Diallo
-           </text>
-          </g>
-          <g>
-           <circle cx="320" cy="220" r="5" fill="#00ff88">
-            <animate attributename="r" values="5;7;5" dur="2s" begin="0.3s" repeatcount="indefinite" />
-           </circle>
-           <text x="330" y="215" fill="#00ff88" font-size="9" font-family="DM Sans">
-            A. Traoré
-           </text>
-          </g>
-          <g>
-           <circle cx="540" cy="300" r="5" fill="#007aff">
-            <animate attributename="r" values="5;7;5" dur="2s" begin="0.6s" repeatcount="indefinite" />
-           </circle>
-           <text x="550" y="295" fill="#007aff" font-size="9" font-family="DM Sans">
-            B. Koné
-           </text>
-          </g>
-          <g>
-           <circle cx="150" cy="350" r="5" fill="#ffd60a">
-            <animate attributename="r" values="5;7;5" dur="2s" begin="0.9s" repeatcount="indefinite" />
-           </circle>
-           <text x="160" y="345" fill="#ffd60a" font-size="9" font-family="DM Sans">
-            S. Ouattara
-           </text>
-          </g>
-          <g>
-           <circle cx="650" cy="150" r="5" fill="#00ff88">
-            <animate attributename="r" values="5;7;5" dur="2s" begin="1.2s" repeatcount="indefinite" />
-           </circle>
-           <text x="660" y="145" fill="#00ff88" font-size="9" font-family="DM Sans">
-            K. Bamba
-           </text>
-          </g> <!-- SOS -->
-          <g>
-           <circle cx="500" cy="120" r="8" fill="#ff3b30">
-            <animate attributename="r" values="8;14;8" dur="1s" repeatcount="indefinite" />
-            <animate attributename="opacity" values="1;0.4;1" dur="1s" repeatcount="indefinite" />
-           </circle>
-           <text x="515" y="118" fill="#ff3b30" font-size="10" font-weight="bold" font-family="DM Sans">
-            SOS - I. Sanogo
-           </text>
-          </g>
-         </g> <!-- Radar --> <g transform="translate(400,250)">
-          <circle r="120" fill="none" stroke="rgba(0,255,136,0.06)" stroke-width="0.5" />
-          <line x1="0" y1="0" x2="120" y2="0" stroke="rgba(0,255,136,0.15)" stroke-width="1" transform="rotate(0)">
-           <animatetransform attributename="transform" type="rotate" from="0" to="360" dur="6s" repeatcount="indefinite" />
-          </line>
-         </g>
-        </svg><!-- SOS Alert overlay -->
-        <div class="absolute top-4 right-4 sos-pulse rounded-lg px-4 py-3 flex items-center gap-3" style="background: rgba(255,59,48,0.15); border: 1px solid rgba(255,59,48,0.4);"><span class="text-lg">🆘</span>
-         <div>
-          <div class="text-xs font-bold" style="color: #ff3b30;">
-           ALERTE SOS
-          </div>
-          <div class="text-xs" style="color: #e0e6ed;">
-           I. Sanogo - Site Entrepôt Nord
-          </div>
-         </div>
-        </div>
-       </div><!-- Agent List -->
-       <div class="rounded-xl p-4 overflow-auto" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06); max-height: 500px;">
-        <h3 class="text-xs font-semibold mb-3" style="color: #5a6a7a;">AGENTS EN SERVICE</h3>
-        <div class="space-y-2" id="geo-agent-list"><!-- rendered by JS -->
-        </div>
-       </div>
-      </div>
-     </div><!-- INCIDENTS VIEW -->
-     <div id="view-incidents" class="view-panel hidden">
-      <div class="flex items-center justify-between mb-5">
-       <div>
-        <h2 class="text-lg font-bold" style="color: #ffffff;">Gestion des Incidents</h2>
-        <p class="text-xs" style="color: #5a6a7a;">Suivi et traitement des incidents</p>
-       </div>
-       <div class="flex gap-2"><button class="tab-active text-xs px-3 py-1.5 rounded-t-md" onclick="filterIncidents('all', this)">Tous</button> <button class="text-xs px-3 py-1.5" style="color: #5a6a7a;" onclick="filterIncidents('critique', this)">Critiques</button> <button class="text-xs px-3 py-1.5" style="color: #5a6a7a;" onclick="filterIncidents('moyen', this)">Moyens</button> <button class="text-xs px-3 py-1.5" style="color: #5a6a7a;" onclick="filterIncidents('faible', this)">Faibles</button>
-       </div>
-      </div>
-      <div class="space-y-3" id="incidents-list"><!-- rendered by JS -->
-      </div>
-     </div><!-- SUBSCRIPTIONS VIEW -->
-     <div id="view-subscriptions" class="view-panel hidden">
-      <div class="flex items-center justify-between mb-5">
-       <h2 class="text-lg font-bold" style="color: #ffffff;">Gestion des Abonnements</h2>
-      </div><!-- Plans -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-       <div class="rounded-xl p-5 card-hover animate-fade-up delay-1" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
-        <div class="text-xs font-medium mb-2" style="color: #5a6a7a;">
-         BASIQUE
-        </div>
-        <div class="text-2xl font-bold mb-1" style="color: #ffffff;">
-         25 000 <span class="text-sm font-normal" style="color: #5a6a7a;">FCFA/mois</span>
-        </div>
-        <div class="text-xs mb-4" style="color: #5a6a7a;">
-         Jusqu'à 10 agents
-        </div>
-        <div class="space-y-2 text-xs" style="color: #e0e6ed;">
-         <div class="flex items-center gap-2">
-          <span style="color: #00ff88;">✓</span> Gestion des agents
-         </div>
-         <div class="flex items-center gap-2">
-          <span style="color: #00ff88;">✓</span> Suivi des sites
-         </div>
-         <div class="flex items-center gap-2">
-          <span style="color: #00ff88;">✓</span> Rapports basiques
-         </div>
-         <div class="flex items-center gap-2">
-          <span style="color: #5a6a7a;">✗</span><span style="color: #5a6a7a;">Géolocalisation</span>
-         </div>
-         <div class="flex items-center gap-2">
-          <span style="color: #5a6a7a;">✗</span><span style="color: #5a6a7a;">SOS / Alertes</span>
-         </div>
-        </div>
-        <div class="mt-4 text-center text-xs px-3 py-1.5 rounded-lg" style="background: rgba(255,255,255,0.05); color: #5a6a7a;">
-         4 entreprises
-        </div>
-       </div>
-       <div class="rounded-xl p-5 card-hover animate-fade-up delay-2 relative" style="background: linear-gradient(135deg, rgba(0,255,136,0.06), rgba(0,204,106,0.02)); border: 1px solid rgba(0,255,136,0.2);">
-        <div class="absolute -top-2 right-4 text-xs px-2 py-0.5 rounded-full font-medium" style="background: #00ff88; color: #0b1120;">
-         Populaire
-        </div>
-        <div class="text-xs font-medium mb-2" style="color: #00ff88;">
-         PRO
-        </div>
-        <div class="text-2xl font-bold mb-1" style="color: #ffffff;">
-         75 000 <span class="text-sm font-normal" style="color: #5a6a7a;">FCFA/mois</span>
-        </div>
-        <div class="text-xs mb-4" style="color: #5a6a7a;">
-         Jusqu'à 50 agents
-        </div>
-        <div class="space-y-2 text-xs" style="color: #e0e6ed;">
-         <div class="flex items-center gap-2">
-          <span style="color: #00ff88;">✓</span> Tout le plan Basique
-         </div>
-         <div class="flex items-center gap-2">
-          <span style="color: #00ff88;">✓</span> Géolocalisation temps réel
-         </div>
-         <div class="flex items-center gap-2">
-          <span style="color: #00ff88;">✓</span> Gestion des incidents
-         </div>
-         <div class="flex items-center gap-2">
-          <span style="color: #00ff88;">✓</span> Alertes SOS
-         </div>
-         <div class="flex items-center gap-2">
-          <span style="color: #5a6a7a;">✗</span><span style="color: #5a6a7a;">API personnalisée</span>
-         </div>
-        </div>
-        <div class="mt-4 text-center text-xs px-3 py-1.5 rounded-lg" style="background: rgba(0,255,136,0.1); color: #00ff88;">
-         6 entreprises
-        </div>
-       </div>
-       <div class="rounded-xl p-5 card-hover animate-fade-up delay-3" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
-        <div class="text-xs font-medium mb-2" style="color: #ffd60a;">
-         PREMIUM
-        </div>
-        <div class="text-2xl font-bold mb-1" style="color: #ffffff;">
-         150 000 <span class="text-sm font-normal" style="color: #5a6a7a;">FCFA/mois</span>
-        </div>
-        <div class="text-xs mb-4" style="color: #5a6a7a;">
-         Agents illimités
-        </div>
-        <div class="space-y-2 text-xs" style="color: #e0e6ed;">
-         <div class="flex items-center gap-2">
-          <span style="color: #00ff88;">✓</span> Tout le plan Pro
-         </div>
-         <div class="flex items-center gap-2">
-          <span style="color: #00ff88;">✓</span> API personnalisée
-         </div>
-         <div class="flex items-center gap-2">
-          <span style="color: #00ff88;">✓</span> Support prioritaire
-         </div>
-         <div class="flex items-center gap-2">
-          <span style="color: #00ff88;">✓</span> Rapports avancés
-         </div>
-         <div class="flex items-center gap-2">
-          <span style="color: #00ff88;">✓</span> Multi-sites illimités
-         </div>
-        </div>
-        <div class="mt-4 text-center text-xs px-3 py-1.5 rounded-lg" style="background: rgba(255,214,10,0.1); color: #ffd60a;">
-         2 entreprises
-        </div>
-       </div>
-      </div><!-- Subscription Table -->
-      <div class="rounded-xl overflow-hidden" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
-       <div class="px-5 py-3" style="border-bottom: 1px solid rgba(255,255,255,0.06);">
-        <h3 class="text-sm font-semibold" style="color: #ffffff;">Historique des Abonnements</h3>
-       </div>
-       <table class="w-full text-sm">
-        <thead>
-         <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
-          <th class="text-left px-5 py-3 text-xs font-medium" style="color: #5a6a7a;">Entreprise</th>
-          <th class="text-left px-5 py-3 text-xs font-medium hidden md:table-cell" style="color: #5a6a7a;">Plan</th>
-          <th class="text-left px-5 py-3 text-xs font-medium hidden md:table-cell" style="color: #5a6a7a;">Expiration</th>
-          <th class="text-left px-5 py-3 text-xs font-medium" style="color: #5a6a7a;">Paiement</th>
-          <th class="text-left px-5 py-3 text-xs font-medium" style="color: #5a6a7a;">Statut</th>
-         </tr>
-        </thead>
-        <tbody id="subscriptions-table-body"><!-- rendered by JS -->
-        </tbody>
-       </table>
-      </div>
-     </div><!-- REPORTS VIEW -->
-     <div id="view-reports" class="view-panel hidden">
-      <div class="flex items-center justify-between mb-5">
-       <h2 class="text-lg font-bold" style="color: #ffffff;">Rapports</h2>
-       <div class="flex gap-2"><button class="text-xs px-3 py-1.5 rounded-lg flex items-center gap-2" style="background: rgba(0,255,136,0.1); color: #00ff88;" onclick="showToast('Rapport PDF généré', 'success')">
-         <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
-         </svg> Export PDF </button> <button class="text-xs px-3 py-1.5 rounded-lg flex items-center gap-2" style="background: rgba(255,255,255,0.05); color: #5a6a7a;" onclick="showToast('Rapport Excel généré', 'success')">
-         <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
-         </svg> Export Excel </button>
-       </div>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"><!-- Report cards -->
-       <div class="rounded-xl p-5 animate-fade-up delay-1" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
-        <h3 class="text-sm font-semibold mb-3" style="color: #ffffff;">Présence des Agents</h3>
-        <div class="space-y-3">
-         <div>
-          <div class="flex justify-between text-xs mb-1">
-           <span style="color: #e0e6ed;">SecuriPlus</span><span style="color: #00ff88;">96%</span>
-          </div>
-          <div class="progress-bar">
-           <div class="progress-fill" style="width: 96%; background: #00ff88;"></div>
-          </div>
-         </div>
-         <div>
-          <div class="flex justify-between text-xs mb-1">
-           <span style="color: #e0e6ed;">GuardForce</span><span style="color: #007aff;">88%</span>
-          </div>
-          <div class="progress-bar">
-           <div class="progress-fill" style="width: 88%; background: #007aff;"></div>
-          </div>
-         </div>
-         <div>
-          <div class="flex justify-between text-xs mb-1">
-           <span style="color: #e0e6ed;">VigiPro</span><span style="color: #ffd60a;">72%</span>
-          </div>
-          <div class="progress-bar">
-           <div class="progress-fill" style="width: 72%; background: #ffd60a;"></div>
-          </div>
-         </div>
-         <div>
-          <div class="flex justify-between text-xs mb-1">
-           <span style="color: #e0e6ed;">SafeZone</span><span style="color: #ff3b30;">65%</span>
-          </div>
-          <div class="progress-bar">
-           <div class="progress-fill" style="width: 65%; background: #ff3b30;"></div>
-          </div>
-         </div>
-        </div>
-       </div>
-       <div class="rounded-xl p-5 animate-fade-up delay-2" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
-        <h3 class="text-sm font-semibold mb-3" style="color: #ffffff;">Incidents par Gravité</h3>
-        <div class="flex items-center justify-center gap-8" style="height: 140px;"><!-- Simple donut chart with SVG -->
-         <svg width="120" height="120" viewbox="0 0 120 120"><circle cx="60" cy="60" r="45" fill="none" stroke="rgba(255,59,48,0.3)" stroke-width="12" stroke-dasharray="56.5 226" stroke-dashoffset="0" transform="rotate(-90 60 60)" /> <circle cx="60" cy="60" r="45" fill="none" stroke="rgba(255,214,10,0.4)" stroke-width="12" stroke-dasharray="113 226" stroke-dashoffset="-56.5" transform="rotate(-90 60 60)" /> <circle cx="60" cy="60" r="45" fill="none" stroke="rgba(0,255,136,0.3)" stroke-width="12" stroke-dasharray="56.5 226" stroke-dashoffset="-169.5" transform="rotate(-90 60 60)" /> <text x="60" y="56" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="bold" font-family="DM Sans">
-           47
-          </text> <text x="60" y="72" text-anchor="middle" fill="#5a6a7a" font-size="9" font-family="DM Sans">
-           total
-          </text>
-         </svg>
-         <div class="space-y-2 text-xs">
-          <div class="flex items-center gap-2">
-           <span class="w-3 h-3 rounded-sm" style="background: rgba(255,59,48,0.5);"></span> Critique: 12
-          </div>
-          <div class="flex items-center gap-2">
-           <span class="w-3 h-3 rounded-sm" style="background: rgba(255,214,10,0.5);"></span> Moyen: 23
-          </div>
-          <div class="flex items-center gap-2">
-           <span class="w-3 h-3 rounded-sm" style="background: rgba(0,255,136,0.4);"></span> Faible: 12
-          </div>
-         </div>
-        </div>
-       </div>
-      </div><!-- Report types -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"><button onclick="showToast('Rapport journalier généré', 'success')" class="rounded-xl p-4 text-left card-hover animate-fade-up delay-3" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
-        <div class="text-lg mb-2">
-         📋
-        </div>
-        <div class="text-sm font-medium" style="color: #ffffff;">
-         Rapport Journalier
-        </div>
-        <div class="text-xs mt-1" style="color: #5a6a7a;">
-         Dernière génération: Aujourd'hui
-        </div></button> <button onclick="showToast('Rapport hebdomadaire généré', 'success')" class="rounded-xl p-4 text-left card-hover animate-fade-up delay-4" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
-        <div class="text-lg mb-2">
-         📊
-        </div>
-        <div class="text-sm font-medium" style="color: #ffffff;">
-         Rapport Hebdomadaire
-        </div>
-        <div class="text-xs mt-1" style="color: #5a6a7a;">
-         Semaine du 6 Jan
-        </div></button> <button onclick="showToast('Rapport mensuel généré', 'success')" class="rounded-xl p-4 text-left card-hover animate-fade-up delay-5" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
-        <div class="text-lg mb-2">
-         📈
-        </div>
-        <div class="text-sm font-medium" style="color: #ffffff;">
-         Rapport Mensuel
-        </div>
-        <div class="text-xs mt-1" style="color: #5a6a7a;">
-         Décembre 2024
-        </div></button> <button onclick="showToast('Rapport incidents généré', 'success')" class="rounded-xl p-4 text-left card-hover animate-fade-up delay-6" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
-        <div class="text-lg mb-2">
-         🚨
-        </div>
-        <div class="text-sm font-medium" style="color: #ffffff;">
-         Rapport Incidents
-        </div>
-        <div class="text-xs mt-1" style="color: #5a6a7a;">
-         3 incidents ouverts
-        </div></button>
-      </div>
-     </div>
+     </main>
     </div>
-   </main><!-- Modal Container -->
-   <div id="modal-container"></div><!-- Toast Container -->
-   <div id="toast-container"></div>
+   </div>
   </div>
   <script>
-    // ========== DATA ==========
-    const companies = [
-      { id: 1, name: 'SecuriPlus SARL', plan: 'Pro', agents: 42, maxAgents: 50, status: 'active', expiry: '2025-03-15', payment: 'Mobile Money' },
-      { id: 2, name: 'GuardForce CI', plan: 'Premium', agents: 78, maxAgents: 999, status: 'active', expiry: '2025-06-01', payment: 'Carte bancaire' },
-      { id: 3, name: 'VigiPro Sécurité', plan: 'Basique', agents: 8, maxAgents: 10, status: 'active', expiry: '2025-02-28', payment: 'Virement' },
-      { id: 4, name: 'SafeZone Group', plan: 'Pro', agents: 35, maxAgents: 50, status: 'suspended', expiry: '2024-12-31', payment: 'Mobile Money' },
-      { id: 5, name: 'Alpha Sécurité', plan: 'Basique', agents: 6, maxAgents: 10, status: 'active', expiry: '2025-04-10', payment: 'Mobile Money' },
-    ];
+    // ---- State ----
+    let allSuppliers = [];
+    let allOrders = [];
+    let currentTab = 'suppliers';
+    let supplierSearchQuery = '';
+    let orderSearchQuery = '';
+    let orderStatusFilter = '';
 
-    const agents = [
-      { id: 1, name: 'Moussa Diallo', matricule: 'AG-001', company: 'SecuriPlus SARL', site: 'Centre Commercial Abidjan', status: 'online', lat: 5.316, lng: -4.025 },
-      { id: 2, name: 'Aminata Traoré', matricule: 'AG-002', company: 'SecuriPlus SARL', site: 'Centre Commercial Abidjan', status: 'online', lat: 5.318, lng: -4.022 },
-      { id: 3, name: 'Bakary Koné', matricule: 'AG-003', company: 'GuardForce CI', site: 'Entrepôt Zone Industrielle', status: 'idle', lat: 5.325, lng: -4.010 },
-      { id: 4, name: 'Seydou Ouattara', matricule: 'AG-004', company: 'VigiPro Sécurité', site: 'Résidence Les Palmiers', status: 'idle', lat: 5.310, lng: -4.030 },
-      { id: 5, name: 'Karim Bamba', matricule: 'AG-005', company: 'GuardForce CI', site: 'Bureau Corporate Tour A', status: 'online', lat: 5.340, lng: -4.005 },
-      { id: 6, name: 'Ibrahim Sanogo', matricule: 'AG-006', company: 'SecuriPlus SARL', site: 'Entrepôt Nord', status: 'sos', lat: 5.350, lng: -3.990 },
-    ];
-
-    const incidents = [
-      { id: 1, title: 'Intrusion détectée - Entrepôt Nord', agent: 'Ibrahim Sanogo', company: 'SecuriPlus SARL', severity: 'critique', time: '14:32', date: '10 Jan 2025', status: 'open', description: 'Mouvement détecté dans la zone restreinte B3. Agent en alerte SOS.' },
-      { id: 2, title: 'Porte non verrouillée - Bureau 4B', agent: 'Bakary Koné', company: 'GuardForce CI', severity: 'moyen', time: '08:15', date: '10 Jan 2025', status: 'open', description: 'Porte d\'accès secondaire trouvée non verrouillée lors de la ronde matinale.' },
-      { id: 3, title: 'Caméra hors service - Parking P2', agent: 'Moussa Diallo', company: 'SecuriPlus SARL', severity: 'faible', time: '22:45', date: '09 Jan 2025', status: 'open', description: 'Caméra de surveillance parking P2 ne répond plus depuis 22h.' },
-      { id: 4, title: 'Altercation visiteur', agent: 'Aminata Traoré', company: 'SecuriPlus SARL', severity: 'moyen', time: '16:20', date: '08 Jan 2025', status: 'closed', description: 'Altercation verbale entre un visiteur et un employé. Situation contrôlée.' },
-    ];
-
-    const activities = [
-      { text: 'Ibrahim Sanogo a déclenché une alerte SOS', time: 'Il y a 5 min', type: 'sos' },
-      { text: 'SecuriPlus a renouvelé son abonnement Pro', time: 'Il y a 1h', type: 'payment' },
-      { text: 'Nouvel agent ajouté chez GuardForce CI', time: 'Il y a 2h', type: 'agent' },
-      { text: 'Rapport mensuel généré pour VigiPro', time: 'Il y a 3h', type: 'report' },
-      { text: 'SafeZone Group — abonnement expiré', time: 'Il y a 12h', type: 'warning' },
-    ];
-
-    const revenueData = [65, 72, 68, 85, 92, 98];
-
-    // ========== DEFAULT CONFIG ==========
+    // ---- Default Config ----
     const defaultConfig = {
-      background_color: '#0b1120',
-      surface_color: '#111b2e',
-      text_color: '#e0e6ed',
-      primary_action_color: '#00ff88',
-      secondary_action_color: '#007aff',
+      background_color: '#0f1729',
+      surface_color: '#1a2540',
+      text_color: '#e8ecf4',
+      primary_action: '#f0943a',
+      secondary_action: '#3b5998',
       font_family: 'DM Sans',
-      font_size: 14,
-      platform_name: 'SecureGuard Pro',
-      welcome_message: 'Bienvenue, Super Admin',
-      company_label: 'Entreprises',
-      agents_label: 'Agents',
+      font_size: 15,
+      page_title: 'Gestion Fournisseurs & Commandes',
+      subtitle_text: 'Gérez vos contacts et suivez vos commandes en un seul endroit',
+      add_supplier_text: 'Ajouter un fournisseur',
+      add_order_text: 'Ajouter une commande'
     };
 
-    // ========== VIEW SWITCHING ==========
-    let currentView = 'dashboard';
-
-    function switchView(view) {
-      currentView = view;
-      document.querySelectorAll('.view-panel').forEach(p => p.classList.add('hidden'));
-      document.getElementById('view-' + view).classList.remove('hidden');
-
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      const navBtn = document.querySelector(`[data-nav="${view}"]`);
-      if (navBtn) navBtn.classList.add('active');
-
-      const titles = {
-        dashboard: 'Tableau de bord',
-        companies: window.elementSdk?.config?.company_label || defaultConfig.company_label,
-        agents: window.elementSdk?.config?.agents_label || defaultConfig.agents_label,
-        geolocation: 'Géolocalisation Temps Réel',
-        incidents: 'Gestion des Incidents',
-        subscriptions: 'Gestion des Abonnements',
-        reports: 'Rapports',
-      };
-      document.getElementById('page-title').textContent = titles[view] || '';
-    }
-
-    // ========== RENDER FUNCTIONS ==========
-    function renderRevenueChart() {
-      const container = document.getElementById('revenue-chart');
-      if (!container) return;
-      const max = Math.max(...revenueData);
-      container.innerHTML = revenueData.map((val, i) => {
-        const pct = (val / max) * 100;
-        return `<div class="flex-1 flex flex-col items-center justify-end h-full">
-          <div class="text-xs font-mono mb-1" style="color: #00ff88;">${val}M</div>
-          <div class="w-full rounded-t-md" style="height: ${pct}%; background: linear-gradient(to top, rgba(0,255,136,0.3), rgba(0,255,136,0.08)); animation: fadeSlideUp 0.5s ease-out ${i * 0.1}s both;"></div>
-        </div>`;
-      }).join('');
-    }
-
-    function renderActivityFeed() {
-      const container = document.getElementById('activity-feed');
-      if (!container) return;
-      const icons = { sos: '🆘', payment: '💳', agent: '👤', report: '📊', warning: '⚠️' };
-      container.innerHTML = activities.map((a, i) => `
-        <div class="flex items-start gap-3 animate-fade-right" style="animation-delay: ${i * 0.1}s;">
-          <span class="text-sm mt-0.5">${icons[a.type] || '📌'}</span>
-          <div class="flex-1 min-w-0">
-            <div class="text-xs" style="color: #e0e6ed;">${a.text}</div>
-            <div class="text-xs mt-0.5" style="color: #5a6a7a;">${a.time}</div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function renderAlerts() {
-      const container = document.getElementById('alerts-list');
-      if (!container) return;
-      const openIncidents = incidents.filter(inc => inc.status === 'open');
-      container.innerHTML = openIncidents.map((inc, i) => {
-        const colors = { critique: '#ff3b30', moyen: '#ffd60a', faible: '#007aff' };
-        const color = colors[inc.severity] || '#5a6a7a';
-        return `<div class="flex items-start gap-3 p-3 rounded-lg animate-fade-up" style="background: rgba(${inc.severity === 'critique' ? '255,59,48' : inc.severity === 'moyen' ? '255,214,10' : '0,122,255'},0.05); border: 1px solid rgba(${inc.severity === 'critique' ? '255,59,48' : inc.severity === 'moyen' ? '255,214,10' : '0,122,255'},0.15); animation-delay: ${i * 0.1}s;">
-          <span class="w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${inc.severity === 'critique' ? 'animate-blink' : ''}" style="background: ${color};"></span>
-          <div class="flex-1 min-w-0">
-            <div class="text-xs font-medium" style="color: #ffffff;">${inc.title}</div>
-            <div class="text-xs mt-0.5" style="color: #5a6a7a;">${inc.agent} · ${inc.time}</div>
-          </div>
-          <span class="text-xs px-2 py-0.5 rounded-full flex-shrink-0" style="background: rgba(${inc.severity === 'critique' ? '255,59,48' : inc.severity === 'moyen' ? '255,214,10' : '0,122,255'},0.15); color: ${color};">${inc.severity}</span>
-        </div>`;
-      }).join('');
-    }
-
-    function renderCompaniesTable() {
-      const tbody = document.getElementById('companies-table-body');
-      if (!tbody) return;
-      tbody.innerHTML = companies.map(c => {
-        const planColors = { Basique: '#5a6a7a', Pro: '#00ff88', Premium: '#ffd60a' };
-        const statusColors = { active: '#00ff88', suspended: '#ff3b30' };
-        const statusLabels = { active: 'Actif', suspended: 'Suspendu' };
-        return `<tr style="border-bottom: 1px solid rgba(255,255,255,0.04);" class="hover:bg-white/[0.02]">
-          <td class="px-5 py-3">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold" style="background: rgba(${c.status === 'active' ? '0,255,136' : '255,59,48'},0.1); color: ${statusColors[c.status]};">${c.name.charAt(0)}</div>
-              <div>
-                <div class="text-sm font-medium" style="color: #ffffff;">${c.name}</div>
-                <div class="text-xs" style="color: #5a6a7a;">${c.agents}/${c.maxAgents === 999 ? '∞' : c.maxAgents} agents</div>
-              </div>
-            </div>
-          </td>
-          <td class="px-5 py-3 hidden md:table-cell"><span class="text-xs px-2 py-0.5 rounded-full" style="background: rgba(255,255,255,0.05); color: ${planColors[c.plan]};">${c.plan}</span></td>
-          <td class="px-5 py-3 hidden lg:table-cell text-xs" style="color: #5a6a7a;">${c.agents} / ${c.maxAgents === 999 ? '∞' : c.maxAgents}</td>
-          <td class="px-5 py-3"><span class="flex items-center gap-1.5 text-xs"><span class="w-1.5 h-1.5 rounded-full" style="background: ${statusColors[c.status]};"></span>${statusLabels[c.status]}</span></td>
-          <td class="px-5 py-3">
-            <div class="flex gap-2">
-              <button onclick="showToast('Détails de ${c.name}', 'success')" class="text-xs px-2 py-1 rounded" style="background: rgba(255,255,255,0.05); color: #e0e6ed;">Voir</button>
-              ${c.status === 'active'
-                ? `<button onclick="toggleCompanyStatus(${c.id}, 'suspended')" class="text-xs px-2 py-1 rounded" style="background: rgba(255,59,48,0.1); color: #ff3b30;">Suspendre</button>`
-                : `<button onclick="toggleCompanyStatus(${c.id}, 'active')" class="text-xs px-2 py-1 rounded" style="background: rgba(0,255,136,0.1); color: #00ff88;">Activer</button>`
-              }
-            </div>
-          </td>
-        </tr>`;
-      }).join('');
-    }
-
-    function renderAgentsGrid() {
-      const grid = document.getElementById('agents-grid');
-      if (!grid) return;
-      const statusColors = { online: '#00ff88', idle: '#ffd60a', sos: '#ff3b30', offline: '#5a6a7a' };
-      const statusLabels = { online: 'En ligne', idle: 'Inactif', sos: 'SOS', offline: 'Hors ligne' };
-      grid.innerHTML = agents.map((a, i) => `
-        <div class="rounded-xl p-4 card-hover animate-fade-up" style="background: #111b2e; border: 1px solid ${a.status === 'sos' ? 'rgba(255,59,48,0.3)' : 'rgba(255,255,255,0.06)'}; animation-delay: ${i * 0.08}s;">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="relative">
-              <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold" style="background: linear-gradient(135deg, ${statusColors[a.status]}33, ${statusColors[a.status]}11); color: ${statusColors[a.status]};">${a.name.split(' ').map(n => n[0]).join('')}</div>
-              <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 ${a.status === 'sos' ? 'animate-blink' : ''}" style="border-color: #111b2e; background: ${statusColors[a.status]};"></span>
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="text-sm font-medium truncate" style="color: #ffffff;">${a.name}</div>
-              <div class="text-xs" style="color: #5a6a7a;">${a.matricule}</div>
-            </div>
-            <span class="text-xs px-2 py-0.5 rounded-full flex-shrink-0" style="background: ${statusColors[a.status]}15; color: ${statusColors[a.status]};">${statusLabels[a.status]}</span>
-          </div>
-          <div class="space-y-1.5 text-xs" style="color: #5a6a7a;">
-            <div class="flex items-center gap-2">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/></svg>
-              ${a.company}
-            </div>
-            <div class="flex items-center gap-2">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              ${a.site}
-            </div>
-          </div>
-          ${a.status === 'sos' ? `<div class="mt-3 text-center py-1.5 rounded-lg sos-pulse text-xs font-bold" style="background: rgba(255,59,48,0.15); color: #ff3b30; border: 1px solid rgba(255,59,48,0.3);">⚠️ ALERTE SOS ACTIVE</div>` : ''}
-        </div>
-      `).join('');
-    }
-
-    function renderGeoAgentList() {
-      const container = document.getElementById('geo-agent-list');
-      if (!container) return;
-      const statusColors = { online: '#00ff88', idle: '#ffd60a', sos: '#ff3b30', offline: '#5a6a7a' };
-      container.innerHTML = agents.map(a => `
-        <div class="flex items-center gap-2 p-2 rounded-lg" style="background: rgba(255,255,255,0.02);">
-          <span class="w-2 h-2 rounded-full flex-shrink-0 ${a.status === 'sos' ? 'animate-blink' : ''}" style="background: ${statusColors[a.status]};"></span>
-          <div class="flex-1 min-w-0">
-            <div class="text-xs font-medium truncate" style="color: #ffffff;">${a.name}</div>
-            <div class="text-xs truncate" style="color: #5a6a7a;">${a.site}</div>
-          </div>
-          ${a.status === 'sos' ? '<span class="text-xs">🆘</span>' : ''}
-        </div>
-      `).join('');
-    }
-
-    function renderIncidents(filter = 'all') {
-      const container = document.getElementById('incidents-list');
-      if (!container) return;
-      const filtered = filter === 'all' ? incidents : incidents.filter(inc => inc.severity === filter);
-      const colors = { critique: '#ff3b30', moyen: '#ffd60a', faible: '#007aff' };
-      container.innerHTML = filtered.length === 0
-        ? '<div class="text-center py-8 text-xs" style="color: #5a6a7a;">Aucun incident trouvé</div>'
-        : filtered.map((inc, i) => `
-        <div class="rounded-xl p-4 animate-fade-up" style="background: #111b2e; border: 1px solid ${inc.status === 'open' ? `rgba(${inc.severity === 'critique' ? '255,59,48' : inc.severity === 'moyen' ? '255,214,10' : '0,122,255'},0.12)` : 'rgba(255,255,255,0.06)'}; animation-delay: ${i * 0.08}s;">
-          <div class="flex items-start justify-between mb-2">
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full ${inc.severity === 'critique' && inc.status === 'open' ? 'animate-blink' : ''}" style="background: ${colors[inc.severity]};"></span>
-              <h4 class="text-sm font-medium" style="color: #ffffff;">${inc.title}</h4>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs px-2 py-0.5 rounded-full" style="background: ${colors[inc.severity]}15; color: ${colors[inc.severity]};">${inc.severity}</span>
-              <span class="text-xs px-2 py-0.5 rounded-full" style="background: ${inc.status === 'open' ? 'rgba(255,214,10,0.1)' : 'rgba(0,255,136,0.1)'}; color: ${inc.status === 'open' ? '#ffd60a' : '#00ff88'};">${inc.status === 'open' ? 'Ouvert' : 'Clôturé'}</span>
-            </div>
-          </div>
-          <p class="text-xs mb-3" style="color: #5a6a7a;">${inc.description}</p>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4 text-xs" style="color: #5a6a7a;">
-              <span>👤 ${inc.agent}</span>
-              <span>🏢 ${inc.company}</span>
-              <span>📅 ${inc.date} à ${inc.time}</span>
-            </div>
-            ${inc.status === 'open' ? `<button onclick="closeIncident(${inc.id})" class="text-xs px-3 py-1 rounded-lg" style="background: rgba(0,255,136,0.1); color: #00ff88;">Clôturer</button>` : ''}
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function renderSubscriptionsTable() {
-      const tbody = document.getElementById('subscriptions-table-body');
-      if (!tbody) return;
-      tbody.innerHTML = companies.map(c => {
-        const statusColors = { active: '#00ff88', suspended: '#ff3b30' };
-        const paymentIcons = { 'Mobile Money': '📱', 'Carte bancaire': '💳', 'Virement': '🏦' };
-        return `<tr style="border-bottom: 1px solid rgba(255,255,255,0.04);" class="hover:bg-white/[0.02]">
-          <td class="px-5 py-3 text-sm" style="color: #ffffff;">${c.name}</td>
-          <td class="px-5 py-3 text-xs hidden md:table-cell" style="color: #e0e6ed;">${c.plan}</td>
-          <td class="px-5 py-3 text-xs hidden md:table-cell" style="color: #5a6a7a;">${c.expiry}</td>
-          <td class="px-5 py-3 text-xs" style="color: #e0e6ed;">${paymentIcons[c.payment] || '💰'} ${c.payment}</td>
-          <td class="px-5 py-3"><span class="text-xs px-2 py-0.5 rounded-full" style="background: ${statusColors[c.status]}15; color: ${statusColors[c.status]};">${c.status === 'active' ? 'Actif' : 'Expiré'}</span></td>
-        </tr>`;
-      }).join('');
-    }
-
-    // ========== ACTIONS ==========
-    function toggleCompanyStatus(id, newStatus) {
-      const company = companies.find(c => c.id === id);
-      if (company) {
-        company.status = newStatus;
-        renderCompaniesTable();
-        renderSubscriptionsTable();
-        showToast(`${company.name} ${newStatus === 'active' ? 'activé' : 'suspendu'}`, newStatus === 'active' ? 'success' : 'warning');
-      }
-    }
-
-    function closeIncident(id) {
-      const inc = incidents.find(i => i.id === id);
-      if (inc) {
-        inc.status = 'closed';
-        renderIncidents(currentIncidentFilter);
-        renderAlerts();
-        showToast(`Incident clôturé: ${inc.title}`, 'success');
-      }
-    }
-
-    let currentIncidentFilter = 'all';
-    function filterIncidents(filter, btn) {
-      currentIncidentFilter = filter;
-      document.querySelectorAll('#view-incidents .tab-active').forEach(t => {
-        t.classList.remove('tab-active');
-        t.style.color = '#5a6a7a';
-      });
-      if (btn) {
-        btn.classList.add('tab-active');
-        btn.style.color = '#00ff88';
-      }
-      renderIncidents(filter);
-    }
-
-    // ========== MODALS ==========
-    function openCompanyModal() {
-      const modal = document.getElementById('modal-container');
-      modal.innerHTML = `
-        <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
-          <div class="rounded-xl p-6 w-full max-w-md mx-4" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.1);">
-            <div class="flex items-center justify-between mb-5">
-              <h3 class="text-base font-bold" style="color: #ffffff;">Nouvelle Entreprise</h3>
-              <button onclick="closeModal()" class="p-1 rounded-lg" style="background: rgba(255,255,255,0.05);">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5a6a7a" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-            </div>
-            <form onsubmit="handleCompanySubmit(event)" class="space-y-4">
-              <div>
-                <label for="company-name" class="block text-xs font-medium mb-1" style="color: #5a6a7a;">Nom de l'entreprise</label>
-                <input id="company-name" type="text" required class="w-full text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #e0e6ed; --tw-ring-color: #00ff88;" placeholder="Ex: SecuriPlus SARL">
-              </div>
-              <div>
-                <label for="company-plan" class="block text-xs font-medium mb-1" style="color: #5a6a7a;">Plan d'abonnement</label>
-                <select id="company-plan" class="w-full text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #e0e6ed; --tw-ring-color: #00ff88;">
-                  <option value="Basique">Basique - 25 000 FCFA/mois</option>
-                  <option value="Pro" selected>Pro - 75 000 FCFA/mois</option>
-                  <option value="Premium">Premium - 150 000 FCFA/mois</option>
-                </select>
-              </div>
-              <div>
-                <label for="company-payment" class="block text-xs font-medium mb-1" style="color: #5a6a7a;">Mode de paiement</label>
-                <select id="company-payment" class="w-full text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #e0e6ed; --tw-ring-color: #00ff88;">
-                  <option value="Mobile Money">Mobile Money</option>
-                  <option value="Carte bancaire">Carte bancaire</option>
-                  <option value="Virement">Virement bancaire</option>
-                </select>
-              </div>
-              <button type="submit" class="w-full py-2.5 rounded-lg text-sm font-medium" style="background: #00ff88; color: #0b1120;">Créer l'entreprise</button>
-            </form>
-          </div>
-        </div>
-      `;
-    }
-
-    function openAgentModal() {
-      const modal = document.getElementById('modal-container');
-      modal.innerHTML = `
-        <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
-          <div class="rounded-xl p-6 w-full max-w-md mx-4" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.1);">
-            <div class="flex items-center justify-between mb-5">
-              <h3 class="text-base font-bold" style="color: #ffffff;">Nouvel Agent</h3>
-              <button onclick="closeModal()" class="p-1 rounded-lg" style="background: rgba(255,255,255,0.05);">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5a6a7a" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-            </div>
-            <form onsubmit="handleAgentSubmit(event)" class="space-y-4">
-              <div>
-                <label for="agent-name" class="block text-xs font-medium mb-1" style="color: #5a6a7a;">Nom complet</label>
-                <input id="agent-name" type="text" required class="w-full text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #e0e6ed; --tw-ring-color: #00ff88;" placeholder="Ex: Moussa Diallo">
-              </div>
-              <div>
-                <label for="agent-company" class="block text-xs font-medium mb-1" style="color: #5a6a7a;">Entreprise</label>
-                <select id="agent-company" class="w-full text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #e0e6ed; --tw-ring-color: #00ff88;">
-                  ${companies.filter(c => c.status === 'active').map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
-                </select>
-              </div>
-              <div>
-                <label for="agent-site" class="block text-xs font-medium mb-1" style="color: #5a6a7a;">Site d'affectation</label>
-                <input id="agent-site" type="text" required class="w-full text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #e0e6ed; --tw-ring-color: #00ff88;" placeholder="Ex: Centre Commercial Abidjan">
-              </div>
-              <button type="submit" class="w-full py-2.5 rounded-lg text-sm font-medium" style="background: #00ff88; color: #0b1120;">Ajouter l'agent</button>
-            </form>
-          </div>
-        </div>
-      `;
-    }
-
-    function closeModal() {
-      document.getElementById('modal-container').innerHTML = '';
-    }
-
-    function handleCompanySubmit(e) {
-      e.preventDefault();
-      const name = document.getElementById('company-name').value;
-      const plan = document.getElementById('company-plan').value;
-      const payment = document.getElementById('company-payment').value;
-      const maxAgents = { Basique: 10, Pro: 50, Premium: 999 };
-      companies.push({
-        id: companies.length + 1,
-        name, plan, agents: 0,
-        maxAgents: maxAgents[plan],
-        status: 'active',
-        expiry: '2026-01-10',
-        payment,
-      });
-      closeModal();
-      renderCompaniesTable();
-      renderSubscriptionsTable();
-      showToast(`${name} créée avec succès`, 'success');
-    }
-
-    function handleAgentSubmit(e) {
-      e.preventDefault();
-      const name = document.getElementById('agent-name').value;
-      const company = document.getElementById('agent-company').value;
-      const site = document.getElementById('agent-site').value;
-      agents.push({
-        id: agents.length + 1,
-        name,
-        matricule: `AG-${String(agents.length + 1).padStart(3, '0')}`,
-        company, site,
-        status: 'offline',
-        lat: 5.316 + (Math.random() - 0.5) * 0.05,
-        lng: -4.025 + (Math.random() - 0.5) * 0.05,
-      });
-      closeModal();
-      renderAgentsGrid();
-      renderGeoAgentList();
-      showToast(`Agent ${name} ajouté avec succès`, 'success');
-    }
-
-    // ========== TOAST ==========
-    function showToast(message, type = 'success') {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      toast.className = `toast toast-${type}`;
-      toast.textContent = message;
-      container.appendChild(toast);
-      setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
-    }
-
-    // ========== NOTIFICATIONS ==========
-    function toggleNotifications() {
-      showToast('3 nouvelles notifications', 'warning');
-    }
-
-    // ========== CLOCK ==========
-    function updateClock() {
-      const now = new Date();
-      const clock = document.getElementById('live-clock');
-      if (clock) {
-        clock.textContent = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      }
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    // ========== ELEMENT SDK ==========
+    // ---- Element SDK ----
     function applyConfig(config) {
-      const bg = config.background_color || defaultConfig.background_color;
-      const surface = config.surface_color || defaultConfig.surface_color;
-      const text = config.text_color || defaultConfig.text_color;
-      const primary = config.primary_action_color || defaultConfig.primary_action_color;
-      const secondary = config.secondary_action_color || defaultConfig.secondary_action_color;
-      const font = config.font_family || defaultConfig.font_family;
-      const fontSize = config.font_size || defaultConfig.font_size;
-      const platformName = config.platform_name || defaultConfig.platform_name;
-      const welcomeMsg = config.welcome_message || defaultConfig.welcome_message;
-      const companyLabel = config.company_label || defaultConfig.company_label;
-      const agentsLabel = config.agents_label || defaultConfig.agents_label;
+      const c = { ...defaultConfig, ...config };
+      const root = document.documentElement.style;
+      root.setProperty('--bg-color', c.background_color);
+      root.setProperty('--surface-color', c.surface_color);
+      root.setProperty('--text-color', c.text_color);
+      root.setProperty('--primary-action', c.primary_action);
+      root.setProperty('--secondary-action', c.secondary_action);
 
-      // Background
-      const appRoot = document.getElementById('app-root');
-      if (appRoot) { appRoot.style.background = bg; appRoot.style.color = text; }
+      document.getElementById('app-wrapper').style.background = c.background_color;
 
-      // Sidebar
-      const sidebar = document.getElementById('sidebar');
-      if (sidebar) sidebar.style.background = surface;
+      const font = c.font_family || defaultConfig.font_family;
+      const baseFontStack = "'DM Sans', sans-serif";
+      document.body.style.fontFamily = `'${font}', ${baseFontStack}`;
 
-      // Font
-      const baseFontStack = 'sans-serif';
-      document.body.style.fontFamily = `${font}, ${baseFontStack}`;
+      const baseSize = c.font_size || defaultConfig.font_size;
+      document.getElementById('page-title').style.fontSize = `${baseSize * 2.1}px`;
+      document.getElementById('subtitle-text').style.fontSize = `${baseSize}px`;
 
-      // Font size
-      const base = fontSize;
-      document.querySelectorAll('.text-2xl').forEach(el => el.style.fontSize = `${base * 1.7}px`);
-      document.querySelectorAll('.text-lg').forEach(el => el.style.fontSize = `${base * 1.3}px`);
-      document.querySelectorAll('.text-sm').forEach(el => el.style.fontSize = `${base}px`);
-      document.querySelectorAll('.text-xs').forEach(el => el.style.fontSize = `${base * 0.85}px`);
+      document.getElementById('page-title').textContent = c.page_title || defaultConfig.page_title;
+      document.getElementById('subtitle-text').textContent = c.subtitle_text || defaultConfig.subtitle_text;
+      document.getElementById('add-supplier-label').textContent = c.add_supplier_text || defaultConfig.add_supplier_text;
+      document.getElementById('add-order-label').textContent = c.add_order_text || defaultConfig.add_order_text;
 
-      // Text content
-      const sidebarName = document.getElementById('sidebar-platform-name');
-      if (sidebarName) sidebarName.textContent = platformName;
-
-      const welcomeEl = document.getElementById('welcome-msg');
-      if (welcomeEl) welcomeEl.textContent = welcomeMsg;
-
-      const companiesTitle = document.getElementById('companies-title');
-      if (companiesTitle) companiesTitle.textContent = companyLabel;
-
-      const agentsTitle = document.getElementById('agents-title');
-      if (agentsTitle) agentsTitle.textContent = agentsLabel;
-
-      const navCompanies = document.getElementById('nav-companies');
-      if (navCompanies) navCompanies.textContent = companyLabel;
-
-      const navAgents = document.getElementById('nav-agents');
-      if (navAgents) navAgents.textContent = agentsLabel;
-
-      // Primary action color for buttons
-      document.querySelectorAll('[style*="background: #00ff88"]').forEach(el => {
-        el.style.background = primary;
-      });
+      renderSupplierList();
+      renderOrderList();
     }
 
-    // Initialize Element SDK
     if (window.elementSdk) {
       window.elementSdk.init({
         defaultConfig,
-        onConfigChange: async (config) => {
-          applyConfig(config);
-        },
+        onConfigChange: async (config) => { applyConfig(config); },
         mapToCapabilities: (config) => ({
           recolorables: [
             {
@@ -1250,13 +261,13 @@
               set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); }
             },
             {
-              get: () => config.primary_action_color || defaultConfig.primary_action_color,
-              set: (v) => { config.primary_action_color = v; window.elementSdk.setConfig({ primary_action_color: v }); }
+              get: () => config.primary_action || defaultConfig.primary_action,
+              set: (v) => { config.primary_action = v; window.elementSdk.setConfig({ primary_action: v }); }
             },
             {
-              get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
-              set: (v) => { config.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); }
-            },
+              get: () => config.secondary_action || defaultConfig.secondary_action,
+              set: (v) => { config.secondary_action = v; window.elementSdk.setConfig({ secondary_action: v }); }
+            }
           ],
           borderables: [],
           fontEditable: {
@@ -1266,27 +277,518 @@
           fontSizeable: {
             get: () => config.font_size || defaultConfig.font_size,
             set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
-          },
+          }
         }),
         mapToEditPanelValues: (config) => new Map([
-          ['platform_name', config.platform_name || defaultConfig.platform_name],
-          ['welcome_message', config.welcome_message || defaultConfig.welcome_message],
-          ['company_label', config.company_label || defaultConfig.company_label],
-          ['agents_label', config.agents_label || defaultConfig.agents_label],
-        ]),
+          ['page_title', config.page_title || defaultConfig.page_title],
+          ['subtitle_text', config.subtitle_text || defaultConfig.subtitle_text],
+          ['add_supplier_text', config.add_supplier_text || defaultConfig.add_supplier_text],
+          ['add_order_text', config.add_order_text || defaultConfig.add_order_text]
+        ])
       });
     }
 
-    // ========== INITIAL RENDER ==========
-    renderRevenueChart();
-    renderActivityFeed();
-    renderAlerts();
-    renderCompaniesTable();
-    renderAgentsGrid();
-    renderGeoAgentList();
-    renderIncidents();
-    renderSubscriptionsTable();
-    applyConfig(defaultConfig);
+    // ---- Data SDK ----
+    const dataHandler = {
+      onDataChanged(data) {
+        allSuppliers = data.filter(d => d.type === 'supplier');
+        allOrders = data.filter(d => d.type === 'order');
+        populateSupplierSelect();
+        renderSupplierList();
+        renderOrderList();
+        updateCounts();
+      }
+    };
+
+    (async () => {
+      if (window.dataSdk) {
+        const res = await window.dataSdk.init(dataHandler);
+        if (!res.isOk) console.error('Data SDK init failed');
+      }
+    })();
+
+    // ---- Tab Switching ----
+    function switchTab(tab) {
+      currentTab = tab;
+      document.getElementById('suppliers-section').style.display = tab === 'suppliers' ? 'block' : 'none';
+      document.getElementById('orders-section').style.display = tab === 'orders' ? 'block' : 'none';
+      document.getElementById('tab-suppliers').style.borderBottomColor = tab === 'suppliers' ? 'var(--primary-action)' : 'transparent';
+      document.getElementById('tab-suppliers').style.color = tab === 'suppliers' ? 'var(--primary-action)' : 'var(--text-color)';
+      document.getElementById('tab-suppliers').style.opacity = tab === 'suppliers' ? '1' : '0.6';
+      document.getElementById('tab-orders').style.borderBottomColor = tab === 'orders' ? 'var(--primary-action)' : 'transparent';
+      document.getElementById('tab-orders').style.color = tab === 'orders' ? 'var(--primary-action)' : 'var(--text-color)';
+      document.getElementById('tab-orders').style.opacity = tab === 'orders' ? '1' : '0.6';
+    }
+
+    // ---- Supplier Form ----
+    function toggleSupplierForm() {
+      const panel = document.getElementById('supplier-form-panel');
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      if (panel.style.display === 'block') {
+        panel.classList.add('fade-up');
+        document.getElementById('s-name').focus();
+      }
+      hideSupplierMessages();
+    }
+
+    async function handleSupplierSubmit(e) {
+      e.preventDefault();
+      hideSupplierMessages();
+
+      if (allSuppliers.length >= 999) {
+        showSupplierError('Limite de 999 fournisseurs atteinte.');
+        return;
+      }
+
+      const name = document.getElementById('s-name').value.trim();
+      if (!name) { showSupplierError('Le nom est obligatoire.'); return; }
+
+      setSupplierSubmitting(true);
+      const record = {
+        type: 'supplier',
+        name,
+        contact: document.getElementById('s-contact').value.trim(),
+        email: document.getElementById('s-email').value.trim(),
+        phone: document.getElementById('s-phone').value.trim(),
+        category: document.getElementById('s-category').value.trim(),
+        notes: document.getElementById('s-notes').value.trim(),
+        created_at: new Date().toISOString()
+      };
+
+      const result = await window.dataSdk.create(record);
+      setSupplierSubmitting(false);
+
+      if (result.isOk) {
+        showSupplierSuccess('Fournisseur ajouté !');
+        document.getElementById('supplier-form').reset();
+        setTimeout(() => { toggleSupplierForm(); }, 800);
+      } else {
+        showSupplierError('Erreur. Réessayez.');
+      }
+    }
+
+    // ---- Order Form ----
+    function toggleOrderForm() {
+      const panel = document.getElementById('order-form-panel');
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      if (panel.style.display === 'block') {
+        panel.classList.add('fade-up');
+        document.getElementById('o-supplier').focus();
+      }
+      hideOrderMessages();
+    }
+
+    async function handleOrderSubmit(e) {
+      e.preventDefault();
+      hideOrderMessages();
+
+      if (allOrders.length >= 999) {
+        showOrderError('Limite de 999 commandes atteinte.');
+        return;
+      }
+
+      const supplierId = document.getElementById('o-supplier').value;
+      if (!supplierId) { showOrderError('Sélectionnez un fournisseur.'); return; }
+
+      const article = document.getElementById('o-article').value.trim();
+      if (!article) { showOrderError('Entrez un article.'); return; }
+
+      const quantity = parseFloat(document.getElementById('o-quantity').value);
+      const price = parseFloat(document.getElementById('o-price').value);
+      const date = document.getElementById('o-date').value;
+      if (!date) { showOrderError('Sélectionnez une date.'); return; }
+
+      setOrderSubmitting(true);
+      const record = {
+        type: 'order',
+        supplier_id: supplierId,
+        article_name: article,
+        quantity,
+        unit_price: price,
+        order_date: date,
+        status: document.getElementById('o-status').value,
+        name: article,
+        contact: '',
+        email: '',
+        phone: '',
+        category: '',
+        notes: '',
+        created_at: new Date().toISOString()
+      };
+
+      const result = await window.dataSdk.create(record);
+      setOrderSubmitting(false);
+
+      if (result.isOk) {
+        showOrderSuccess('Commande ajoutée !');
+        document.getElementById('order-form').reset();
+        setTimeout(() => { toggleOrderForm(); }, 800);
+      } else {
+        showOrderError('Erreur. Réessayez.');
+      }
+    }
+
+    // ---- Populate Supplier Select ----
+    function populateSupplierSelect() {
+      const select = document.getElementById('o-supplier');
+      const current = select.value;
+      select.innerHTML = '<option value="">-- Sélectionner un fournisseur --</option>';
+      allSuppliers.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.__backendId;
+        opt.textContent = s.name;
+        select.appendChild(opt);
+      });
+      select.value = current;
+    }
+
+    // ---- Render Suppliers ----
+    function renderSupplierList() {
+      const container = document.getElementById('supplier-list');
+      const emptyState = document.getElementById('suppliers-empty');
+      const filtered = getFilteredSuppliers();
+
+      const existingCards = new Map();
+      container.querySelectorAll('.supplier-card').forEach(el => {
+        existingCards.set(el.dataset.id, el);
+      });
+
+      if (filtered.length === 0) {
+        existingCards.forEach(el => el.remove());
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      const ids = new Set(filtered.map(s => s.__backendId));
+      existingCards.forEach((el, id) => { if (!ids.has(id)) el.remove(); });
+
+      filtered.forEach((supplier, i) => {
+        const id = supplier.__backendId;
+        if (existingCards.has(id)) {
+          updateSupplierCard(existingCards.get(id), supplier);
+        } else {
+          const card = createSupplierCard(supplier, i);
+          container.appendChild(card);
+        }
+      });
+    }
+
+    function createSupplierCard(s, index) {
+      const card = document.createElement('div');
+      card.className = 'card supplier-card slide-in rounded-xl p-4 sm:p-5';
+      card.dataset.id = s.__backendId;
+      card.style.cssText = `background:var(--surface-color); border:1px solid rgba(255,255,255,0.06); animation-delay:${index * 0.04}s;`;
+      updateSupplierCard(card, s);
+      return card;
+    }
+
+    function updateSupplierCard(card, s) {
+      const initial = (s.name || '?')[0].toUpperCase();
+      const categoryTag = s.category
+        ? `<span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:var(--secondary-action); color:var(--text-color);">${esc(s.category)}</span>`
+        : '';
+      const details = [];
+      if (s.contact) details.push(`<span>👤 ${esc(s.contact)}</span>`);
+      if (s.email) details.push(`<span>✉️ ${esc(s.email)}</span>`);
+      if (s.phone) details.push(`<span>📞 ${esc(s.phone)}</span>`);
+      const notesHTML = s.notes ? `<p class="mt-2 text-xs" style="color:var(--text-color); opacity:0.5;">💬 ${esc(s.notes)}</p>` : '';
+
+      card.innerHTML = `
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-start gap-3 min-w-0 flex-1">
+            <div class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm"
+              style="background:var(--primary-action); color:var(--bg-color);">
+              ${initial}
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-center gap-2 mb-1">
+                <h3 class="font-semibold text-sm truncate" style="color:var(--text-color); margin:0;">${esc(s.name)}</h3>
+                ${categoryTag}
+              </div>
+              <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs" style="color:var(--text-color); opacity:0.6;">
+                ${details.join('')}
+              </div>
+              ${notesHTML}
+            </div>
+          </div>
+          <div class="supplier-card-actions flex items-center gap-2 flex-shrink-0">
+            <button onclick="requestDeleteSupplier('${s.__backendId}')" class="p-2 rounded-lg" style="background:rgba(255,255,255,0.06);" title="Supprimer">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 5h8l-.6 7.5a1 1 0 01-1 .9H5.6a1 1 0 01-1-.9L4 5z" stroke="var(--text-color)" stroke-opacity="0.5" stroke-width="1.3"/><path d="M3 4h10M6.5 4V3a.5.5 0 01.5-.5h2a.5.5 0 01.5.5v1" stroke="var(--text-color)" stroke-opacity="0.5" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function getFilteredSuppliers() {
+      if (!supplierSearchQuery) return allSuppliers;
+      return allSuppliers.filter(s =>
+        (s.name || '').toLowerCase().includes(supplierSearchQuery) ||
+        (s.contact || '').toLowerCase().includes(supplierSearchQuery) ||
+        (s.category || '').toLowerCase().includes(supplierSearchQuery) ||
+        (s.email || '').toLowerCase().includes(supplierSearchQuery)
+      );
+    }
+
+    function filterSuppliers() {
+      supplierSearchQuery = document.getElementById('supplier-search').value.toLowerCase().trim();
+      renderSupplierList();
+      updateCounts();
+    }
+
+    // ---- Render Orders ----
+    function renderOrderList() {
+      const container = document.getElementById('order-list');
+      const emptyState = document.getElementById('orders-empty');
+      const filtered = getFilteredOrders();
+
+      const existingCards = new Map();
+      container.querySelectorAll('.order-card').forEach(el => {
+        existingCards.set(el.dataset.id, el);
+      });
+
+      if (filtered.length === 0) {
+        existingCards.forEach(el => el.remove());
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      const ids = new Set(filtered.map(o => o.__backendId));
+      existingCards.forEach((el, id) => { if (!ids.has(id)) el.remove(); });
+
+      filtered.forEach((order, i) => {
+        const id = order.__backendId;
+        if (existingCards.has(id)) {
+          updateOrderCard(existingCards.get(id), order);
+        } else {
+          const card = createOrderCard(order, i);
+          container.appendChild(card);
+        }
+      });
+    }
+
+    function createOrderCard(o, index) {
+      const card = document.createElement('div');
+      card.className = 'card order-card slide-in rounded-xl p-4 sm:p-5';
+      card.dataset.id = o.__backendId;
+      card.style.cssText = `background:var(--surface-color); border:1px solid rgba(255,255,255,0.06); animation-delay:${index * 0.04}s;`;
+      updateOrderCard(card, o);
+      return card;
+    }
+
+    function updateOrderCard(card, o) {
+      const supplier = allSuppliers.find(s => s.__backendId === o.supplier_id);
+      const supplierName = supplier ? supplier.name : 'Fournisseur supprimé';
+      const total = (o.quantity * o.unit_price).toFixed(2);
+      const statusMap = { pending: '⏳ En attente', confirmed: '✓ Confirmée', shipped: '📦 Expédiée', delivered: '✓✓ Livrée' };
+      const statusText = statusMap[o.status] || o.status;
+
+      card.innerHTML = `
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-2">
+              <h3 class="font-semibold text-sm" style="color:var(--text-color); margin:0;">${esc(o.article_name)}</h3>
+              <span class="status-badge status-${o.status}">${statusText}</span>
+            </div>
+            <div class="text-xs" style="color:var(--text-color); opacity:0.6;">
+              <p style="margin:4px 0;">📦 Fournisseur: ${esc(supplierName)}</p>
+              <p style="margin:4px 0;">📊 Quantité: ${o.quantity} × ${o.unit_price.toFixed(2)}€ = <span style="color:var(--primary-action); font-weight:600;">${total}€</span></p>
+              <p style="margin:4px 0;">📅 ${new Date(o.order_date).toLocaleDateString('fr-FR')}</p>
+            </div>
+          </div>
+          <div class="order-card-actions flex items-center gap-2 flex-shrink-0">
+            <select onchange="updateOrderStatus('${o.__backendId}', this.value); this.value='${o.status}';" class="form-input rounded px-2 py-1 text-xs"
+              style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:var(--text-color);">
+              <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Attente</option>
+              <option value="confirmed" ${o.status === 'confirmed' ? 'selected' : ''}>Confirmée</option>
+              <option value="shipped" ${o.status === 'shipped' ? 'selected' : ''}>Expédiée</option>
+              <option value="delivered" ${o.status === 'delivered' ? 'selected' : ''}>Livrée</option>
+            </select>
+            <button onclick="requestDeleteOrder('${o.__backendId}')" class="p-2 rounded-lg" style="background:rgba(255,255,255,0.06);" title="Supprimer">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 5h8l-.6 7.5a1 1 0 01-1 .9H5.6a1 1 0 01-1-.9L4 5z" stroke="var(--text-color)" stroke-opacity="0.5" stroke-width="1.3"/><path d="M3 4h10M6.5 4V3a.5.5 0 01.5-.5h2a.5.5 0 01.5.5v1" stroke="var(--text-color)" stroke-opacity="0.5" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function getFilteredOrders() {
+      let filtered = allOrders;
+      if (orderStatusFilter) {
+        filtered = filtered.filter(o => o.status === orderStatusFilter);
+      }
+      if (orderSearchQuery) {
+        filtered = filtered.filter(o =>
+          (o.article_name || '').toLowerCase().includes(orderSearchQuery) ||
+          (getSupplierName(o.supplier_id) || '').toLowerCase().includes(orderSearchQuery)
+        );
+      }
+      return filtered;
+    }
+
+    function getSupplierName(id) {
+      const s = allSuppliers.find(s => s.__backendId === id);
+      return s ? s.name : '';
+    }
+
+    function filterOrders() {
+      orderSearchQuery = document.getElementById('order-search').value.toLowerCase().trim();
+      orderStatusFilter = document.getElementById('status-filter').value;
+      renderOrderList();
+      updateCounts();
+    }
+
+    async function updateOrderStatus(orderId, newStatus) {
+      const order = allOrders.find(o => o.__backendId === orderId);
+      if (!order) return;
+      const updated = { ...order, status: newStatus };
+      const result = await window.dataSdk.update(updated);
+      if (!result.isOk) console.error('Update failed');
+    }
+
+    // ---- Delete Handlers ----
+    function requestDeleteSupplier(id) {
+      const supplier = allSuppliers.find(s => s.__backendId === id);
+      if (!supplier) return;
+      const card = document.querySelector(`[data-id="${id}"]`);
+      if (!card) return;
+      const actions = card.querySelector('.supplier-card-actions');
+      actions.innerHTML = `
+        <span style="color:var(--text-color); opacity:0.7; font-size:12px;">Supprimer ?</span>
+        <button onclick="confirmDeleteSupplier('${id}')" class="px-3 py-1 rounded-lg text-xs font-semibold" style="background:#dc2626; color:#fff;">Oui</button>
+        <button onclick="cancelDeleteSupplier('${id}')" class="px-3 py-1 rounded-lg text-xs font-semibold" style="background:rgba(255,255,255,0.1); color:var(--text-color);">Non</button>
+      `;
+    }
+
+    function cancelDeleteSupplier(id) {
+      const card = document.querySelector(`[data-id="${id}"]`);
+      if (card) {
+        const supplier = allSuppliers.find(s => s.__backendId === id);
+        if (supplier) {
+          const actions = card.querySelector('.supplier-card-actions');
+          actions.innerHTML = `<button onclick="requestDeleteSupplier('${id}')" class="p-2 rounded-lg" style="background:rgba(255,255,255,0.06);"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 5h8l-.6 7.5a1 1 0 01-1 .9H5.6a1 1 0 01-1-.9L4 5z" stroke="var(--text-color)" stroke-opacity="0.5" stroke-width="1.3"/><path d="M3 4h10M6.5 4V3a.5.5 0 01.5-.5h2a.5.5 0 01.5.5v1" stroke="var(--text-color)" stroke-opacity="0.5" stroke-width="1.3" stroke-linecap="round"/></svg></button>`;
+        }
+      }
+    }
+
+    async function confirmDeleteSupplier(id) {
+      const supplier = allSuppliers.find(s => s.__backendId === id);
+      if (!supplier) return;
+      const card = document.querySelector(`[data-id="${id}"]`);
+      if (card) {
+        const actions = card.querySelector('.supplier-card-actions');
+        actions.innerHTML = '<span class="text-xs" style="color:var(--text-color); opacity:0.5;">Suppression...</span>';
+      }
+      const result = await window.dataSdk.delete(supplier);
+      if (!result.isOk && card) {
+        cancelDeleteSupplier(id);
+      }
+    }
+
+    function requestDeleteOrder(id) {
+      const order = allOrders.find(o => o.__backendId === id);
+      if (!order) return;
+      const card = document.querySelector(`[data-id="${id}"]`);
+      if (!card) return;
+      const actions = card.querySelector('.order-card-actions');
+      actions.innerHTML = `
+        <span style="color:var(--text-color); opacity:0.7; font-size:12px;">Supprimer ?</span>
+        <button onclick="confirmDeleteOrder('${id}')" class="px-3 py-1 rounded-lg text-xs font-semibold" style="background:#dc2626; color:#fff;">Oui</button>
+        <button onclick="cancelDeleteOrder('${id}')" class="px-3 py-1 rounded-lg text-xs font-semibold" style="background:rgba(255,255,255,0.1); color:var(--text-color);">Non</button>
+      `;
+    }
+
+    function cancelDeleteOrder(id) {
+      const card = document.querySelector(`[data-id="${id}"]`);
+      if (card) {
+        const order = allOrders.find(o => o.__backendId === id);
+        if (order) {
+          const actions = card.querySelector('.order-card-actions');
+          actions.innerHTML = `
+            <select onchange="updateOrderStatus('${id}', this.value); this.value='${order.status}';" class="form-input rounded px-2 py-1 text-xs"
+              style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:var(--text-color);">
+              <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Attente</option>
+              <option value="confirmed" ${order.status === 'confirmed' ? 'selected' : ''}>Confirmée</option>
+              <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Expédiée</option>
+              <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Livrée</option>
+            </select>
+            <button onclick="requestDeleteOrder('${id}')" class="p-2 rounded-lg" style="background:rgba(255,255,255,0.06);"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 5h8l-.6 7.5a1 1 0 01-1 .9H5.6a1 1 0 01-1-.9L4 5z" stroke="var(--text-color)" stroke-opacity="0.5" stroke-width="1.3"/><path d="M3 4h10M6.5 4V3a.5.5 0 01.5-.5h2a.5.5 0 01.5.5v1" stroke="var(--text-color)" stroke-opacity="0.5" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+          `;
+        }
+      }
+    }
+
+    async function confirmDeleteOrder(id) {
+      const order = allOrders.find(o => o.__backendId === id);
+      if (!order) return;
+      const card = document.querySelector(`[data-id="${id}"]`);
+      if (card) {
+        const actions = card.querySelector('.order-card-actions');
+        actions.innerHTML = '<span class="text-xs" style="color:var(--text-color); opacity:0.5;">Suppression...</span>';
+      }
+      const result = await window.dataSdk.delete(order);
+      if (!result.isOk && card) {
+        cancelDeleteOrder(id);
+      }
+    }
+
+    // ---- Helpers ----
+    function updateCounts() {
+      const suppCount = getFilteredSuppliers().length;
+      const ordCount = getFilteredOrders().length;
+      document.getElementById('supplier-count').textContent = `${suppCount} fournisseur${suppCount !== 1 ? 's' : ''}`;
+      document.getElementById('order-count').textContent = `${ordCount} commande${ordCount !== 1 ? 's' : ''}`;
+    }
+
+    function setSupplierSubmitting(loading) {
+      const btn = document.getElementById('supplier-submit-btn');
+      btn.disabled = loading;
+      btn.style.opacity = loading ? '0.7' : '1';
+      document.getElementById('supplier-submit-label').textContent = loading ? 'Enregistrement' : 'Enregistrer';
+      document.getElementById('supplier-submit-spinner').style.display = loading ? 'inline-flex' : 'none';
+    }
+
+    function setOrderSubmitting(loading) {
+      const btn = document.getElementById('order-submit-btn');
+      btn.disabled = loading;
+      btn.style.opacity = loading ? '0.7' : '1';
+      document.getElementById('order-submit-label').textContent = loading ? 'Enregistrement' : 'Enregistrer';
+      document.getElementById('order-submit-spinner').style.display = loading ? 'inline-flex' : 'none';
+    }
+
+    function showSupplierError(msg) {
+      document.getElementById('supplier-form-error').textContent = msg;
+      document.getElementById('supplier-form-error').style.display = 'block';
+    }
+    function showSupplierSuccess(msg) {
+      document.getElementById('supplier-form-success').textContent = msg;
+      document.getElementById('supplier-form-success').style.display = 'block';
+    }
+    function hideSupplierMessages() {
+      document.getElementById('supplier-form-error').style.display = 'none';
+      document.getElementById('supplier-form-success').style.display = 'none';
+    }
+
+    function showOrderError(msg) {
+      document.getElementById('order-form-error').textContent = msg;
+      document.getElementById('order-form-error').style.display = 'block';
+    }
+    function showOrderSuccess(msg) {
+      document.getElementById('order-form-success').textContent = msg;
+      document.getElementById('order-form-success').style.display = 'block';
+    }
+    function hideOrderMessages() {
+      document.getElementById('order-form-error').style.display = 'none';
+      document.getElementById('order-form-success').style.display = 'none';
+    }
+
+    function esc(str) {
+      const d = document.createElement('div');
+      d.textContent = str || '';
+      return d.innerHTML;
+    }
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd3f5c0943a73a8',t:'MTc3MDk4MTg3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd492a7b1af8a3d',t:'MTc3MDk4ODI5OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
