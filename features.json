@@ -1,0 +1,37 @@
+{
+  "persistence_enabled": true,
+  "app_name": "Gestionnaire de Stock Mag House",
+  "avoids_browser_dialogs": true,
+  "avoids_viewport_units": true,
+  "verified_data_sdk_usage": true,
+  "verified_editable_features_usage": true,
+  "data_paradigm": "B",
+  "schema": {
+    "record_type": "string",
+    "name": "string",
+    "contact": "string",
+    "email": "string",
+    "phone": "string",
+    "category": "string",
+    "notes": "string",
+    "supplier_id": "string",
+    "article_name": "string",
+    "quantity": "number",
+    "unit_price": "number",
+    "order_date": "string",
+    "status": "string",
+    "created_at": "string"
+  },
+  "edit_panel": {
+    "page_title": {
+      "type": "text_input",
+      "label": "Titre de la page",
+      "placeholder": "Gestionnaire de Stock"
+    },
+    "subtitle_text": {
+      "type": "text_input",
+      "label": "Sous-titre",
+      "placeholder": "Gérez vos fournisseurs..."
+    }
+  }
+}
