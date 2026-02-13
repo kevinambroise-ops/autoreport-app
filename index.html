@@ -239,8 +239,6 @@
 
       document.getElementById('page-title').textContent = c.page_title || defaultConfig.page_title;
       document.getElementById('subtitle-text').textContent = c.subtitle_text || defaultConfig.subtitle_text;
-      document.getElementById('add-supplier-label').textContent = c.add_supplier_text || defaultConfig.add_supplier_text;
-      document.getElementById('add-order-label').textContent = c.add_order_text || defaultConfig.add_order_text;
 
       renderSupplierList();
       renderOrderList();
@@ -285,9 +283,7 @@
         }),
         mapToEditPanelValues: (config) => new Map([
           ['page_title', config.page_title || defaultConfig.page_title],
-          ['subtitle_text', config.subtitle_text || defaultConfig.subtitle_text],
-          ['add_supplier_text', config.add_supplier_text || defaultConfig.add_supplier_text],
-          ['add_order_text', config.add_order_text || defaultConfig.add_order_text]
+          ['subtitle_text', config.subtitle_text || defaultConfig.subtitle_text]
         ])
       });
     }
@@ -304,35 +300,37 @@
       }
     };
 
-    // Initialize SDK - simple approach
-    async function initDataSdk() {
-      // Check every 100ms for up to 10 seconds
+    // Wait for SDK and initialize
+    async function waitForSdkAndInit() {
       let attempts = 0;
-      while (!window.dataSdk && attempts < 100) {
+      const maxAttempts = 200; // 20 seconds
+      
+      while (!window.dataSdk && attempts < maxAttempts) {
         await new Promise(resolve => setTimeout(resolve, 100));
         attempts++;
       }
 
       if (!window.dataSdk) {
-        console.error('Data SDK still not available after 10 seconds');
-        return;
+        console.error('Data SDK not available');
+        return false;
       }
 
       try {
         const result = await window.dataSdk.init(dataHandler);
         if (result.isOk) {
           dataSdkReady = true;
-          console.log('✅ Data SDK Ready!');
+          return true;
         } else {
           console.error('SDK init failed:', result.error);
+          return false;
         }
       } catch (err) {
-        console.error('SDK init exception:', err);
+        console.error('SDK init error:', err);
+        return false;
       }
     }
 
-    // Start initialization immediately
-    initDataSdk();
+    waitForSdkAndInit();
 
     // ---- Tab Switching ----
     function switchTab(tab) {
@@ -362,13 +360,8 @@
       e.preventDefault();
       hideSupplierMessages();
 
-      if (!dataSdkReady) {
-        showSupplierError('Système de stockage en cours d\'initialisation... Attendez quelques secondes et réessayez.');
-        return;
-      }
-
-      if (!window.dataSdk) {
-        showSupplierError('Service de stockage indisponible. Rechargez la page.');
+      if (!dataSdkReady || !window.dataSdk) {
+        showSupplierError('❌ Système de stockage indisponible. Rechargez la page.');
         return;
       }
 
@@ -385,7 +378,6 @@
 
       setSupplierSubmitting(true);
       const record = {
-        id: 'supplier_' + Date.now(),
         record_type: 'supplier',
         name,
         contact: document.getElementById('s-contact').value.trim(),
@@ -433,13 +425,8 @@
       e.preventDefault();
       hideOrderMessages();
 
-      if (!dataSdkReady) {
-        showOrderError('Système de stockage en cours d\'initialisation... Attendez quelques secondes et réessayez.');
-        return;
-      }
-
-      if (!window.dataSdk) {
-        showOrderError('Service de stockage indisponible. Rechargez la page.');
+      if (!dataSdkReady || !window.dataSdk) {
+        showOrderError('❌ Système de stockage indisponible. Rechargez la page.');
         return;
       }
 
@@ -470,7 +457,6 @@
 
       setOrderSubmitting(true);
       const record = {
-        id: 'order_' + Date.now(),
         record_type: 'order',
         supplier_id: supplierId,
         article_name: article,
@@ -872,5 +858,5 @@
       return d.innerHTML;
     }
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd4e69151588a3d',t:'MTc3MDk5MTczNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd4f533b73e8a3d',t:'MTc3MDk5MjMzNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
