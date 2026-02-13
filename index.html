@@ -200,7 +200,7 @@
     let supplierSearchQuery = '';
     let orderSearchQuery = '';
     let orderStatusFilter = '';
-    let isInitializing = false;
+    let dataSdkReady = false;
 
     // ---- Default Config ----
     const defaultConfig = {
@@ -292,7 +292,7 @@
       });
     }
 
-    // ---- Data SDK ----
+    // ---- Data SDK Init ----
     const dataHandler = {
       onDataChanged(data) {
         allSuppliers = data.filter(d => d.record_type === 'supplier');
@@ -304,25 +304,29 @@
       }
     };
 
+    // Initialize SDK with retry logic
     async function initDataSdk() {
-      if (isInitializing) return;
-      isInitializing = true;
-      
+      let retries = 0;
+      while (!window.dataSdk && retries < 100) {
+        await new Promise(r => setTimeout(r, 50));
+        retries++;
+      }
+
       if (!window.dataSdk) {
-        console.warn('Data SDK not available');
-        isInitializing = false;
+        console.error('Data SDK unavailable');
         return;
       }
-      
+
       try {
-        const res = await window.dataSdk.init(dataHandler);
-        if (!res.isOk) {
-          console.error('Data SDK init failed:', res.error);
+        const result = await window.dataSdk.init(dataHandler);
+        if (result && result.isOk) {
+          dataSdkReady = true;
+          console.log('✅ Data SDK initialized');
+        } else {
+          console.error('Failed to init SDK:', result?.error);
         }
-      } catch (err) {
-        console.error('Data SDK init error:', err);
-      } finally {
-        isInitializing = false;
+      } catch (e) {
+        console.error('SDK init error:', e);
       }
     }
 
@@ -356,15 +360,20 @@
       e.preventDefault();
       hideSupplierMessages();
 
+      if (!dataSdkReady || !window.dataSdk) {
+        showSupplierError('Service de stockage non disponible. Rechargez la page.');
+        return;
+      }
+
       if (allSuppliers.length >= 999) {
         showSupplierError('Limite de 999 fournisseurs atteinte.');
         return;
       }
 
       const name = document.getElementById('s-name').value.trim();
-      if (!name) { 
-        showSupplierError('Le nom est obligatoire.'); 
-        return; 
+      if (!name) {
+        showSupplierError('Le nom est obligatoire.');
+        return;
       }
 
       setSupplierSubmitting(true);
@@ -388,16 +397,14 @@
       try {
         const result = await window.dataSdk.create(record);
         if (result.isOk) {
-          showSupplierSuccess('Fournisseur ajouté !');
+          showSupplierSuccess('✅ Fournisseur ajouté !');
           document.getElementById('supplier-form').reset();
-          setTimeout(() => { 
-            toggleSupplierForm(); 
-          }, 800);
+          setTimeout(() => toggleSupplierForm(), 800);
         } else {
-          showSupplierError('Erreur: ' + (result.error?.message || 'Réessayez'));
+          showSupplierError('❌ Erreur: ' + (result.error?.message || 'Réessayez'));
         }
       } catch (err) {
-        showSupplierError('Erreur réseau: ' + err.message);
+        showSupplierError('❌ ' + (err.message || 'Erreur réseau'));
       } finally {
         setSupplierSubmitting(false);
       }
@@ -418,29 +425,34 @@
       e.preventDefault();
       hideOrderMessages();
 
+      if (!dataSdkReady || !window.dataSdk) {
+        showOrderError('Service de stockage non disponible. Rechargez la page.');
+        return;
+      }
+
       if (allOrders.length >= 999) {
         showOrderError('Limite de 999 commandes atteinte.');
         return;
       }
 
       const supplierId = document.getElementById('o-supplier').value;
-      if (!supplierId) { 
-        showOrderError('Sélectionnez un fournisseur.'); 
-        return; 
+      if (!supplierId) {
+        showOrderError('Sélectionnez un fournisseur.');
+        return;
       }
 
       const article = document.getElementById('o-article').value.trim();
-      if (!article) { 
-        showOrderError('Entrez un article.'); 
-        return; 
+      if (!article) {
+        showOrderError('Entrez un article.');
+        return;
       }
 
       const quantity = parseFloat(document.getElementById('o-quantity').value);
       const price = parseFloat(document.getElementById('o-price').value);
       const date = document.getElementById('o-date').value;
-      if (!date) { 
-        showOrderError('Sélectionnez une date.'); 
-        return; 
+      if (!date) {
+        showOrderError('Sélectionnez une date.');
+        return;
       }
 
       setOrderSubmitting(true);
@@ -464,16 +476,14 @@
       try {
         const result = await window.dataSdk.create(record);
         if (result.isOk) {
-          showOrderSuccess('Commande ajoutée !');
+          showOrderSuccess('✅ Commande ajoutée !');
           document.getElementById('order-form').reset();
-          setTimeout(() => { 
-            toggleOrderForm(); 
-          }, 800);
+          setTimeout(() => toggleOrderForm(), 800);
         } else {
-          showOrderError('Erreur: ' + (result.error?.message || 'Réessayez'));
+          showOrderError('❌ Erreur: ' + (result.error?.message || 'Réessayez'));
         }
       } catch (err) {
-        showOrderError('Erreur réseau: ' + err.message);
+        showOrderError('❌ ' + (err.message || 'Erreur réseau'));
       } finally {
         setOrderSubmitting(false);
       }
@@ -512,7 +522,9 @@
 
       emptyState.style.display = 'none';
       const ids = new Set(filtered.map(s => s.__backendId));
-      existingCards.forEach((el, id) => { if (!ids.has(id)) el.remove(); });
+      existingCards.forEach((el, id) => {
+        if (!ids.has(id)) el.remove();
+      });
 
       filtered.forEach((supplier, i) => {
         const id = supplier.__backendId;
@@ -607,7 +619,9 @@
 
       emptyState.style.display = 'none';
       const ids = new Set(filtered.map(o => o.__backendId));
-      existingCards.forEach((el, id) => { if (!ids.has(id)) el.remove(); });
+      existingCards.forEach((el, id) => {
+        if (!ids.has(id)) el.remove();
+      });
 
       filtered.forEach((order, i) => {
         const id = order.__backendId;
@@ -692,6 +706,7 @@
     }
 
     async function updateOrderStatus(orderId, newStatus) {
+      if (!window.dataSdk) return;
       const order = allOrders.find(o => o.__backendId === orderId);
       if (!order) return;
       const updated = { ...order, status: newStatus };
@@ -725,6 +740,7 @@
     }
 
     async function confirmDeleteSupplier(id) {
+      if (!window.dataSdk) return;
       const supplier = allSuppliers.find(s => s.__backendId === id);
       if (!supplier) return;
       const card = document.querySelector(`[data-id="${id}"]`);
@@ -772,6 +788,7 @@
     }
 
     async function confirmDeleteOrder(id) {
+      if (!window.dataSdk) return;
       const order = allOrders.find(o => o.__backendId === id);
       if (!order) return;
       const card = document.querySelector(`[data-id="${id}"]`);
@@ -797,7 +814,7 @@
       const btn = document.getElementById('supplier-submit-btn');
       btn.disabled = loading;
       btn.style.opacity = loading ? '0.7' : '1';
-      document.getElementById('supplier-submit-label').textContent = loading ? 'Enregistrement' : 'Enregistrer';
+      document.getElementById('supplier-submit-label').textContent = loading ? 'Enregistrement...' : 'Enregistrer';
       document.getElementById('supplier-submit-spinner').style.display = loading ? 'inline-flex' : 'none';
     }
 
@@ -805,7 +822,7 @@
       const btn = document.getElementById('order-submit-btn');
       btn.disabled = loading;
       btn.style.opacity = loading ? '0.7' : '1';
-      document.getElementById('order-submit-label').textContent = loading ? 'Enregistrement' : 'Enregistrer';
+      document.getElementById('order-submit-label').textContent = loading ? 'Enregistrement...' : 'Enregistrer';
       document.getElementById('order-submit-spinner').style.display = loading ? 'inline-flex' : 'none';
     }
 
@@ -841,5 +858,5 @@
       return d.innerHTML;
     }
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd4b22fd22e93cf',t:'MTc3MDk4OTU5MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd4bdbcd4ae8a3d',t:'MTc3MDk5MDA2NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
