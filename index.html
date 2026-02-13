@@ -3,1095 +3,1290 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AutoReport — Plateforme de Sécurité</title>
-  <script src="/_sdk/element_sdk.js"></script>
-  <script src="/_sdk/data_sdk.js"></script>
+  <title>SecureGuard Pro</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; font-family: 'Outfit', sans-serif; }
+    html, body { height: 100%; margin: 0; padding: 0; }
+    * { box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; }
+    .font-mono { font-family: 'Space Mono', monospace; }
 
-    :root {
-      --bg-primary: #0a0e1a;
-      --bg-surface: #111827;
-      --text-main: #e2e8f0;
-      --accent-primary: #3b82f6;
-      --accent-danger: #ef4444;
-    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2a3a4a; border-radius: 3px; }
 
-    body {
-      background: var(--bg-primary);
-      color: var(--text-main);
-    }
-
-    .container-app {
-      height: 100%;
-      width: 100%;
-      overflow: auto;
-    }
-
-    .glass-card {
-      background: rgba(17, 24, 39, 0.8);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(59, 130, 246, 0.15);
-      border-radius: 16px;
-    }
-
-    .glow-border {
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255,255,255,0.05);
-    }
-
-    .fade-in {
-      animation: fadeSlide 0.4s ease-out forwards;
-      opacity: 0;
-    }
-    @keyframes fadeSlide {
-      from { opacity: 0; transform: translateY(12px); }
+    /* Animations */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(16px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #3b82f6, #2563eb);
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: 'Outfit', sans-serif;
-      font-size: 14px;
-      transition: all 0.2s ease;
+    @keyframes fadeSlideRight {
+      from { opacity: 0; transform: translateX(-12px); }
+      to { opacity: 1; transform: translateX(0); }
     }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(59,130,246,0.4); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-    .btn-secondary {
-      background: rgba(59,130,246,0.15);
-      color: #93c5fd;
-      border: 1px solid rgba(59,130,246,0.3);
-      padding: 10px 20px;
-      border-radius: 10px;
-      font-weight: 500;
-      cursor: pointer;
-      font-family: 'Outfit', sans-serif;
-      font-size: 14px;
-      transition: all 0.2s ease;
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.3); }
+      50% { box-shadow: 0 0 12px 4px rgba(0, 255, 136, 0.15); }
     }
-    .btn-secondary:hover { background: rgba(59,130,246,0.25); }
-
-    .btn-danger {
-      background: linear-gradient(135deg, #ef4444, #dc2626);
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: 'Outfit', sans-serif;
-      font-size: 14px;
-      transition: all 0.2s ease;
+    @keyframes countUp {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
     }
-    .btn-danger:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(239,68,68,0.4); }
-
-    .form-input {
-      width: 100%;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(59, 130, 246, 0.2);
-      border-radius: 10px;
-      padding: 12px 14px;
-      color: #e2e8f0;
-      font-family: 'Outfit', sans-serif;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s;
+    @keyframes radarSweep {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
-    .form-input:focus { border-color: #3b82f6; box-shadow: 0 0 12px rgba(59,130,246,0.2); }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .animate-fade-up { animation: fadeSlideUp 0.5s ease-out both; }
+    .animate-fade-right { animation: fadeSlideRight 0.4s ease-out both; }
+    .animate-pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
+    .animate-count { animation: countUp 0.6s ease-out both; }
+    .animate-radar { animation: radarSweep 4s linear infinite; }
+    .animate-blink { animation: blink 1.5s ease-in-out infinite; }
 
-    .form-label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      opacity: 0.8;
-      margin-bottom: 6px;
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+    .delay-6 { animation-delay: 0.6s; }
+
+    /* Map grid pattern */
+    .map-grid {
+      background-image:
+        linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
     }
 
-    .toast-container {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 1000;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    /* SOS button pulse */
+    .sos-pulse {
+      animation: sosPulse 1.2s ease-in-out infinite;
     }
+    @keyframes sosPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.5); }
+      50% { box-shadow: 0 0 20px 8px rgba(255, 59, 48, 0.2); }
+    }
+
+    /* Nav item hover */
+    .nav-item { transition: all 0.2s ease; position: relative; }
+    .nav-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: #00ff88;
+      border-radius: 0 2px 2px 0;
+      transform: scaleY(0);
+      transition: transform 0.2s ease;
+    }
+    .nav-item:hover::before, .nav-item.active::before { transform: scaleY(1); }
+    .nav-item:hover, .nav-item.active { background: rgba(0, 255, 136, 0.06); }
+
+    /* Status dot */
+    .status-online { background: #00ff88; box-shadow: 0 0 6px rgba(0,255,136,0.5); }
+    .status-offline { background: #ff3b30; }
+    .status-idle { background: #ffd60a; }
+
+    /* Card hover */
+    .card-hover { transition: all 0.25s ease; }
+    .card-hover:hover { transform: translateY(-2px); }
+
+    /* Toast */
     .toast {
-      padding: 14px 20px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 500;
-      animation: fadeSlide 0.3s ease-out;
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      padding: 12px 20px; border-radius: 8px; font-size: 14px;
+      animation: fadeSlideUp 0.3s ease-out;
       max-width: 360px;
     }
-    .toast-success { background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.4); color: #86efac; }
-    .toast-error { background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; }
+    .toast-success { background: #0a2e1a; border: 1px solid #00ff88; color: #00ff88; }
+    .toast-error { background: #2e0a0a; border: 1px solid #ff3b30; color: #ff3b30; }
+    .toast-warning { background: #2e2a0a; border: 1px solid #ffd60a; color: #ffd60a; }
 
+    /* Tab active indicator */
+    .tab-active { border-bottom: 2px solid #00ff88; color: #00ff88; }
+
+    /* Modal overlay */
     .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(4px);
-      z-index: 100;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      overflow-y: auto;
-    }
-    .modal-overlay.active { display: flex; }
-    .modal-content {
-      background: #111827;
-      border: 1px solid rgba(59,130,246,0.2);
-      border-radius: 16px;
-      padding: 28px;
-      max-width: 520px;
-      width: 100%;
-      max-height: 80%;
-      overflow-y: auto;
-      margin: auto;
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px); z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      animation: fadeSlideUp 0.2s ease-out;
     }
 
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .badge-active { background: rgba(34,197,94,0.2); color: #86efac; }
-    .badge-expired { background: rgba(239,68,68,0.2); color: #fca5a5; }
-    .badge-pending { background: rgba(234,179,8,0.2); color: #fde047; }
-
-    .login-container {
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 50%, #0a0e1a 100%);
+    /* Confirmation inline */
+    .confirm-inline {
+      background: rgba(255, 59, 48, 0.1);
+      border: 1px solid rgba(255, 59, 48, 0.3);
+      border-radius: 8px; padding: 8px 12px;
+      animation: fadeSlideUp 0.2s ease-out;
     }
 
-    .login-card {
-      width: 100%;
-      max-width: 420px;
+    /* Progress bar */
+    .progress-bar {
+      height: 4px; border-radius: 2px; overflow: hidden;
+      background: rgba(255,255,255,0.1);
     }
-
-    .logo-brand {
-      font-size: 32px;
-      font-weight: 800;
-      background: linear-gradient(135deg, #3b82f6, #6366f1);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 8px;
-    }
-
-    .header-bar {
-      background: rgba(17,24,39,0.95);
-      border-bottom: 1px solid rgba(59,130,246,0.15);
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      background: rgba(59,130,246,0.15);
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .pulse-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #22c55e;
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-    .loading-spinner {
-      display: inline-block;
-      width: 14px;
-      height: 14px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .mono { font-family: 'JetBrains Mono', monospace; }
-
-    .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .stat-box {
-      background: rgba(15,23,42,0.6);
-      border: 1px solid rgba(59,130,246,0.15);
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-    }
-
-    .stat-value {
-      font-size: 24px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .stat-label {
-      font-size: 12px;
-      opacity: 0.6;
-    }
-
-    .table-container {
-      overflow-x: auto;
-    }
-
-    .table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-
-    .table th {
-      background: rgba(59,130,246,0.1);
-      padding: 12px;
-      text-align: left;
-      font-weight: 600;
-      border-bottom: 1px solid rgba(59,130,246,0.2);
-    }
-
-    .table td {
-      padding: 12px;
-      border-bottom: 1px solid rgba(59,130,246,0.1);
-    }
-
-    .table tr:hover { background: rgba(59,130,246,0.05); }
-
-    .btn-sm {
-      padding: 4px 10px;
-      font-size: 12px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-weight: 500;
-      font-family: 'Outfit', sans-serif;
-      transition: all 0.2s;
-      margin-right: 4px;
-    }
-
-    .btn-sm-primary { background: rgba(59,130,246,0.3); color: #93c5fd; }
-    .btn-sm-primary:hover { background: rgba(59,130,246,0.5); }
-
-    .btn-sm-danger { background: rgba(239,68,68,0.3); color: #fca5a5; }
-    .btn-sm-danger:hover { background: rgba(239,68,68,0.5); }
-
-    .pending-verification {
-      background: linear-gradient(135deg, rgba(234,179,8,0.1), rgba(249,115,22,0.1));
-      border: 1px solid rgba(234,179,8,0.3);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 20px;
-    }
-
-    .pending-verification p {
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .admin-tab-content { display: none; }
-    .admin-tab-content.active { display: block; }
-
-    .tab-nav { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-    .tab-btn { padding: 10px 16px; border-radius: 8px; background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); cursor: pointer; font-weight: 500; font-family: 'Outfit', sans-serif; transition: all 0.2s; }
-    .tab-btn.active { background: rgba(59,130,246,0.3); }
-    .tab-btn:hover { background: rgba(59,130,246,0.25); }
-
-    .invitation-box {
-      background: rgba(59,130,246,0.1);
-      border: 1px solid rgba(59,130,246,0.2);
-      border-radius: 12px;
-      padding: 12px;
-      font-size: 12px;
-      margin-bottom: 8px;
+    .progress-fill {
+      height: 100%; border-radius: 2px;
+      transition: width 0.6s ease;
     }
   </style>
   <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
  </head>
  <body class="h-full">
-  <div class="container-app" id="appContainer">
-   <div class="toast-container" id="toastContainer"></div>
-   <div class="modal-overlay" id="modalOverlay"></div><!-- LOGIN PAGE -->
-   <div id="loginPage" class="login-container fade-in">
-    <div class="login-card">
-     <div class="glass-card glow-border p-8">
-      <div class="logo-brand">
-       🔐 AutoReport
+  <div id="app-root" class="h-full w-full flex overflow-hidden" style="background: #0b1120; color: #e0e6ed;"><!-- Sidebar -->
+   <aside id="sidebar" class="w-64 flex-shrink-0 flex flex-col" style="background: #0f1729; border-right: 1px solid rgba(255,255,255,0.06);"><!-- Logo -->
+    <div class="p-5 flex items-center gap-3" style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+     <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, #00ff88, #00cc6a);">
+      <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="#0b1120" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      </svg>
+     </div>
+     <div>
+      <div id="sidebar-platform-name" class="font-bold text-sm" style="color: #ffffff;">
+       SecureGuard Pro
       </div>
-      <p class="text-sm opacity-60 mb-6">Plateforme de Gestion de Sécurité Confidentielle</p>
-      <div id="loginTabs" class="tab-nav mb-6"><button class="tab-btn active" id="loginTab">🔓 Connexion</button> <button class="tab-btn" id="invitationTab">📧 Invitation</button>
-      </div><!-- Login Form -->
-      <form id="loginForm" class="flex flex-col gap-4">
-       <div><label class="form-label">Email de l'entreprise</label> <input type="email" id="emailInput" class="form-input" placeholder="contact@entreprise.com" required>
-       </div>
-       <div><label class="form-label">Mot de passe</label> <input type="password" id="passwordInput" class="form-input" placeholder="••••••••" required>
-       </div><button type="submit" class="btn-primary flex items-center justify-center gap-2 mt-2"> <span id="loginText">🔓 Connexion</span> <span id="loginSpinner" class="loading-spinner" style="display:none;"></span> </button>
-      </form><!-- Invitation Form -->
-      <form id="invitationForm" class="flex flex-col gap-4" style="display:none;">
-       <p class="text-sm opacity-70 mb-2">Vous avez reçu une invitation AutoReport ? Entrez vos informations :</p>
-       <div><label class="form-label">Token d'invitation</label> <input type="text" id="invitationToken" class="form-input" placeholder="Collez votre token d'invitation" required>
-       </div>
-       <div><label class="form-label">Email</label> <input type="email" id="invitationEmail" class="form-input" placeholder="contact@entreprise.com" required>
-       </div>
-       <div><label class="form-label">Créer un mot de passe</label> <input type="password" id="invitationPassword" class="form-input" placeholder="••••••••" required>
-       </div>
-       <div><label class="form-label">Confirmer le mot de passe</label> <input type="password" id="invitationPasswordConfirm" class="form-input" placeholder="••••••••" required>
-       </div><button type="submit" class="btn-primary flex items-center justify-center gap-2 mt-2"> <span id="invitationText">✅ Accepter l'invitation</span> <span id="invitationSpinner" class="loading-spinner" style="display:none;"></span> </button>
-      </form>
-      <div class="mt-6 p-4 rounded-lg" style="background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);">
-       <p class="text-xs opacity-70 mb-3"><strong>🧪 Comptes de test:</strong></p>
-       <div class="mono text-xs space-y-1 opacity-60">
-        <div>
-         <strong>Admin:</strong> admin@autoreport.com / admin123
-        </div>
-        <div>
-         <strong>Entreprise 1:</strong> secure1@test.com / pass123
-        </div>
-        <div>
-         <strong>Entreprise 2:</strong> secure2@test.com / pass123
-        </div>
-       </div>
+      <div class="text-xs" style="color: #5a6a7a;">
+       Super Admin
       </div>
      </div>
-    </div>
-   </div><!-- DASHBOARD PAGE -->
-   <div id="dashboardPage" class="hidden" style="display:none; height: 100%; overflow: auto;">
-    <div class="header-bar">
+    </div><!-- Nav -->
+    <nav class="flex-1 py-3 px-2 space-y-1 overflow-auto"><button onclick="switchView('dashboard')" class="nav-item active w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left" data-nav="dashboard">
+      <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+       <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
+      </svg><span>Tableau de bord</span> </button> <button onclick="switchView('companies')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left" data-nav="companies">
+      <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+       <path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-4" /><path d="M9 9h1" /><path d="M9 13h1" /><path d="M9 17h1" />
+      </svg><span id="nav-companies">Entreprises</span> </button> <button onclick="switchView('agents')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left" data-nav="agents">
+      <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+       <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
+      </svg><span id="nav-agents">Agents</span> </button> <button onclick="switchView('geolocation')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left" data-nav="geolocation">
+      <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+       <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /><path d="M12 2v4" /><path d="M12 18v4" /><path d="M2 12h4" /><path d="M18 12h4" />
+      </svg><span>Géolocalisation</span> </button> <button onclick="switchView('incidents')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left" data-nav="incidents">
+      <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+       <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+      </svg><span>Incidents</span> <span class="ml-auto text-xs px-1.5 py-0.5 rounded-full" style="background: rgba(255,59,48,0.2); color: #ff3b30;">3</span> </button> <button onclick="switchView('subscriptions')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left" data-nav="subscriptions">
+      <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+       <rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" />
+      </svg><span>Abonnements</span> </button> <button onclick="switchView('reports')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left" data-nav="reports">
+      <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+       <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
+      </svg><span>Rapports</span> </button>
+    </nav><!-- Sidebar footer -->
+    <div class="p-4" style="border-top: 1px solid rgba(255,255,255,0.06);">
      <div class="flex items-center gap-3">
-      <div class="logo-brand" style="font-size: 20px;">
-       AutoReport
+      <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style="background: linear-gradient(135deg, #00ff88, #00cc6a); color: #0b1120;">
+       KA
       </div>
-      <div id="headerEnterprise" class="text-sm font-semibold opacity-80">
-       Entreprise
+      <div class="flex-1 min-w-0">
+       <div class="text-xs font-medium truncate">
+        Kevin Ambroise
+       </div>
+       <div class="text-xs" style="color: #5a6a7a;">
+        Super Admin
+       </div>
       </div>
-     </div>
-     <div class="flex items-center gap-4">
-      <div id="subscriptionStatus" class="status-pill">
-       <div class="pulse-dot"></div><span id="subStatusText">Actif</span>
-      </div><button id="logoutBtn" class="btn-secondary text-sm">🚪 Déconnexion</button>
      </div>
     </div>
-    <main class="p-6" id="mainContent">
-     <div class="flex items-center justify-center py-12">
-      <div class="loading-spinner" style="width: 32px; height: 32px;"></div>
+   </aside><!-- Main Content -->
+   <main class="flex-1 flex flex-col overflow-hidden"><!-- Top Bar -->
+    <header class="flex items-center justify-between px-6 py-4 flex-shrink-0" style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+     <div>
+      <h1 id="page-title" class="text-lg font-bold" style="color: #ffffff;">Tableau de bord</h1>
+      <p id="welcome-msg" class="text-xs mt-0.5" style="color: #5a6a7a;">Bienvenue, Super Admin</p>
      </div>
-    </main>
-   </div><!-- ADMIN PAGE -->
-   <div id="adminPage" class="hidden" style="display:none; height: 100%; overflow: auto;">
-    <div class="header-bar">
-     <div class="logo-brand" style="font-size: 20px;">
-      AutoReport — Admin
-     </div><button id="adminLogoutBtn" class="btn-secondary text-sm">🚪 Déconnexion</button>
+     <div class="flex items-center gap-4"><!-- Search -->
+      <div class="relative hidden md:block"><label for="global-search" class="sr-only">Rechercher</label> <input id="global-search" type="text" placeholder="Rechercher..." class="text-sm rounded-lg pl-9 pr-4 py-2 w-56 focus:outline-none focus:ring-1" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #e0e6ed; --tw-ring-color: #00ff88;">
+       <svg class="absolute left-3 top-2.5" width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="#5a6a7a" stroke-width="2">
+        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+       </svg>
+      </div><!-- Notifications --> <button onclick="toggleNotifications()" class="relative p-2 rounded-lg" style="background: rgba(255,255,255,0.05);" aria-label="Notifications">
+       <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="#e0e6ed" stroke-width="1.8">
+        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" />
+       </svg><span class="absolute top-1 right-1 w-2 h-2 rounded-full animate-blink" style="background: #ff3b30;"></span> </button> <!-- Time -->
+      <div class="font-mono text-xs px-3 py-1.5 rounded-lg" style="background: rgba(0,255,136,0.06); color: #00ff88;" id="live-clock">
+       --:--:--
+      </div>
+     </div>
+    </header><!-- Content Area -->
+    <div class="flex-1 overflow-auto p-6" id="content-area"><!-- DASHBOARD VIEW -->
+     <div id="view-dashboard" class="view-panel"><!-- Stats Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+       <div class="rounded-xl p-4 card-hover animate-fade-up delay-1" style="background: linear-gradient(135deg, rgba(0,255,136,0.08), rgba(0,204,106,0.03)); border: 1px solid rgba(0,255,136,0.12);">
+        <div class="flex items-center justify-between mb-3"><span class="text-xs font-medium" style="color: #5a6a7a;">Entreprises Actives</span>
+         <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(0,255,136,0.1);">
+          <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2">
+           <path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-4" />
+          </svg>
+         </div>
+        </div>
+        <div class="text-2xl font-bold animate-count" style="color: #ffffff;">
+         12
+        </div>
+        <div class="text-xs mt-1" style="color: #00ff88;">
+         +2 ce mois
+        </div>
+       </div>
+       <div class="rounded-xl p-4 card-hover animate-fade-up delay-2" style="background: linear-gradient(135deg, rgba(0,122,255,0.08), rgba(0,122,255,0.03)); border: 1px solid rgba(0,122,255,0.12);">
+        <div class="flex items-center justify-between mb-3"><span class="text-xs font-medium" style="color: #5a6a7a;">Agents en Service</span>
+         <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(0,122,255,0.1);">
+          <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#007aff" stroke-width="2">
+           <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
+          </svg>
+         </div>
+        </div>
+        <div class="text-2xl font-bold animate-count delay-1" style="color: #ffffff;">
+         247
+        </div>
+        <div class="text-xs mt-1" style="color: #007aff;">
+         189 en ligne
+        </div>
+       </div>
+       <div class="rounded-xl p-4 card-hover animate-fade-up delay-3" style="background: linear-gradient(135deg, rgba(255,214,10,0.08), rgba(255,214,10,0.03)); border: 1px solid rgba(255,214,10,0.12);">
+        <div class="flex items-center justify-between mb-3"><span class="text-xs font-medium" style="color: #5a6a7a;">Sites Protégés</span>
+         <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(255,214,10,0.1);">
+          <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#ffd60a" stroke-width="2">
+           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
+          </svg>
+         </div>
+        </div>
+        <div class="text-2xl font-bold animate-count delay-2" style="color: #ffffff;">
+         58
+        </div>
+        <div class="text-xs mt-1" style="color: #ffd60a;">
+         5 alertes actives
+        </div>
+       </div>
+       <div class="rounded-xl p-4 card-hover animate-fade-up delay-4" style="background: linear-gradient(135deg, rgba(255,59,48,0.08), rgba(255,59,48,0.03)); border: 1px solid rgba(255,59,48,0.12);">
+        <div class="flex items-center justify-between mb-3"><span class="text-xs font-medium" style="color: #5a6a7a;">Incidents Ouverts</span>
+         <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(255,59,48,0.1);">
+          <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="#ff3b30" stroke-width="2">
+           <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" />
+          </svg>
+         </div>
+        </div>
+        <div class="text-2xl font-bold animate-count delay-3" style="color: #ffffff;">
+         3
+        </div>
+        <div class="text-xs mt-1" style="color: #ff3b30;">
+         1 critique
+        </div>
+       </div>
+      </div><!-- Revenue + Activity -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6"><!-- Revenue Chart -->
+       <div class="lg:col-span-2 rounded-xl p-5 animate-fade-up delay-3" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
+        <div class="flex items-center justify-between mb-4">
+         <h3 class="text-sm font-semibold" style="color: #ffffff;">Revenus Mensuels</h3>
+         <div class="flex gap-2"><button class="text-xs px-3 py-1 rounded-md" style="background: rgba(0,255,136,0.1); color: #00ff88;">6 mois</button> <button class="text-xs px-3 py-1 rounded-md" style="background: rgba(255,255,255,0.05); color: #5a6a7a;">12 mois</button>
+         </div>
+        </div>
+        <div class="flex items-end gap-3 h-40" id="revenue-chart"><!-- bars rendered by JS -->
+        </div>
+        <div class="flex justify-between mt-3 text-xs" style="color: #5a6a7a;"><span>Juil</span><span>Août</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Déc</span>
+        </div>
+       </div><!-- Recent Activity -->
+       <div class="rounded-xl p-5 animate-fade-up delay-4" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
+        <h3 class="text-sm font-semibold mb-4" style="color: #ffffff;">Activité Récente</h3>
+        <div class="space-y-3" id="activity-feed"><!-- rendered by JS -->
+        </div>
+       </div>
+      </div><!-- Active Alerts + Quick Map -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4"><!-- Active Alerts -->
+       <div class="rounded-xl p-5 animate-fade-up delay-5" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
+        <h3 class="text-sm font-semibold mb-4" style="color: #ffffff;">🚨 Alertes Actives</h3>
+        <div class="space-y-3" id="alerts-list"><!-- rendered by JS -->
+        </div>
+       </div><!-- Quick Map Preview -->
+       <div class="rounded-xl p-5 animate-fade-up delay-6 map-grid relative overflow-hidden" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
+        <h3 class="text-sm font-semibold mb-4" style="color: #ffffff;">📍 Aperçu Géolocalisation</h3>
+        <div class="relative" style="height: 180px;"><!-- Simulated Map -->
+         <div class="absolute inset-0 rounded-lg overflow-hidden" style="background: #0a1628;"><!-- Grid -->
+          <svg class="w-full h-full absolute inset-0" viewbox="0 0 400 200"><!-- Grid lines --> <g stroke="rgba(0,255,136,0.05)" stroke-width="0.5">
+            <line x1="0" y1="40" x2="400" y2="40" />
+            <line x1="0" y1="80" x2="400" y2="80" />
+            <line x1="0" y1="120" x2="400" y2="120" />
+            <line x1="0" y1="160" x2="400" y2="160" />
+            <line x1="80" y1="0" x2="80" y2="200" />
+            <line x1="160" y1="0" x2="160" y2="200" />
+            <line x1="240" y1="0" x2="240" y2="200" />
+            <line x1="320" y1="0" x2="320" y2="200" />
+           </g> <!-- Roads --> <g stroke="rgba(255,255,255,0.04)" stroke-width="2">
+            <path d="M0,100 Q100,80 200,100 T400,90" />
+            <path d="M200,0 Q180,100 200,200" />
+            <path d="M50,30 L350,170" />
+           </g> <!-- Agent dots --> <circle cx="120" cy="70" r="4" fill="#00ff88" opacity="0.9">
+            <animate attributename="r" values="4;6;4" dur="2s" repeatcount="indefinite" />
+           </circle> <circle cx="250" cy="110" r="4" fill="#00ff88" opacity="0.9">
+            <animate attributename="r" values="4;6;4" dur="2s" begin="0.5s" repeatcount="indefinite" />
+           </circle> <circle cx="180" cy="150" r="4" fill="#007aff" opacity="0.9">
+            <animate attributename="r" values="4;6;4" dur="2s" begin="1s" repeatcount="indefinite" />
+           </circle> <circle cx="310" cy="60" r="4" fill="#00ff88" opacity="0.9">
+            <animate attributename="r" values="4;6;4" dur="2s" begin="1.5s" repeatcount="indefinite" />
+           </circle> <circle cx="80" cy="140" r="4" fill="#ffd60a" opacity="0.9">
+            <animate attributename="r" values="4;6;4" dur="2s" begin="0.7s" repeatcount="indefinite" />
+           </circle> <!-- SOS marker --> <circle cx="340" cy="150" r="6" fill="#ff3b30" opacity="0.8">
+            <animate attributename="r" values="6;10;6" dur="1s" repeatcount="indefinite" />
+            <animate attributename="opacity" values="0.8;0.3;0.8" dur="1s" repeatcount="indefinite" />
+           </circle> <!-- Zone circle --> <circle cx="200" cy="100" r="50" fill="none" stroke="rgba(0,255,136,0.15)" stroke-width="1" stroke-dasharray="4,4" />
+          </svg><!-- Radar sweep -->
+          <div class="absolute animate-radar" style="width: 120px; height: 120px; top: 40px; left: 140px;">
+           <div style="width: 100%; height: 100%; background: conic-gradient(from 0deg, transparent 0deg, rgba(0,255,136,0.08) 30deg, transparent 31deg); border-radius: 50%;"></div>
+          </div>
+         </div><!-- Legend -->
+         <div class="absolute bottom-2 right-2 flex gap-3 text-xs p-2 rounded-md" style="background: rgba(11,17,32,0.9);"><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full status-online"></span> En ligne</span> <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full status-idle"></span> Inactif</span> <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full status-offline animate-blink"></span> SOS</span>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- COMPANIES VIEW -->
+     <div id="view-companies" class="view-panel hidden">
+      <div class="flex items-center justify-between mb-5">
+       <div>
+        <h2 id="companies-title" class="text-lg font-bold" style="color: #ffffff;">Entreprises</h2>
+        <p class="text-xs" style="color: #5a6a7a;">Gestion des entreprises clientes</p>
+       </div><button onclick="openCompanyModal()" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium" style="background: #00ff88; color: #0b1120;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+         <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+        </svg> Nouvelle Entreprise </button>
+      </div>
+      <div class="rounded-xl overflow-hidden" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
+       <table class="w-full text-sm">
+        <thead>
+         <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+          <th class="text-left px-5 py-3 text-xs font-medium" style="color: #5a6a7a;">Entreprise</th>
+          <th class="text-left px-5 py-3 text-xs font-medium hidden md:table-cell" style="color: #5a6a7a;">Plan</th>
+          <th class="text-left px-5 py-3 text-xs font-medium hidden lg:table-cell" style="color: #5a6a7a;">Agents</th>
+          <th class="text-left px-5 py-3 text-xs font-medium" style="color: #5a6a7a;">Statut</th>
+          <th class="text-left px-5 py-3 text-xs font-medium" style="color: #5a6a7a;">Actions</th>
+         </tr>
+        </thead>
+        <tbody id="companies-table-body"><!-- rendered by JS -->
+        </tbody>
+       </table>
+      </div>
+     </div><!-- AGENTS VIEW -->
+     <div id="view-agents" class="view-panel hidden">
+      <div class="flex items-center justify-between mb-5">
+       <div>
+        <h2 id="agents-title" class="text-lg font-bold" style="color: #ffffff;">Agents</h2>
+        <p class="text-xs" style="color: #5a6a7a;">Suivi et gestion des agents de sécurité</p>
+       </div><button onclick="openAgentModal()" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium" style="background: #00ff88; color: #0b1120;">
+        <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+         <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+        </svg> Nouvel Agent </button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="agents-grid"><!-- rendered by JS -->
+      </div>
+     </div><!-- GEOLOCATION VIEW -->
+     <div id="view-geolocation" class="view-panel hidden">
+      <div class="flex items-center justify-between mb-5">
+       <h2 class="text-lg font-bold" style="color: #ffffff;">Géolocalisation Temps Réel</h2>
+       <div class="flex items-center gap-3"><span class="flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg" style="background: rgba(0,255,136,0.08); color: #00ff88;"> <span class="w-2 h-2 rounded-full status-online animate-pulse-glow"></span> 189 agents en ligne </span>
+       </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-4"><!-- Large Map -->
+       <div class="lg:col-span-3 rounded-xl overflow-hidden map-grid relative" style="background: #0a1628; border: 1px solid rgba(255,255,255,0.06); height: 500px;">
+        <svg class="w-full h-full" viewbox="0 0 800 500"><!-- Grid --> <g stroke="rgba(0,255,136,0.04)" stroke-width="0.5">
+          <line x1="0" y1="100" x2="800" y2="100" />
+          <line x1="0" y1="200" x2="800" y2="200" />
+          <line x1="0" y1="300" x2="800" y2="300" />
+          <line x1="0" y1="400" x2="800" y2="400" />
+          <line x1="160" y1="0" x2="160" y2="500" />
+          <line x1="320" y1="0" x2="320" y2="500" />
+          <line x1="480" y1="0" x2="480" y2="500" />
+          <line x1="640" y1="0" x2="640" y2="500" />
+         </g> <!-- Roads --> <g stroke="rgba(255,255,255,0.06)" stroke-width="3" fill="none">
+          <path d="M0,250 Q200,200 400,250 T800,230" />
+          <path d="M400,0 Q380,250 400,500" />
+          <path d="M100,50 Q400,200 700,350" />
+          <path d="M0,400 Q300,350 600,420 T800,380" />
+          <path d="M200,0 L600,500" />
+         </g> <!-- Zones --> <circle cx="300" cy="200" r="80" fill="rgba(0,255,136,0.04)" stroke="rgba(0,255,136,0.15)" stroke-width="1" stroke-dasharray="6,4" /> <circle cx="550" cy="320" r="60" fill="rgba(0,122,255,0.04)" stroke="rgba(0,122,255,0.15)" stroke-width="1" stroke-dasharray="6,4" /> <text x="300" y="205" text-anchor="middle" fill="rgba(0,255,136,0.25)" font-size="10" font-family="DM Sans">
+          Zone A - Centre Commercial
+         </text> <text x="550" y="325" text-anchor="middle" fill="rgba(0,122,255,0.25)" font-size="10" font-family="DM Sans">
+          Zone B - Entrepôt
+         </text> <!-- Agents --> <g id="map-agents">
+          <g>
+           <circle cx="280" cy="180" r="5" fill="#00ff88">
+            <animate attributename="r" values="5;7;5" dur="2s" repeatcount="indefinite" />
+           </circle>
+           <text x="290" y="175" fill="#00ff88" font-size="9" font-family="DM Sans">
+            M. Diallo
+           </text>
+          </g>
+          <g>
+           <circle cx="320" cy="220" r="5" fill="#00ff88">
+            <animate attributename="r" values="5;7;5" dur="2s" begin="0.3s" repeatcount="indefinite" />
+           </circle>
+           <text x="330" y="215" fill="#00ff88" font-size="9" font-family="DM Sans">
+            A. Traoré
+           </text>
+          </g>
+          <g>
+           <circle cx="540" cy="300" r="5" fill="#007aff">
+            <animate attributename="r" values="5;7;5" dur="2s" begin="0.6s" repeatcount="indefinite" />
+           </circle>
+           <text x="550" y="295" fill="#007aff" font-size="9" font-family="DM Sans">
+            B. Koné
+           </text>
+          </g>
+          <g>
+           <circle cx="150" cy="350" r="5" fill="#ffd60a">
+            <animate attributename="r" values="5;7;5" dur="2s" begin="0.9s" repeatcount="indefinite" />
+           </circle>
+           <text x="160" y="345" fill="#ffd60a" font-size="9" font-family="DM Sans">
+            S. Ouattara
+           </text>
+          </g>
+          <g>
+           <circle cx="650" cy="150" r="5" fill="#00ff88">
+            <animate attributename="r" values="5;7;5" dur="2s" begin="1.2s" repeatcount="indefinite" />
+           </circle>
+           <text x="660" y="145" fill="#00ff88" font-size="9" font-family="DM Sans">
+            K. Bamba
+           </text>
+          </g> <!-- SOS -->
+          <g>
+           <circle cx="500" cy="120" r="8" fill="#ff3b30">
+            <animate attributename="r" values="8;14;8" dur="1s" repeatcount="indefinite" />
+            <animate attributename="opacity" values="1;0.4;1" dur="1s" repeatcount="indefinite" />
+           </circle>
+           <text x="515" y="118" fill="#ff3b30" font-size="10" font-weight="bold" font-family="DM Sans">
+            SOS - I. Sanogo
+           </text>
+          </g>
+         </g> <!-- Radar --> <g transform="translate(400,250)">
+          <circle r="120" fill="none" stroke="rgba(0,255,136,0.06)" stroke-width="0.5" />
+          <line x1="0" y1="0" x2="120" y2="0" stroke="rgba(0,255,136,0.15)" stroke-width="1" transform="rotate(0)">
+           <animatetransform attributename="transform" type="rotate" from="0" to="360" dur="6s" repeatcount="indefinite" />
+          </line>
+         </g>
+        </svg><!-- SOS Alert overlay -->
+        <div class="absolute top-4 right-4 sos-pulse rounded-lg px-4 py-3 flex items-center gap-3" style="background: rgba(255,59,48,0.15); border: 1px solid rgba(255,59,48,0.4);"><span class="text-lg">🆘</span>
+         <div>
+          <div class="text-xs font-bold" style="color: #ff3b30;">
+           ALERTE SOS
+          </div>
+          <div class="text-xs" style="color: #e0e6ed;">
+           I. Sanogo - Site Entrepôt Nord
+          </div>
+         </div>
+        </div>
+       </div><!-- Agent List -->
+       <div class="rounded-xl p-4 overflow-auto" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06); max-height: 500px;">
+        <h3 class="text-xs font-semibold mb-3" style="color: #5a6a7a;">AGENTS EN SERVICE</h3>
+        <div class="space-y-2" id="geo-agent-list"><!-- rendered by JS -->
+        </div>
+       </div>
+      </div>
+     </div><!-- INCIDENTS VIEW -->
+     <div id="view-incidents" class="view-panel hidden">
+      <div class="flex items-center justify-between mb-5">
+       <div>
+        <h2 class="text-lg font-bold" style="color: #ffffff;">Gestion des Incidents</h2>
+        <p class="text-xs" style="color: #5a6a7a;">Suivi et traitement des incidents</p>
+       </div>
+       <div class="flex gap-2"><button class="tab-active text-xs px-3 py-1.5 rounded-t-md" onclick="filterIncidents('all', this)">Tous</button> <button class="text-xs px-3 py-1.5" style="color: #5a6a7a;" onclick="filterIncidents('critique', this)">Critiques</button> <button class="text-xs px-3 py-1.5" style="color: #5a6a7a;" onclick="filterIncidents('moyen', this)">Moyens</button> <button class="text-xs px-3 py-1.5" style="color: #5a6a7a;" onclick="filterIncidents('faible', this)">Faibles</button>
+       </div>
+      </div>
+      <div class="space-y-3" id="incidents-list"><!-- rendered by JS -->
+      </div>
+     </div><!-- SUBSCRIPTIONS VIEW -->
+     <div id="view-subscriptions" class="view-panel hidden">
+      <div class="flex items-center justify-between mb-5">
+       <h2 class="text-lg font-bold" style="color: #ffffff;">Gestion des Abonnements</h2>
+      </div><!-- Plans -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+       <div class="rounded-xl p-5 card-hover animate-fade-up delay-1" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
+        <div class="text-xs font-medium mb-2" style="color: #5a6a7a;">
+         BASIQUE
+        </div>
+        <div class="text-2xl font-bold mb-1" style="color: #ffffff;">
+         25 000 <span class="text-sm font-normal" style="color: #5a6a7a;">FCFA/mois</span>
+        </div>
+        <div class="text-xs mb-4" style="color: #5a6a7a;">
+         Jusqu'à 10 agents
+        </div>
+        <div class="space-y-2 text-xs" style="color: #e0e6ed;">
+         <div class="flex items-center gap-2">
+          <span style="color: #00ff88;">✓</span> Gestion des agents
+         </div>
+         <div class="flex items-center gap-2">
+          <span style="color: #00ff88;">✓</span> Suivi des sites
+         </div>
+         <div class="flex items-center gap-2">
+          <span style="color: #00ff88;">✓</span> Rapports basiques
+         </div>
+         <div class="flex items-center gap-2">
+          <span style="color: #5a6a7a;">✗</span><span style="color: #5a6a7a;">Géolocalisation</span>
+         </div>
+         <div class="flex items-center gap-2">
+          <span style="color: #5a6a7a;">✗</span><span style="color: #5a6a7a;">SOS / Alertes</span>
+         </div>
+        </div>
+        <div class="mt-4 text-center text-xs px-3 py-1.5 rounded-lg" style="background: rgba(255,255,255,0.05); color: #5a6a7a;">
+         4 entreprises
+        </div>
+       </div>
+       <div class="rounded-xl p-5 card-hover animate-fade-up delay-2 relative" style="background: linear-gradient(135deg, rgba(0,255,136,0.06), rgba(0,204,106,0.02)); border: 1px solid rgba(0,255,136,0.2);">
+        <div class="absolute -top-2 right-4 text-xs px-2 py-0.5 rounded-full font-medium" style="background: #00ff88; color: #0b1120;">
+         Populaire
+        </div>
+        <div class="text-xs font-medium mb-2" style="color: #00ff88;">
+         PRO
+        </div>
+        <div class="text-2xl font-bold mb-1" style="color: #ffffff;">
+         75 000 <span class="text-sm font-normal" style="color: #5a6a7a;">FCFA/mois</span>
+        </div>
+        <div class="text-xs mb-4" style="color: #5a6a7a;">
+         Jusqu'à 50 agents
+        </div>
+        <div class="space-y-2 text-xs" style="color: #e0e6ed;">
+         <div class="flex items-center gap-2">
+          <span style="color: #00ff88;">✓</span> Tout le plan Basique
+         </div>
+         <div class="flex items-center gap-2">
+          <span style="color: #00ff88;">✓</span> Géolocalisation temps réel
+         </div>
+         <div class="flex items-center gap-2">
+          <span style="color: #00ff88;">✓</span> Gestion des incidents
+         </div>
+         <div class="flex items-center gap-2">
+          <span style="color: #00ff88;">✓</span> Alertes SOS
+         </div>
+         <div class="flex items-center gap-2">
+          <span style="color: #5a6a7a;">✗</span><span style="color: #5a6a7a;">API personnalisée</span>
+         </div>
+        </div>
+        <div class="mt-4 text-center text-xs px-3 py-1.5 rounded-lg" style="background: rgba(0,255,136,0.1); color: #00ff88;">
+         6 entreprises
+        </div>
+       </div>
+       <div class="rounded-xl p-5 card-hover animate-fade-up delay-3" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
+        <div class="text-xs font-medium mb-2" style="color: #ffd60a;">
+         PREMIUM
+        </div>
+        <div class="text-2xl font-bold mb-1" style="color: #ffffff;">
+         150 000 <span class="text-sm font-normal" style="color: #5a6a7a;">FCFA/mois</span>
+        </div>
+        <div class="text-xs mb-4" style="color: #5a6a7a;">
+         Agents illimités
+        </div>
+        <div class="space-y-2 text-xs" style="color: #e0e6ed;">
+         <div class="flex items-center gap-2">
+          <span style="color: #00ff88;">✓</span> Tout le plan Pro
+         </div>
+         <div class="flex items-center gap-2">
+          <span style="color: #00ff88;">✓</span> API personnalisée
+         </div>
+         <div class="flex items-center gap-2">
+          <span style="color: #00ff88;">✓</span> Support prioritaire
+         </div>
+         <div class="flex items-center gap-2">
+          <span style="color: #00ff88;">✓</span> Rapports avancés
+         </div>
+         <div class="flex items-center gap-2">
+          <span style="color: #00ff88;">✓</span> Multi-sites illimités
+         </div>
+        </div>
+        <div class="mt-4 text-center text-xs px-3 py-1.5 rounded-lg" style="background: rgba(255,214,10,0.1); color: #ffd60a;">
+         2 entreprises
+        </div>
+       </div>
+      </div><!-- Subscription Table -->
+      <div class="rounded-xl overflow-hidden" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
+       <div class="px-5 py-3" style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <h3 class="text-sm font-semibold" style="color: #ffffff;">Historique des Abonnements</h3>
+       </div>
+       <table class="w-full text-sm">
+        <thead>
+         <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+          <th class="text-left px-5 py-3 text-xs font-medium" style="color: #5a6a7a;">Entreprise</th>
+          <th class="text-left px-5 py-3 text-xs font-medium hidden md:table-cell" style="color: #5a6a7a;">Plan</th>
+          <th class="text-left px-5 py-3 text-xs font-medium hidden md:table-cell" style="color: #5a6a7a;">Expiration</th>
+          <th class="text-left px-5 py-3 text-xs font-medium" style="color: #5a6a7a;">Paiement</th>
+          <th class="text-left px-5 py-3 text-xs font-medium" style="color: #5a6a7a;">Statut</th>
+         </tr>
+        </thead>
+        <tbody id="subscriptions-table-body"><!-- rendered by JS -->
+        </tbody>
+       </table>
+      </div>
+     </div><!-- REPORTS VIEW -->
+     <div id="view-reports" class="view-panel hidden">
+      <div class="flex items-center justify-between mb-5">
+       <h2 class="text-lg font-bold" style="color: #ffffff;">Rapports</h2>
+       <div class="flex gap-2"><button class="text-xs px-3 py-1.5 rounded-lg flex items-center gap-2" style="background: rgba(0,255,136,0.1); color: #00ff88;" onclick="showToast('Rapport PDF généré', 'success')">
+         <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+         </svg> Export PDF </button> <button class="text-xs px-3 py-1.5 rounded-lg flex items-center gap-2" style="background: rgba(255,255,255,0.05); color: #5a6a7a;" onclick="showToast('Rapport Excel généré', 'success')">
+         <svg width="12" height="12" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+         </svg> Export Excel </button>
+       </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"><!-- Report cards -->
+       <div class="rounded-xl p-5 animate-fade-up delay-1" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
+        <h3 class="text-sm font-semibold mb-3" style="color: #ffffff;">Présence des Agents</h3>
+        <div class="space-y-3">
+         <div>
+          <div class="flex justify-between text-xs mb-1">
+           <span style="color: #e0e6ed;">SecuriPlus</span><span style="color: #00ff88;">96%</span>
+          </div>
+          <div class="progress-bar">
+           <div class="progress-fill" style="width: 96%; background: #00ff88;"></div>
+          </div>
+         </div>
+         <div>
+          <div class="flex justify-between text-xs mb-1">
+           <span style="color: #e0e6ed;">GuardForce</span><span style="color: #007aff;">88%</span>
+          </div>
+          <div class="progress-bar">
+           <div class="progress-fill" style="width: 88%; background: #007aff;"></div>
+          </div>
+         </div>
+         <div>
+          <div class="flex justify-between text-xs mb-1">
+           <span style="color: #e0e6ed;">VigiPro</span><span style="color: #ffd60a;">72%</span>
+          </div>
+          <div class="progress-bar">
+           <div class="progress-fill" style="width: 72%; background: #ffd60a;"></div>
+          </div>
+         </div>
+         <div>
+          <div class="flex justify-between text-xs mb-1">
+           <span style="color: #e0e6ed;">SafeZone</span><span style="color: #ff3b30;">65%</span>
+          </div>
+          <div class="progress-bar">
+           <div class="progress-fill" style="width: 65%; background: #ff3b30;"></div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="rounded-xl p-5 animate-fade-up delay-2" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
+        <h3 class="text-sm font-semibold mb-3" style="color: #ffffff;">Incidents par Gravité</h3>
+        <div class="flex items-center justify-center gap-8" style="height: 140px;"><!-- Simple donut chart with SVG -->
+         <svg width="120" height="120" viewbox="0 0 120 120"><circle cx="60" cy="60" r="45" fill="none" stroke="rgba(255,59,48,0.3)" stroke-width="12" stroke-dasharray="56.5 226" stroke-dashoffset="0" transform="rotate(-90 60 60)" /> <circle cx="60" cy="60" r="45" fill="none" stroke="rgba(255,214,10,0.4)" stroke-width="12" stroke-dasharray="113 226" stroke-dashoffset="-56.5" transform="rotate(-90 60 60)" /> <circle cx="60" cy="60" r="45" fill="none" stroke="rgba(0,255,136,0.3)" stroke-width="12" stroke-dasharray="56.5 226" stroke-dashoffset="-169.5" transform="rotate(-90 60 60)" /> <text x="60" y="56" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="bold" font-family="DM Sans">
+           47
+          </text> <text x="60" y="72" text-anchor="middle" fill="#5a6a7a" font-size="9" font-family="DM Sans">
+           total
+          </text>
+         </svg>
+         <div class="space-y-2 text-xs">
+          <div class="flex items-center gap-2">
+           <span class="w-3 h-3 rounded-sm" style="background: rgba(255,59,48,0.5);"></span> Critique: 12
+          </div>
+          <div class="flex items-center gap-2">
+           <span class="w-3 h-3 rounded-sm" style="background: rgba(255,214,10,0.5);"></span> Moyen: 23
+          </div>
+          <div class="flex items-center gap-2">
+           <span class="w-3 h-3 rounded-sm" style="background: rgba(0,255,136,0.4);"></span> Faible: 12
+          </div>
+         </div>
+        </div>
+       </div>
+      </div><!-- Report types -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"><button onclick="showToast('Rapport journalier généré', 'success')" class="rounded-xl p-4 text-left card-hover animate-fade-up delay-3" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
+        <div class="text-lg mb-2">
+         📋
+        </div>
+        <div class="text-sm font-medium" style="color: #ffffff;">
+         Rapport Journalier
+        </div>
+        <div class="text-xs mt-1" style="color: #5a6a7a;">
+         Dernière génération: Aujourd'hui
+        </div></button> <button onclick="showToast('Rapport hebdomadaire généré', 'success')" class="rounded-xl p-4 text-left card-hover animate-fade-up delay-4" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
+        <div class="text-lg mb-2">
+         📊
+        </div>
+        <div class="text-sm font-medium" style="color: #ffffff;">
+         Rapport Hebdomadaire
+        </div>
+        <div class="text-xs mt-1" style="color: #5a6a7a;">
+         Semaine du 6 Jan
+        </div></button> <button onclick="showToast('Rapport mensuel généré', 'success')" class="rounded-xl p-4 text-left card-hover animate-fade-up delay-5" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
+        <div class="text-lg mb-2">
+         📈
+        </div>
+        <div class="text-sm font-medium" style="color: #ffffff;">
+         Rapport Mensuel
+        </div>
+        <div class="text-xs mt-1" style="color: #5a6a7a;">
+         Décembre 2024
+        </div></button> <button onclick="showToast('Rapport incidents généré', 'success')" class="rounded-xl p-4 text-left card-hover animate-fade-up delay-6" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.06);">
+        <div class="text-lg mb-2">
+         🚨
+        </div>
+        <div class="text-sm font-medium" style="color: #ffffff;">
+         Rapport Incidents
+        </div>
+        <div class="text-xs mt-1" style="color: #5a6a7a;">
+         3 incidents ouverts
+        </div></button>
+      </div>
+     </div>
     </div>
-    <main class="p-6" id="adminContent"><!-- Will be populated -->
-    </main>
-   </div>
+   </main><!-- Modal Container -->
+   <div id="modal-container"></div><!-- Toast Container -->
+   <div id="toast-container"></div>
   </div>
   <script>
-(async function() {
-  // ==================== STATE ====================
-  let allRecords = [];
-  let currentUser = null;
-  const ADMIN_EMAIL = 'ambromutamba@gmail.com';
-  const ADMIN_PASSWORD = 'ADMIN-AUTOREPORT-2024';
+    // ========== DATA ==========
+    const companies = [
+      { id: 1, name: 'SecuriPlus SARL', plan: 'Pro', agents: 42, maxAgents: 50, status: 'active', expiry: '2025-03-15', payment: 'Mobile Money' },
+      { id: 2, name: 'GuardForce CI', plan: 'Premium', agents: 78, maxAgents: 999, status: 'active', expiry: '2025-06-01', payment: 'Carte bancaire' },
+      { id: 3, name: 'VigiPro Sécurité', plan: 'Basique', agents: 8, maxAgents: 10, status: 'active', expiry: '2025-02-28', payment: 'Virement' },
+      { id: 4, name: 'SafeZone Group', plan: 'Pro', agents: 35, maxAgents: 50, status: 'suspended', expiry: '2024-12-31', payment: 'Mobile Money' },
+      { id: 5, name: 'Alpha Sécurité', plan: 'Basique', agents: 6, maxAgents: 10, status: 'active', expiry: '2025-04-10', payment: 'Mobile Money' },
+    ];
 
-  const testAccounts = [
-    { email: ADMIN_EMAIL, password: ADMIN_PASSWORD, role: 'admin' },
-    { email: 'secure1@test.com', password: 'pass123', role: 'user', enterprise_name: 'Sécurité Pro SA' },
-    { email: 'secure2@test.com', password: 'pass123', role: 'user', enterprise_name: 'Vigilance Express' },
-  ];
+    const agents = [
+      { id: 1, name: 'Moussa Diallo', matricule: 'AG-001', company: 'SecuriPlus SARL', site: 'Centre Commercial Abidjan', status: 'online', lat: 5.316, lng: -4.025 },
+      { id: 2, name: 'Aminata Traoré', matricule: 'AG-002', company: 'SecuriPlus SARL', site: 'Centre Commercial Abidjan', status: 'online', lat: 5.318, lng: -4.022 },
+      { id: 3, name: 'Bakary Koné', matricule: 'AG-003', company: 'GuardForce CI', site: 'Entrepôt Zone Industrielle', status: 'idle', lat: 5.325, lng: -4.010 },
+      { id: 4, name: 'Seydou Ouattara', matricule: 'AG-004', company: 'VigiPro Sécurité', site: 'Résidence Les Palmiers', status: 'idle', lat: 5.310, lng: -4.030 },
+      { id: 5, name: 'Karim Bamba', matricule: 'AG-005', company: 'GuardForce CI', site: 'Bureau Corporate Tour A', status: 'online', lat: 5.340, lng: -4.005 },
+      { id: 6, name: 'Ibrahim Sanogo', matricule: 'AG-006', company: 'SecuriPlus SARL', site: 'Entrepôt Nord', status: 'sos', lat: 5.350, lng: -3.990 },
+    ];
 
-  // ==================== HELPERS ====================
-  function showToast(message, type = 'success') {
-    const container = document.getElementById('toastContainer');
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.textContent = message;
-    container.appendChild(toast);
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transition = 'opacity 0.3s';
-      setTimeout(() => toast.remove(), 300);
-    }, 3000);
-  }
+    const incidents = [
+      { id: 1, title: 'Intrusion détectée - Entrepôt Nord', agent: 'Ibrahim Sanogo', company: 'SecuriPlus SARL', severity: 'critique', time: '14:32', date: '10 Jan 2025', status: 'open', description: 'Mouvement détecté dans la zone restreinte B3. Agent en alerte SOS.' },
+      { id: 2, title: 'Porte non verrouillée - Bureau 4B', agent: 'Bakary Koné', company: 'GuardForce CI', severity: 'moyen', time: '08:15', date: '10 Jan 2025', status: 'open', description: 'Porte d\'accès secondaire trouvée non verrouillée lors de la ronde matinale.' },
+      { id: 3, title: 'Caméra hors service - Parking P2', agent: 'Moussa Diallo', company: 'SecuriPlus SARL', severity: 'faible', time: '22:45', date: '09 Jan 2025', status: 'open', description: 'Caméra de surveillance parking P2 ne répond plus depuis 22h.' },
+      { id: 4, title: 'Altercation visiteur', agent: 'Aminata Traoré', company: 'SecuriPlus SARL', severity: 'moyen', time: '16:20', date: '08 Jan 2025', status: 'closed', description: 'Altercation verbale entre un visiteur et un employé. Situation contrôlée.' },
+    ];
 
-  function showModal(html) {
-    const overlay = document.getElementById('modalOverlay');
-    overlay.classList.add('active');
-    overlay.innerHTML = `<div class="modal-content fade-in">${html}</div>`;
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) closeModal();
-    });
-  }
+    const activities = [
+      { text: 'Ibrahim Sanogo a déclenché une alerte SOS', time: 'Il y a 5 min', type: 'sos' },
+      { text: 'SecuriPlus a renouvelé son abonnement Pro', time: 'Il y a 1h', type: 'payment' },
+      { text: 'Nouvel agent ajouté chez GuardForce CI', time: 'Il y a 2h', type: 'agent' },
+      { text: 'Rapport mensuel généré pour VigiPro', time: 'Il y a 3h', type: 'report' },
+      { text: 'SafeZone Group — abonnement expiré', time: 'Il y a 12h', type: 'warning' },
+    ];
 
-  function closeModal() {
-    document.getElementById('modalOverlay').classList.remove('active');
-  }
+    const revenueData = [65, 72, 68, 85, 92, 98];
 
-  function formatDate(isoStr) {
-    if (!isoStr) return '—';
-    const d = new Date(isoStr);
-    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-  }
-
-  function generateInvitationToken() {
-    return 'INV-' + Math.random().toString(36).substring(2, 15).toUpperCase() + '-' + Date.now().toString(36).toUpperCase();
-  }
-
-  function generateAccessKey() {
-    return 'ARK-' + Math.random().toString(36).substring(2, 15).toUpperCase() + '-' + Date.now().toString(36).toUpperCase();
-  }
-
-  window.closeModal = closeModal;
-
-  // ==================== AUTHENTICATION ====================
-  function login(email, password) {
-    const account = testAccounts.find(a => a.email === email && a.password === password);
-    if (!account) return null;
-    
-    // Check if user accepted invitation in database
-    const userRecord = allRecords.find(r => 
-      r.record_type === 'user' && 
-      r.user_email === email && 
-      r.invitation_accepted === true
-    );
-    
-    if (!account.role === 'admin' && !userRecord) return null;
-    
-    return {
-      email,
-      role: account.role,
-      enterprise_name: userRecord?.enterprise_name || account.enterprise_name || 'AutoReport Admin',
-      enterprise_id: account.role === 'admin' ? 'admin' : userRecord?.enterprise_id,
-      created_at: new Date().toISOString()
+    // ========== DEFAULT CONFIG ==========
+    const defaultConfig = {
+      background_color: '#0b1120',
+      surface_color: '#111b2e',
+      text_color: '#e0e6ed',
+      primary_action_color: '#00ff88',
+      secondary_action_color: '#007aff',
+      font_family: 'DM Sans',
+      font_size: 14,
+      platform_name: 'SecureGuard Pro',
+      welcome_message: 'Bienvenue, Super Admin',
+      company_label: 'Entreprises',
+      agents_label: 'Agents',
     };
-  }
 
-  function logout() {
-    currentUser = null;
-    document.getElementById('loginPage').style.display = 'flex';
-    document.getElementById('dashboardPage').style.display = 'none';
-    document.getElementById('adminPage').style.display = 'none';
-    document.getElementById('loginForm').reset();
-    document.getElementById('invitationForm').reset();
-    showToast('👋 Déconnecté avec succès.', 'success');
-  }
+    // ========== VIEW SWITCHING ==========
+    let currentView = 'dashboard';
 
-  // ==================== DATA FILTERING ====================
-  function getCompanyRecords() {
-    return allRecords.filter(r => r.record_type === 'enterprise');
-  }
+    function switchView(view) {
+      currentView = view;
+      document.querySelectorAll('.view-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById('view-' + view).classList.remove('hidden');
 
-  function getSubscriptionRecords() {
-    return allRecords.filter(r => r.record_type === 'subscription');
-  }
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      const navBtn = document.querySelector(`[data-nav="${view}"]`);
+      if (navBtn) navBtn.classList.add('active');
 
-  function getAccessRecords() {
-    return allRecords.filter(r => r.record_type === 'access_key');
-  }
+      const titles = {
+        dashboard: 'Tableau de bord',
+        companies: window.elementSdk?.config?.company_label || defaultConfig.company_label,
+        agents: window.elementSdk?.config?.agents_label || defaultConfig.agents_label,
+        geolocation: 'Géolocalisation Temps Réel',
+        incidents: 'Gestion des Incidents',
+        subscriptions: 'Gestion des Abonnements',
+        reports: 'Rapports',
+      };
+      document.getElementById('page-title').textContent = titles[view] || '';
+    }
 
-  function getInvitationRecords() {
-    return allRecords.filter(r => r.record_type === 'invitation');
-  }
+    // ========== RENDER FUNCTIONS ==========
+    function renderRevenueChart() {
+      const container = document.getElementById('revenue-chart');
+      if (!container) return;
+      const max = Math.max(...revenueData);
+      container.innerHTML = revenueData.map((val, i) => {
+        const pct = (val / max) * 100;
+        return `<div class="flex-1 flex flex-col items-center justify-end h-full">
+          <div class="text-xs font-mono mb-1" style="color: #00ff88;">${val}M</div>
+          <div class="w-full rounded-t-md" style="height: ${pct}%; background: linear-gradient(to top, rgba(0,255,136,0.3), rgba(0,255,136,0.08)); animation: fadeSlideUp 0.5s ease-out ${i * 0.1}s both;"></div>
+        </div>`;
+      }).join('');
+    }
 
-  function getEnterpriseData() {
-    if (!currentUser) return [];
-    if (currentUser.role === 'admin') return allRecords;
-    return allRecords.filter(r => r.enterprise_id === currentUser.enterprise_id);
-  }
+    function renderActivityFeed() {
+      const container = document.getElementById('activity-feed');
+      if (!container) return;
+      const icons = { sos: '🆘', payment: '💳', agent: '👤', report: '📊', warning: '⚠️' };
+      container.innerHTML = activities.map((a, i) => `
+        <div class="flex items-start gap-3 animate-fade-right" style="animation-delay: ${i * 0.1}s;">
+          <span class="text-sm mt-0.5">${icons[a.type] || '📌'}</span>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs" style="color: #e0e6ed;">${a.text}</div>
+            <div class="text-xs mt-0.5" style="color: #5a6a7a;">${a.time}</div>
+          </div>
+        </div>
+      `).join('');
+    }
 
-  // ==================== DASHBOARD ====================
-  function renderDashboard() {
-    const data = getEnterpriseData();
-    const alerts = data.filter(r => r.record_type === 'alert');
-    const patrols = data.filter(r => r.record_type === 'patrol');
-    const reports = data.filter(r => r.record_type === 'report');
+    function renderAlerts() {
+      const container = document.getElementById('alerts-list');
+      if (!container) return;
+      const openIncidents = incidents.filter(inc => inc.status === 'open');
+      container.innerHTML = openIncidents.map((inc, i) => {
+        const colors = { critique: '#ff3b30', moyen: '#ffd60a', faible: '#007aff' };
+        const color = colors[inc.severity] || '#5a6a7a';
+        return `<div class="flex items-start gap-3 p-3 rounded-lg animate-fade-up" style="background: rgba(${inc.severity === 'critique' ? '255,59,48' : inc.severity === 'moyen' ? '255,214,10' : '0,122,255'},0.05); border: 1px solid rgba(${inc.severity === 'critique' ? '255,59,48' : inc.severity === 'moyen' ? '255,214,10' : '0,122,255'},0.15); animation-delay: ${i * 0.1}s;">
+          <span class="w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${inc.severity === 'critique' ? 'animate-blink' : ''}" style="background: ${color};"></span>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-medium" style="color: #ffffff;">${inc.title}</div>
+            <div class="text-xs mt-0.5" style="color: #5a6a7a;">${inc.agent} · ${inc.time}</div>
+          </div>
+          <span class="text-xs px-2 py-0.5 rounded-full flex-shrink-0" style="background: rgba(${inc.severity === 'critique' ? '255,59,48' : inc.severity === 'moyen' ? '255,214,10' : '0,122,255'},0.15); color: ${color};">${inc.severity}</span>
+        </div>`;
+      }).join('');
+    }
 
-    const subRecord = allRecords.find(r => r.record_type === 'subscription' && r.enterprise_id === currentUser.enterprise_id);
-    const isSubscriptionActive = subRecord && new Date(subRecord.subscription_end_date) > new Date();
+    function renderCompaniesTable() {
+      const tbody = document.getElementById('companies-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = companies.map(c => {
+        const planColors = { Basique: '#5a6a7a', Pro: '#00ff88', Premium: '#ffd60a' };
+        const statusColors = { active: '#00ff88', suspended: '#ff3b30' };
+        const statusLabels = { active: 'Actif', suspended: 'Suspendu' };
+        return `<tr style="border-bottom: 1px solid rgba(255,255,255,0.04);" class="hover:bg-white/[0.02]">
+          <td class="px-5 py-3">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold" style="background: rgba(${c.status === 'active' ? '0,255,136' : '255,59,48'},0.1); color: ${statusColors[c.status]};">${c.name.charAt(0)}</div>
+              <div>
+                <div class="text-sm font-medium" style="color: #ffffff;">${c.name}</div>
+                <div class="text-xs" style="color: #5a6a7a;">${c.agents}/${c.maxAgents === 999 ? '∞' : c.maxAgents} agents</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-5 py-3 hidden md:table-cell"><span class="text-xs px-2 py-0.5 rounded-full" style="background: rgba(255,255,255,0.05); color: ${planColors[c.plan]};">${c.plan}</span></td>
+          <td class="px-5 py-3 hidden lg:table-cell text-xs" style="color: #5a6a7a;">${c.agents} / ${c.maxAgents === 999 ? '∞' : c.maxAgents}</td>
+          <td class="px-5 py-3"><span class="flex items-center gap-1.5 text-xs"><span class="w-1.5 h-1.5 rounded-full" style="background: ${statusColors[c.status]};"></span>${statusLabels[c.status]}</span></td>
+          <td class="px-5 py-3">
+            <div class="flex gap-2">
+              <button onclick="showToast('Détails de ${c.name}', 'success')" class="text-xs px-2 py-1 rounded" style="background: rgba(255,255,255,0.05); color: #e0e6ed;">Voir</button>
+              ${c.status === 'active'
+                ? `<button onclick="toggleCompanyStatus(${c.id}, 'suspended')" class="text-xs px-2 py-1 rounded" style="background: rgba(255,59,48,0.1); color: #ff3b30;">Suspendre</button>`
+                : `<button onclick="toggleCompanyStatus(${c.id}, 'active')" class="text-xs px-2 py-1 rounded" style="background: rgba(0,255,136,0.1); color: #00ff88;">Activer</button>`
+              }
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
 
-    document.getElementById('headerEnterprise').textContent = currentUser.enterprise_name;
-    document.getElementById('subStatusText').textContent = isSubscriptionActive ? '✅ Actif' : '❌ Expiré';
+    function renderAgentsGrid() {
+      const grid = document.getElementById('agents-grid');
+      if (!grid) return;
+      const statusColors = { online: '#00ff88', idle: '#ffd60a', sos: '#ff3b30', offline: '#5a6a7a' };
+      const statusLabels = { online: 'En ligne', idle: 'Inactif', sos: 'SOS', offline: 'Hors ligne' };
+      grid.innerHTML = agents.map((a, i) => `
+        <div class="rounded-xl p-4 card-hover animate-fade-up" style="background: #111b2e; border: 1px solid ${a.status === 'sos' ? 'rgba(255,59,48,0.3)' : 'rgba(255,255,255,0.06)'}; animation-delay: ${i * 0.08}s;">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="relative">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold" style="background: linear-gradient(135deg, ${statusColors[a.status]}33, ${statusColors[a.status]}11); color: ${statusColors[a.status]};">${a.name.split(' ').map(n => n[0]).join('')}</div>
+              <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 ${a.status === 'sos' ? 'animate-blink' : ''}" style="border-color: #111b2e; background: ${statusColors[a.status]};"></span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-medium truncate" style="color: #ffffff;">${a.name}</div>
+              <div class="text-xs" style="color: #5a6a7a;">${a.matricule}</div>
+            </div>
+            <span class="text-xs px-2 py-0.5 rounded-full flex-shrink-0" style="background: ${statusColors[a.status]}15; color: ${statusColors[a.status]};">${statusLabels[a.status]}</span>
+          </div>
+          <div class="space-y-1.5 text-xs" style="color: #5a6a7a;">
+            <div class="flex items-center gap-2">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/></svg>
+              ${a.company}
+            </div>
+            <div class="flex items-center gap-2">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              ${a.site}
+            </div>
+          </div>
+          ${a.status === 'sos' ? `<div class="mt-3 text-center py-1.5 rounded-lg sos-pulse text-xs font-bold" style="background: rgba(255,59,48,0.15); color: #ff3b30; border: 1px solid rgba(255,59,48,0.3);">⚠️ ALERTE SOS ACTIVE</div>` : ''}
+        </div>
+      `).join('');
+    }
 
-    if (!isSubscriptionActive) {
-      document.getElementById('mainContent').innerHTML = `
-        <div class="pending-verification fade-in">
-          <div class="text-2xl mb-3">⏰ Abonnement Expiré</div>
-          <p>Votre abonnement AutoReport a expiré le <strong>${formatDate(subRecord?.subscription_end_date)}</strong>.</p>
-          <p class="mt-3">Veuillez <strong>contacter l'administrateur</strong> pour renouveler votre accès.</p>
-          <p class="text-xs opacity-50 mt-4">Email admin: ${ADMIN_EMAIL}</p>
+    function renderGeoAgentList() {
+      const container = document.getElementById('geo-agent-list');
+      if (!container) return;
+      const statusColors = { online: '#00ff88', idle: '#ffd60a', sos: '#ff3b30', offline: '#5a6a7a' };
+      container.innerHTML = agents.map(a => `
+        <div class="flex items-center gap-2 p-2 rounded-lg" style="background: rgba(255,255,255,0.02);">
+          <span class="w-2 h-2 rounded-full flex-shrink-0 ${a.status === 'sos' ? 'animate-blink' : ''}" style="background: ${statusColors[a.status]};"></span>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-medium truncate" style="color: #ffffff;">${a.name}</div>
+            <div class="text-xs truncate" style="color: #5a6a7a;">${a.site}</div>
+          </div>
+          ${a.status === 'sos' ? '<span class="text-xs">🆘</span>' : ''}
+        </div>
+      `).join('');
+    }
+
+    function renderIncidents(filter = 'all') {
+      const container = document.getElementById('incidents-list');
+      if (!container) return;
+      const filtered = filter === 'all' ? incidents : incidents.filter(inc => inc.severity === filter);
+      const colors = { critique: '#ff3b30', moyen: '#ffd60a', faible: '#007aff' };
+      container.innerHTML = filtered.length === 0
+        ? '<div class="text-center py-8 text-xs" style="color: #5a6a7a;">Aucun incident trouvé</div>'
+        : filtered.map((inc, i) => `
+        <div class="rounded-xl p-4 animate-fade-up" style="background: #111b2e; border: 1px solid ${inc.status === 'open' ? `rgba(${inc.severity === 'critique' ? '255,59,48' : inc.severity === 'moyen' ? '255,214,10' : '0,122,255'},0.12)` : 'rgba(255,255,255,0.06)'}; animation-delay: ${i * 0.08}s;">
+          <div class="flex items-start justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full ${inc.severity === 'critique' && inc.status === 'open' ? 'animate-blink' : ''}" style="background: ${colors[inc.severity]};"></span>
+              <h4 class="text-sm font-medium" style="color: #ffffff;">${inc.title}</h4>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs px-2 py-0.5 rounded-full" style="background: ${colors[inc.severity]}15; color: ${colors[inc.severity]};">${inc.severity}</span>
+              <span class="text-xs px-2 py-0.5 rounded-full" style="background: ${inc.status === 'open' ? 'rgba(255,214,10,0.1)' : 'rgba(0,255,136,0.1)'}; color: ${inc.status === 'open' ? '#ffd60a' : '#00ff88'};">${inc.status === 'open' ? 'Ouvert' : 'Clôturé'}</span>
+            </div>
+          </div>
+          <p class="text-xs mb-3" style="color: #5a6a7a;">${inc.description}</p>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4 text-xs" style="color: #5a6a7a;">
+              <span>👤 ${inc.agent}</span>
+              <span>🏢 ${inc.company}</span>
+              <span>📅 ${inc.date} à ${inc.time}</span>
+            </div>
+            ${inc.status === 'open' ? `<button onclick="closeIncident(${inc.id})" class="text-xs px-3 py-1 rounded-lg" style="background: rgba(0,255,136,0.1); color: #00ff88;">Clôturer</button>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderSubscriptionsTable() {
+      const tbody = document.getElementById('subscriptions-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = companies.map(c => {
+        const statusColors = { active: '#00ff88', suspended: '#ff3b30' };
+        const paymentIcons = { 'Mobile Money': '📱', 'Carte bancaire': '💳', 'Virement': '🏦' };
+        return `<tr style="border-bottom: 1px solid rgba(255,255,255,0.04);" class="hover:bg-white/[0.02]">
+          <td class="px-5 py-3 text-sm" style="color: #ffffff;">${c.name}</td>
+          <td class="px-5 py-3 text-xs hidden md:table-cell" style="color: #e0e6ed;">${c.plan}</td>
+          <td class="px-5 py-3 text-xs hidden md:table-cell" style="color: #5a6a7a;">${c.expiry}</td>
+          <td class="px-5 py-3 text-xs" style="color: #e0e6ed;">${paymentIcons[c.payment] || '💰'} ${c.payment}</td>
+          <td class="px-5 py-3"><span class="text-xs px-2 py-0.5 rounded-full" style="background: ${statusColors[c.status]}15; color: ${statusColors[c.status]};">${c.status === 'active' ? 'Actif' : 'Expiré'}</span></td>
+        </tr>`;
+      }).join('');
+    }
+
+    // ========== ACTIONS ==========
+    function toggleCompanyStatus(id, newStatus) {
+      const company = companies.find(c => c.id === id);
+      if (company) {
+        company.status = newStatus;
+        renderCompaniesTable();
+        renderSubscriptionsTable();
+        showToast(`${company.name} ${newStatus === 'active' ? 'activé' : 'suspendu'}`, newStatus === 'active' ? 'success' : 'warning');
+      }
+    }
+
+    function closeIncident(id) {
+      const inc = incidents.find(i => i.id === id);
+      if (inc) {
+        inc.status = 'closed';
+        renderIncidents(currentIncidentFilter);
+        renderAlerts();
+        showToast(`Incident clôturé: ${inc.title}`, 'success');
+      }
+    }
+
+    let currentIncidentFilter = 'all';
+    function filterIncidents(filter, btn) {
+      currentIncidentFilter = filter;
+      document.querySelectorAll('#view-incidents .tab-active').forEach(t => {
+        t.classList.remove('tab-active');
+        t.style.color = '#5a6a7a';
+      });
+      if (btn) {
+        btn.classList.add('tab-active');
+        btn.style.color = '#00ff88';
+      }
+      renderIncidents(filter);
+    }
+
+    // ========== MODALS ==========
+    function openCompanyModal() {
+      const modal = document.getElementById('modal-container');
+      modal.innerHTML = `
+        <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+          <div class="rounded-xl p-6 w-full max-w-md mx-4" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.1);">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="text-base font-bold" style="color: #ffffff;">Nouvelle Entreprise</h3>
+              <button onclick="closeModal()" class="p-1 rounded-lg" style="background: rgba(255,255,255,0.05);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5a6a7a" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <form onsubmit="handleCompanySubmit(event)" class="space-y-4">
+              <div>
+                <label for="company-name" class="block text-xs font-medium mb-1" style="color: #5a6a7a;">Nom de l'entreprise</label>
+                <input id="company-name" type="text" required class="w-full text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #e0e6ed; --tw-ring-color: #00ff88;" placeholder="Ex: SecuriPlus SARL">
+              </div>
+              <div>
+                <label for="company-plan" class="block text-xs font-medium mb-1" style="color: #5a6a7a;">Plan d'abonnement</label>
+                <select id="company-plan" class="w-full text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #e0e6ed; --tw-ring-color: #00ff88;">
+                  <option value="Basique">Basique - 25 000 FCFA/mois</option>
+                  <option value="Pro" selected>Pro - 75 000 FCFA/mois</option>
+                  <option value="Premium">Premium - 150 000 FCFA/mois</option>
+                </select>
+              </div>
+              <div>
+                <label for="company-payment" class="block text-xs font-medium mb-1" style="color: #5a6a7a;">Mode de paiement</label>
+                <select id="company-payment" class="w-full text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #e0e6ed; --tw-ring-color: #00ff88;">
+                  <option value="Mobile Money">Mobile Money</option>
+                  <option value="Carte bancaire">Carte bancaire</option>
+                  <option value="Virement">Virement bancaire</option>
+                </select>
+              </div>
+              <button type="submit" class="w-full py-2.5 rounded-lg text-sm font-medium" style="background: #00ff88; color: #0b1120;">Créer l'entreprise</button>
+            </form>
+          </div>
         </div>
       `;
-      return;
     }
 
-    document.getElementById('mainContent').innerHTML = `
-      <div class="fade-in">
-        <h1 class="text-2xl font-bold mb-2">Bienvenue, ${currentUser.enterprise_name}</h1>
-        <p class="text-sm opacity-60 mb-6">Centre de commandement pour la gestion de vos incidents et patrouilles</p>
-
-        <div class="stat-grid">
-          <div class="stat-box">
-            <div class="stat-value" style="color: #ef4444;">${alerts.length}</div>
-            <div class="stat-label">Alertes Totales</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-value" style="color: #3b82f6;">${patrols.length}</div>
-            <div class="stat-label">Patrouilles</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-value" style="color: #eab308;">${reports.length}</div>
-            <div class="stat-label">Rapports OPJ</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-value" style="color: #22c55e;">${alerts.filter(r=>r.status==='resolved').length}</div>
-            <div class="stat-label">Résolus</div>
-          </div>
-        </div>
-
-        <div class="glass-card glow-border p-5">
-          <h2 class="font-bold text-lg mb-4">📋 Données Confidentiales</h2>
-          <p class="text-sm opacity-60 mb-4">Vos données sont isolées et sécurisées dans une base de données dédiée à <strong>${currentUser.enterprise_name}</strong>.</p>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="p-4 rounded-lg" style="background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);">
-              <div class="font-semibold text-sm mb-2">🔐 Entreprise ID</div>
-              <div class="mono text-xs opacity-70 break-all">${currentUser.enterprise_id}</div>
-            </div>
-            <div class="p-4 rounded-lg" style="background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);">
-              <div class="font-semibold text-sm mb-2">📧 Email d'accès</div>
-              <div class="mono text-xs opacity-70 break-all">${currentUser.email}</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="glass-card glow-border p-5 mt-4">
-          <h2 class="font-bold text-lg mb-3">ℹ️ À propos d'AutoReport</h2>
-          <p class="text-sm opacity-70 leading-relaxed">AutoReport est une plateforme SaaS sécurisée pour la gestion des incidents de sécurité. Chaque entreprise dispose d'une base de données confidentielle isolée. L'accès est contrôlé par abonnement mensuel pour garantir la sécurité et la confidentialité de vos données.</p>
-        </div>
-      </div>
-    `;
-  }
-
-  // ==================== ADMIN PANEL ====================
-  function renderAdminPanel() {
-    const companies = getCompanyRecords();
-    const subscriptions = getSubscriptionRecords();
-    const accessKeys = getAccessRecords();
-    const invitations = getInvitationRecords();
-
-    let html = `
-      <div class="fade-in">
-        <h1 class="text-2xl font-bold mb-6">🛡️ Panneau d'Administration</h1>
-
-        <div class="tab-nav">
-          <button class="tab-btn active" data-tab="companies">📋 Entreprises (${companies.length})</button>
-          <button class="tab-btn" data-tab="invitations">📧 Invitations (${invitations.length})</button>
-          <button class="tab-btn" data-tab="subscriptions">💳 Abonnements (${subscriptions.length})</button>
-          <button class="tab-btn" data-tab="access">🔑 Accès (${accessKeys.length})</button>
-        </div>
-
-        <!-- Companies -->
-        <div id="companies" class="admin-tab-content active">
-          <div class="glass-card glow-border p-5 mb-4">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="font-bold text-lg">Entreprises Enregistrées</h2>
-              <button class="btn-primary text-sm flex items-center gap-2" id="addCompanyBtn">
-                <span>➕ Ajouter</span>
+    function openAgentModal() {
+      const modal = document.getElementById('modal-container');
+      modal.innerHTML = `
+        <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+          <div class="rounded-xl p-6 w-full max-w-md mx-4" style="background: #111b2e; border: 1px solid rgba(255,255,255,0.1);">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="text-base font-bold" style="color: #ffffff;">Nouvel Agent</h3>
+              <button onclick="closeModal()" class="p-1 rounded-lg" style="background: rgba(255,255,255,0.05);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5a6a7a" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
-            <div class="table-container">
-              <table class="table">
-                <thead><tr><th>Nom</th><th>Email Admin</th><th>Plan</th><th>Créée</th><th>BD</th><th>Actions</th></tr></thead>
-                <tbody>
-                  ${companies.length === 0 ? '<tr><td colspan="6" class="text-center opacity-50 py-4">Aucune entreprise</td></tr>' :
-                    companies.map(c => `<tr>
-                      <td><strong>${c.enterprise_name || '—'}</strong></td>
-                      <td class="mono text-xs">${c.user_email || '—'}</td>
-                      <td>${c.plan_type || '—'}</td>
-                      <td>${formatDate(c.created_at)}</td>
-                      <td><span class="badge badge-active">✅ BD</span></td>
-                      <td><button class="btn-sm btn-sm-danger" onclick="deleteCompany('${c.__backendId}')">🗑️</button></td>
-                    </tr>`).join('')}
-                </tbody>
-              </table>
-            </div>
+            <form onsubmit="handleAgentSubmit(event)" class="space-y-4">
+              <div>
+                <label for="agent-name" class="block text-xs font-medium mb-1" style="color: #5a6a7a;">Nom complet</label>
+                <input id="agent-name" type="text" required class="w-full text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #e0e6ed; --tw-ring-color: #00ff88;" placeholder="Ex: Moussa Diallo">
+              </div>
+              <div>
+                <label for="agent-company" class="block text-xs font-medium mb-1" style="color: #5a6a7a;">Entreprise</label>
+                <select id="agent-company" class="w-full text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #e0e6ed; --tw-ring-color: #00ff88;">
+                  ${companies.filter(c => c.status === 'active').map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
+                </select>
+              </div>
+              <div>
+                <label for="agent-site" class="block text-xs font-medium mb-1" style="color: #5a6a7a;">Site d'affectation</label>
+                <input id="agent-site" type="text" required class="w-full text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #e0e6ed; --tw-ring-color: #00ff88;" placeholder="Ex: Centre Commercial Abidjan">
+              </div>
+              <button type="submit" class="w-full py-2.5 rounded-lg text-sm font-medium" style="background: #00ff88; color: #0b1120;">Ajouter l'agent</button>
+            </form>
           </div>
         </div>
+      `;
+    }
 
-        <!-- Invitations -->
-        <div id="invitations" class="admin-tab-content">
-          <div class="glass-card glow-border p-5 mb-4">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="font-bold text-lg">📧 Invitations Envoyées</h2>
-              <button class="btn-primary text-sm flex items-center gap-2" id="sendInvitationBtn">
-                <span>➕ Envoyer Invitation</span>
-              </button>
-            </div>
-            <div class="table-container">
-              <table class="table">
-                <thead><tr><th>Entreprise</th><th>Email</th><th>Plan</th><th>Token</th><th>Statut</th><th>Créée</th><th>Actions</th></tr></thead>
-                <tbody>
-                  ${invitations.length === 0 ? '<tr><td colspan="7" class="text-center opacity-50 py-4">Aucune invitation</td></tr>' :
-                    invitations.map(inv => `<tr>
-                      <td><strong>${inv.enterprise_name || '—'}</strong></td>
-                      <td class="mono text-xs text-wrap">${inv.user_email || '—'}</td>
-                      <td>${inv.plan_type || '—'}</td>
-                      <td class="mono text-xs">${inv.invitation_token.substring(0, 20)}...</td>
-                      <td><span class="badge ${inv.invitation_accepted ? 'badge-active' : 'badge-pending'}">${inv.invitation_accepted ? '✅ Acceptée' : '⏳ Attente'}</span></td>
-                      <td>${formatDate(inv.created_at)}</td>
-                      <td>
-                        <button class="btn-sm btn-sm-primary" onclick="copyInvitationLink('${inv.invitation_token}')">📋</button>
-                        <button class="btn-sm btn-sm-danger" onclick="revokeInvitation('${inv.__backendId}')">🚫</button>
-                      </td>
-                    </tr>`).join('')}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+    function closeModal() {
+      document.getElementById('modal-container').innerHTML = '';
+    }
 
-        <!-- Subscriptions -->
-        <div id="subscriptions" class="admin-tab-content">
-          <div class="glass-card glow-border p-5">
-            <h2 class="font-bold text-lg mb-4">💳 Gestion des Abonnements</h2>
-            <div class="table-container">
-              <table class="table">
-                <thead><tr><th>Entreprise</th><th>Plan</th><th>Statut</th><th>Fin</th><th>Jours Restants</th><th>Actions</th></tr></thead>
-                <tbody>
-                  ${subscriptions.length === 0 ? '<tr><td colspan="6" class="text-center opacity-50 py-4">Aucun abonnement</td></tr>' :
-                    subscriptions.map(s => {
-                      const isActive = new Date(s.subscription_end_date) > new Date();
-                      const daysLeft = Math.ceil((new Date(s.subscription_end_date) - new Date()) / (1000 * 60 * 60 * 24));
-                      return `<tr>
-                        <td><strong>${s.enterprise_name || '—'}</strong></td>
-                        <td>${s.plan_type || 'Pro'}</td>
-                        <td><span class="badge ${isActive ? 'badge-active' : 'badge-expired'}">${isActive ? '✅ Actif' : '❌ Expiré'}</span></td>
-                        <td>${formatDate(s.subscription_end_date)}</td>
-                        <td>${isActive ? daysLeft + ' j' : '0 j'}</td>
-                        <td><button class="btn-sm btn-sm-primary" onclick="renewSubscription('${s.__backendId}')">🔄 +1 mois</button></td>
-                      </tr>`;
-                    }).join('')}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Access Keys -->
-        <div id="access" class="admin-tab-content">
-          <div class="glass-card glow-border p-5">
-            <h2 class="font-bold text-lg mb-4">🔑 Clés d'Accès Sécurisées</h2>
-            <div class="table-container">
-              <table class="table">
-                <thead><tr><th>Entreprise</th><th>Clé</th><th>Créée</th><th>Actions</th></tr></thead>
-                <tbody>
-                  ${accessKeys.length === 0 ? '<tr><td colspan="4" class="text-center opacity-50 py-4">Aucune clé</td></tr>' :
-                    accessKeys.map(k => `<tr>
-                      <td><strong>${k.enterprise_name || '—'}</strong></td>
-                      <td class="mono text-xs">${k.access_token}</td>
-                      <td>${formatDate(k.created_at)}</td>
-                      <td>
-                        <button class="btn-sm btn-sm-primary" onclick="copyToClipboard('${k.access_token}')">📋</button>
-                        <button class="btn-sm btn-sm-danger" onclick="revokeAccess('${k.__backendId}')">🚫</button>
-                      </td>
-                    </tr>`).join('')}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    document.getElementById('adminContent').innerHTML = html;
-
-    // Tab switching
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.admin-tab-content').forEach(t => t.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById(btn.dataset.tab).classList.add('active');
-      });
-    });
-
-    document.getElementById('addCompanyBtn').addEventListener('click', showAddCompanyModal);
-    document.getElementById('sendInvitationBtn').addEventListener('click', showSendInvitationModal);
-  }
-
-  function showAddCompanyModal() {
-    showModal(`
-      <h2 class="font-bold text-lg mb-4">➕ Nouvelle Entreprise</h2>
-      <form id="addCompanyForm" class="flex flex-col gap-3">
-        <div>
-          <label class="form-label">Nom de l'entreprise</label>
-          <input type="text" id="companyName" class="form-input" placeholder="SecureMax SA" required>
-        </div>
-        <div>
-          <label class="form-label">Email administrateur</label>
-          <input type="email" id="companyEmail" class="form-input" placeholder="contact@secure.com" required>
-        </div>
-        <div>
-          <label class="form-label">Plan d'abonnement</label>
-          <select id="planType" class="form-input">
-            <option value="Starter - 99€/mois">🟢 Starter - 99€/mois</option>
-            <option value="Professional - 299€/mois" selected>🔵 Professional - 299€/mois</option>
-            <option value="Enterprise - 699€/mois">🟣 Enterprise - 699€/mois</option>
-          </select>
-        </div>
-        <div class="flex gap-3">
-          <button type="submit" class="btn-primary flex-1">✅ Créer</button>
-          <button type="button" class="btn-secondary" onclick="closeModal()">Annuler</button>
-        </div>
-      </form>
-    `);
-
-    document.getElementById('addCompanyForm').addEventListener('submit', async (e) => {
+    function handleCompanySubmit(e) {
       e.preventDefault();
-      const name = document.getElementById('companyName').value;
-      const email = document.getElementById('companyEmail').value;
-      const plan = document.getElementById('planType').value;
-
-      if (allRecords.length >= 999) {
-        showToast('Limite atteinte.', 'error');
-        return;
-      }
-
-      const entId = 'ent-' + email.split('@')[0];
-      const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + 1);
-
-      // Create enterprise record
-      const r1 = await window.dataSdk.create({
-        record_type: 'enterprise',
-        enterprise_id: entId,
-        enterprise_name: name,
-        user_email: email,
-        user_role: 'admin',
-        created_at: new Date().toISOString(),
-        subscription_status: 'active',
-        subscription_end_date: endDate.toISOString(),
-        plan_type: plan,
-        payment_status: 'paid',
-        title: name, description: '', severity: '', status: '', agent_name: '', location: '', lat: 0, lng: 0, resolved_at: '', category: '', access_token: '', invitation_token: '', invitation_accepted: false, invitation_accepted_at: '', user_password: ''
+      const name = document.getElementById('company-name').value;
+      const plan = document.getElementById('company-plan').value;
+      const payment = document.getElementById('company-payment').value;
+      const maxAgents = { Basique: 10, Pro: 50, Premium: 999 };
+      companies.push({
+        id: companies.length + 1,
+        name, plan, agents: 0,
+        maxAgents: maxAgents[plan],
+        status: 'active',
+        expiry: '2026-01-10',
+        payment,
       });
+      closeModal();
+      renderCompaniesTable();
+      renderSubscriptionsTable();
+      showToast(`${name} créée avec succès`, 'success');
+    }
 
-      if (r1.isOk) {
-        // Create subscription record
-        const r2 = await window.dataSdk.create({
-          record_type: 'subscription',
-          enterprise_id: entId,
-          enterprise_name: name,
-          user_email: email,
-          plan_type: plan,
-          subscription_status: 'active',
-          subscription_end_date: endDate.toISOString(),
-          payment_status: 'paid',
-          created_at: new Date().toISOString(),
-          user_role: 'admin',
-          title: `Sub ${name}`, description: '', severity: '', status: '', agent_name: '', location: '', lat: 0, lng: 0, resolved_at: '', category: '', access_token: '', invitation_token: '', invitation_accepted: false, invitation_accepted_at: '', user_password: ''
-        });
-
-        if (r2.isOk) {
-          const key = generateAccessKey();
-          const r3 = await window.dataSdk.create({
-            record_type: 'access_key',
-            enterprise_id: entId,
-            enterprise_name: name,
-            user_email: email,
-            access_token: key,
-            created_at: new Date().toISOString(),
-            user_role: 'admin',
-            title: `Key ${name}`, description: '', subscription_status: 'active', subscription_end_date: endDate.toISOString(), severity: '', status: '', agent_name: '', location: '', lat: 0, lng: 0, resolved_at: '', category: '', payment_status: '', invitation_token: '', invitation_accepted: false, invitation_accepted_at: '', user_password: ''
-          });
-
-          if (r3.isOk) {
-            showToast(`✅ Entreprise créée!`, 'success');
-            closeModal();
-          }
-        }
-      }
-    });
-  }
-
-  function showSendInvitationModal() {
-    showModal(`
-      <h2 class="font-bold text-lg mb-4">📧 Envoyer une Invitation</h2>
-      <form id="sendInvitationForm" class="flex flex-col gap-3">
-        <div>
-          <label class="form-label">Nom de l'entreprise</label>
-          <input type="text" id="invEntName" class="form-input" placeholder="SecureMax SA" required>
-        </div>
-        <div>
-          <label class="form-label">Email du destinataire</label>
-          <input type="email" id="invDestEmail" class="form-input" placeholder="contact@secure.com" required>
-        </div>
-        <div>
-          <label class="form-label">Plan d'abonnement</label>
-          <select id="invPlanType" class="form-input">
-            <option value="Starter - 99€/mois">🟢 Starter - 99€/mois</option>
-            <option value="Professional - 299€/mois" selected>🔵 Professional - 299€/mois</option>
-            <option value="Enterprise - 699€/mois">🟣 Enterprise - 699€/mois</option>
-          </select>
-        </div>
-        <p class="text-xs opacity-60">⚠️ L'utilisateur recevra un token pour accepter l'invitation et créer un compte.</p>
-        <div class="flex gap-3">
-          <button type="submit" class="btn-primary flex-1">✅ Envoyer</button>
-          <button type="button" class="btn-secondary" onclick="closeModal()">Annuler</button>
-        </div>
-      </form>
-    `);
-
-    document.getElementById('sendInvitationForm').addEventListener('submit', async (e) => {
+    function handleAgentSubmit(e) {
       e.preventDefault();
-      const name = document.getElementById('invEntName').value;
-      const email = document.getElementById('invDestEmail').value;
-      const plan = document.getElementById('invPlanType').value;
-
-      if (allRecords.length >= 999) {
-        showToast('Limite atteinte.', 'error');
-        return;
-      }
-
-      const entId = 'ent-' + email.split('@')[0];
-      const token = generateInvitationToken();
-      const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + 1);
-
-      // Create invitation record
-      const result = await window.dataSdk.create({
-        record_type: 'invitation',
-        enterprise_id: entId,
-        enterprise_name: name,
-        user_email: email,
-        plan_type: plan,
-        invitation_token: token,
-        invitation_accepted: false,
-        created_at: new Date().toISOString(),
-        subscription_status: 'pending',
-        subscription_end_date: endDate.toISOString(),
-        user_role: 'user',
-        title: `Invitation ${name}`, description: '', severity: '', status: '', agent_name: '', location: '', lat: 0, lng: 0, resolved_at: '', category: '', access_token: '', payment_status: '', invitation_accepted_at: '', user_password: ''
+      const name = document.getElementById('agent-name').value;
+      const company = document.getElementById('agent-company').value;
+      const site = document.getElementById('agent-site').value;
+      agents.push({
+        id: agents.length + 1,
+        name,
+        matricule: `AG-${String(agents.length + 1).padStart(3, '0')}`,
+        company, site,
+        status: 'offline',
+        lat: 5.316 + (Math.random() - 0.5) * 0.05,
+        lng: -4.025 + (Math.random() - 0.5) * 0.05,
       });
+      closeModal();
+      renderAgentsGrid();
+      renderGeoAgentList();
+      showToast(`Agent ${name} ajouté avec succès`, 'success');
+    }
 
-      if (result.isOk) {
-        showToast(`✅ Invitation envoyée à ${email}!`, 'success');
-        closeModal();
+    // ========== TOAST ==========
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
+    }
+
+    // ========== NOTIFICATIONS ==========
+    function toggleNotifications() {
+      showToast('3 nouvelles notifications', 'warning');
+    }
+
+    // ========== CLOCK ==========
+    function updateClock() {
+      const now = new Date();
+      const clock = document.getElementById('live-clock');
+      if (clock) {
+        clock.textContent = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       }
-    });
-  }
-
-  window.deleteCompany = async function(id) {
-    const rec = allRecords.find(r => r.__backendId === id);
-    if (rec) {
-      const res = await window.dataSdk.delete(rec);
-      if (res.isOk) showToast('🗑️ Supprimée.', 'success');
     }
-  };
+    setInterval(updateClock, 1000);
+    updateClock();
 
-  window.copyInvitationLink = function(token) {
-    navigator.clipboard.writeText(token);
-    showToast('📋 Token copié! Partagez-le avec l\'utilisateur.', 'success');
-  };
+    // ========== ELEMENT SDK ==========
+    function applyConfig(config) {
+      const bg = config.background_color || defaultConfig.background_color;
+      const surface = config.surface_color || defaultConfig.surface_color;
+      const text = config.text_color || defaultConfig.text_color;
+      const primary = config.primary_action_color || defaultConfig.primary_action_color;
+      const secondary = config.secondary_action_color || defaultConfig.secondary_action_color;
+      const font = config.font_family || defaultConfig.font_family;
+      const fontSize = config.font_size || defaultConfig.font_size;
+      const platformName = config.platform_name || defaultConfig.platform_name;
+      const welcomeMsg = config.welcome_message || defaultConfig.welcome_message;
+      const companyLabel = config.company_label || defaultConfig.company_label;
+      const agentsLabel = config.agents_label || defaultConfig.agents_label;
 
-  window.revokeInvitation = async function(id) {
-    const rec = allRecords.find(r => r.__backendId === id);
-    if (rec) {
-      const res = await window.dataSdk.delete(rec);
-      if (res.isOk) showToast('🚫 Invitation révoquée.', 'success');
-    }
-  };
+      // Background
+      const appRoot = document.getElementById('app-root');
+      if (appRoot) { appRoot.style.background = bg; appRoot.style.color = text; }
 
-  window.renewSubscription = async function(id) {
-    const rec = allRecords.find(r => r.__backendId === id);
-    if (rec) {
-      const d = new Date();
-      d.setMonth(d.getMonth() + 1);
-      const res = await window.dataSdk.update({ ...rec, subscription_status: 'active', subscription_end_date: d.toISOString(), payment_status: 'paid' });
-      if (res.isOk) showToast('✅ Abonnement renouvelé d\'1 mois.', 'success');
-    }
-  };
+      // Sidebar
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar) sidebar.style.background = surface;
 
-  window.copyToClipboard = function(t) {
-    navigator.clipboard.writeText(t);
-    showToast('📋 Copié!', 'success');
-  };
+      // Font
+      const baseFontStack = 'sans-serif';
+      document.body.style.fontFamily = `${font}, ${baseFontStack}`;
 
-  window.revokeAccess = async function(id) {
-    const rec = allRecords.find(r => r.__backendId === id);
-    if (rec) {
-      const res = await window.dataSdk.delete(rec);
-      if (res.isOk) showToast('🚫 Clé révoquée.', 'success');
-    }
-  };
+      // Font size
+      const base = fontSize;
+      document.querySelectorAll('.text-2xl').forEach(el => el.style.fontSize = `${base * 1.7}px`);
+      document.querySelectorAll('.text-lg').forEach(el => el.style.fontSize = `${base * 1.3}px`);
+      document.querySelectorAll('.text-sm').forEach(el => el.style.fontSize = `${base}px`);
+      document.querySelectorAll('.text-xs').forEach(el => el.style.fontSize = `${base * 0.85}px`);
 
-  // ==================== LOGIN TABS ====================
-  document.getElementById('loginTab').addEventListener('click', () => {
-    document.getElementById('loginForm').style.display = 'flex';
-    document.getElementById('invitationForm').style.display = 'none';
-  });
+      // Text content
+      const sidebarName = document.getElementById('sidebar-platform-name');
+      if (sidebarName) sidebarName.textContent = platformName;
 
-  document.getElementById('invitationTab').addEventListener('click', () => {
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('invitationForm').style.display = 'flex';
-  });
+      const welcomeEl = document.getElementById('welcome-msg');
+      if (welcomeEl) welcomeEl.textContent = welcomeMsg;
 
-  // ==================== LOGIN FORM ====================
-  document.getElementById('loginForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email = document.getElementById('emailInput').value;
-    const pwd = document.getElementById('passwordInput').value;
-    const user = login(email, pwd);
+      const companiesTitle = document.getElementById('companies-title');
+      if (companiesTitle) companiesTitle.textContent = companyLabel;
 
-    if (!user) {
-      showToast('❌ Identifiants incorrects.', 'error');
-      return;
-    }
+      const agentsTitle = document.getElementById('agents-title');
+      if (agentsTitle) agentsTitle.textContent = agentsLabel;
 
-    currentUser = user;
-    document.getElementById('loginPage').style.display = 'none';
+      const navCompanies = document.getElementById('nav-companies');
+      if (navCompanies) navCompanies.textContent = companyLabel;
 
-    if (user.role === 'admin') {
-      document.getElementById('adminPage').style.display = 'block';
-      renderAdminPanel();
-    } else {
-      document.getElementById('dashboardPage').style.display = 'block';
-      renderDashboard();
-    }
+      const navAgents = document.getElementById('nav-agents');
+      if (navAgents) navAgents.textContent = agentsLabel;
 
-    showToast(`✅ Bienvenue ${user.enterprise_name}!`, 'success');
-  });
-
-  // ==================== INVITATION FORM ====================
-  document.getElementById('invitationForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const token = document.getElementById('invitationToken').value;
-    const email = document.getElementById('invitationEmail').value;
-    const pwd1 = document.getElementById('invitationPassword').value;
-    const pwd2 = document.getElementById('invitationPasswordConfirm').value;
-
-    if (pwd1 !== pwd2) {
-      showToast('❌ Les mots de passe ne correspondent pas.', 'error');
-      return;
-    }
-
-    if (pwd1.length < 6) {
-      showToast('❌ Le mot de passe doit avoir au moins 6 caractères.', 'error');
-      return;
-    }
-
-    // Find invitation record
-    const invitation = allRecords.find(r => 
-      r.record_type === 'invitation' && 
-      r.invitation_token === token && 
-      r.user_email === email
-    );
-
-    if (!invitation) {
-      showToast('❌ Token d\'invitation invalide ou expiré.', 'error');
-      return;
-    }
-
-    if (invitation.invitation_accepted) {
-      showToast('❌ Cette invitation a déjà été acceptée.', 'error');
-      return;
-    }
-
-    document.getElementById('invitationText').textContent = 'Activation...';
-    document.getElementById('invitationSpinner').style.display = 'inline-block';
-
-    // Mark invitation as accepted
-    const updateResult = await window.dataSdk.update({
-      ...invitation,
-      invitation_accepted: true,
-      invitation_accepted_at: new Date().toISOString(),
-      user_password: pwd1
-    });
-
-    if (updateResult.isOk) {
-      // Create user record for future logins
-      const userResult = await window.dataSdk.create({
-        record_type: 'user',
-        enterprise_id: invitation.enterprise_id,
-        enterprise_name: invitation.enterprise_name,
-        user_email: email,
-        user_role: 'user',
-        user_password: pwd1,
-        invitation_accepted: true,
-        invitation_accepted_at: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        subscription_status: 'active',
-        subscription_end_date: invitation.subscription_end_date,
-        plan_type: invitation.plan_type,
-        title: '', description: '', severity: '', status: '', agent_name: '', location: '', lat: 0, lng: 0, resolved_at: '', category: '', access_token: '', invitation_token: '', payment_status: ''
+      // Primary action color for buttons
+      document.querySelectorAll('[style*="background: #00ff88"]').forEach(el => {
+        el.style.background = primary;
       });
-
-      if (userResult.isOk) {
-        showToast('✅ Invitation acceptée! Vous pouvez maintenant vous connecter.', 'success');
-        document.getElementById('invitationForm').reset();
-        document.getElementById('loginTab').click();
-        setTimeout(() => {
-          document.getElementById('emailInput').value = email;
-          document.getElementById('passwordInput').value = pwd1;
-        }, 100);
-      }
     }
 
-    document.getElementById('invitationText').textContent = '✅ Accepter l\'invitation';
-    document.getElementById('invitationSpinner').style.display = 'none';
-  });
-
-  document.getElementById('logoutBtn').addEventListener('click', logout);
-  document.getElementById('adminLogoutBtn').addEventListener('click', logout);
-
-  // ==================== DATA SDK ====================
-  const dataHandler = {
-    onDataChanged(data) {
-      allRecords = data;
-      if (currentUser?.role === 'user') {
-        renderDashboard();
-      } else if (currentUser?.role === 'admin') {
-        renderAdminPanel();
-      }
+    // Initialize Element SDK
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (config) => {
+          applyConfig(config);
+        },
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.background_color || defaultConfig.background_color,
+              set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); }
+            },
+            {
+              get: () => config.surface_color || defaultConfig.surface_color,
+              set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); }
+            },
+            {
+              get: () => config.text_color || defaultConfig.text_color,
+              set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); }
+            },
+            {
+              get: () => config.primary_action_color || defaultConfig.primary_action_color,
+              set: (v) => { config.primary_action_color = v; window.elementSdk.setConfig({ primary_action_color: v }); }
+            },
+            {
+              get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+              set: (v) => { config.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); }
+            },
+          ],
+          borderables: [],
+          fontEditable: {
+            get: () => config.font_family || defaultConfig.font_family,
+            set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+          },
+          fontSizeable: {
+            get: () => config.font_size || defaultConfig.font_size,
+            set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+          },
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ['platform_name', config.platform_name || defaultConfig.platform_name],
+          ['welcome_message', config.welcome_message || defaultConfig.welcome_message],
+          ['company_label', config.company_label || defaultConfig.company_label],
+          ['agents_label', config.agents_label || defaultConfig.agents_label],
+        ]),
+      });
     }
-  };
 
-  const res = await window.dataSdk.init(dataHandler);
-  if (!res.isOk) console.error('Data SDK init failed');
-})();
-</script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd38b2a717d8a3d',t:'MTc3MDk3NzUwNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+    // ========== INITIAL RENDER ==========
+    renderRevenueChart();
+    renderActivityFeed();
+    renderAlerts();
+    renderCompaniesTable();
+    renderAgentsGrid();
+    renderGeoAgentList();
+    renderIncidents();
+    renderSubscriptionsTable();
+    applyConfig(defaultConfig);
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd3f5c0943a73a8',t:'MTc3MDk4MTg3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
