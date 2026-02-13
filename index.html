@@ -304,32 +304,34 @@
       }
     };
 
-    // Initialize SDK with retry logic
+    // Initialize SDK - simple approach
     async function initDataSdk() {
-      let retries = 0;
-      while (!window.dataSdk && retries < 100) {
-        await new Promise(r => setTimeout(r, 50));
-        retries++;
+      // Check every 100ms for up to 10 seconds
+      let attempts = 0;
+      while (!window.dataSdk && attempts < 100) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
       }
 
       if (!window.dataSdk) {
-        console.error('Data SDK unavailable');
+        console.error('Data SDK still not available after 10 seconds');
         return;
       }
 
       try {
         const result = await window.dataSdk.init(dataHandler);
-        if (result && result.isOk) {
+        if (result.isOk) {
           dataSdkReady = true;
-          console.log('✅ Data SDK initialized');
+          console.log('✅ Data SDK Ready!');
         } else {
-          console.error('Failed to init SDK:', result?.error);
+          console.error('SDK init failed:', result.error);
         }
-      } catch (e) {
-        console.error('SDK init error:', e);
+      } catch (err) {
+        console.error('SDK init exception:', err);
       }
     }
 
+    // Start initialization immediately
     initDataSdk();
 
     // ---- Tab Switching ----
@@ -360,8 +362,13 @@
       e.preventDefault();
       hideSupplierMessages();
 
-      if (!dataSdkReady || !window.dataSdk) {
-        showSupplierError('Service de stockage non disponible. Rechargez la page.');
+      if (!dataSdkReady) {
+        showSupplierError('Système de stockage en cours d\'initialisation... Attendez quelques secondes et réessayez.');
+        return;
+      }
+
+      if (!window.dataSdk) {
+        showSupplierError('Service de stockage indisponible. Rechargez la page.');
         return;
       }
 
@@ -378,6 +385,7 @@
 
       setSupplierSubmitting(true);
       const record = {
+        id: 'supplier_' + Date.now(),
         record_type: 'supplier',
         name,
         contact: document.getElementById('s-contact').value.trim(),
@@ -425,8 +433,13 @@
       e.preventDefault();
       hideOrderMessages();
 
-      if (!dataSdkReady || !window.dataSdk) {
-        showOrderError('Service de stockage non disponible. Rechargez la page.');
+      if (!dataSdkReady) {
+        showOrderError('Système de stockage en cours d\'initialisation... Attendez quelques secondes et réessayez.');
+        return;
+      }
+
+      if (!window.dataSdk) {
+        showOrderError('Service de stockage indisponible. Rechargez la page.');
         return;
       }
 
@@ -457,6 +470,7 @@
 
       setOrderSubmitting(true);
       const record = {
+        id: 'order_' + Date.now(),
         record_type: 'order',
         supplier_id: supplierId,
         article_name: article,
@@ -858,5 +872,5 @@
       return d.innerHTML;
     }
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd4bdbcd4ae8a3d',t:'MTc3MDk5MDA2NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd4e69151588a3d',t:'MTc3MDk5MTczNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
