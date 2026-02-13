@@ -294,8 +294,8 @@
     // ---- Data SDK ----
     const dataHandler = {
       onDataChanged(data) {
-        allSuppliers = data.filter(d => d.type === 'supplier');
-        allOrders = data.filter(d => d.type === 'order');
+        allSuppliers = data.filter(d => d.record_type === 'supplier');
+        allOrders = data.filter(d => d.record_type === 'order');
         populateSupplierSelect();
         renderSupplierList();
         renderOrderList();
@@ -306,7 +306,7 @@
     (async () => {
       if (window.dataSdk) {
         const res = await window.dataSdk.init(dataHandler);
-        if (!res.isOk) console.error('Data SDK init failed');
+        if (!res.isOk) console.error('Data SDK init failed', res.error);
       }
     })();
 
@@ -348,7 +348,7 @@
 
       setSupplierSubmitting(true);
       const record = {
-        type: 'supplier',
+        record_type: 'supplier',
         name,
         contact: document.getElementById('s-contact').value.trim(),
         email: document.getElementById('s-email').value.trim(),
@@ -366,7 +366,7 @@
         document.getElementById('supplier-form').reset();
         setTimeout(() => { toggleSupplierForm(); }, 800);
       } else {
-        showSupplierError('Erreur. Réessayez.');
+        showSupplierError('Erreur: ' + (result.error?.message || 'Réessayez'));
       }
     }
 
@@ -403,7 +403,7 @@
 
       setOrderSubmitting(true);
       const record = {
-        type: 'order',
+        record_type: 'order',
         supplier_id: supplierId,
         article_name: article,
         quantity,
@@ -427,7 +427,7 @@
         document.getElementById('order-form').reset();
         setTimeout(() => { toggleOrderForm(); }, 800);
       } else {
-        showOrderError('Erreur. Réessayez.');
+        showOrderError('Erreur: ' + (result.error?.message || 'Réessayez'));
       }
     }
 
@@ -793,5 +793,5 @@
       return d.innerHTML;
     }
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd499cd80f18a3d',t:'MTc3MDk4ODU5Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd4aa6081fc8a3d',t:'MTc3MDk4OTI3MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
