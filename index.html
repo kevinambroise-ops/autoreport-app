@@ -17,13 +17,14 @@
       from { opacity: 0; transform: translateX(-12px); }
       to { opacity: 1; transform: translateX(0); }
     }
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 0.4; }
-      50% { opacity: 1; }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
 
     .fade-up { animation: fadeUp 0.5s ease forwards; }
     .slide-in { animation: slideIn 0.35s ease forwards; }
+    .spinner { animation: spin 1s linear infinite; }
 
     .card {
       transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -47,12 +48,6 @@
     .btn-primary:active {
       transform: translateY(0);
     }
-
-    .loading-dot {
-      animation: pulse-dot 1.2s ease infinite;
-    }
-    .loading-dot:nth-child(2) { animation-delay: 0.2s; }
-    .loading-dot:nth-child(3) { animation-delay: 0.4s; }
 
     .tab-btn {
       transition: all 0.2s ease;
@@ -101,8 +96,13 @@
      <p id="subtitle-text" style="color:var(--text-color); opacity:0.6; margin:0; font-size:15px;">Gérez vos fournisseurs et suivez vos commandes en temps réel</p>
     </header><!-- Tabs -->
     <div class="flex gap-1 mb-6 border-b" style="border-color:rgba(255,255,255,0.08);"><button id="tab-suppliers" class="tab-btn px-4 py-3 font-semibold text-sm active" onclick="switchTab('suppliers')" style="border-bottom:2px solid var(--primary-action); color:var(--primary-action);"> 📋 Fournisseurs </button> <button id="tab-orders" class="tab-btn px-4 py-3 font-semibold text-sm" onclick="switchTab('orders')" style="border-bottom:2px solid transparent; color:var(--text-color); opacity:0.6;"> 📦 Commandes </button>
+    </div><!-- Loading State -->
+    <div id="loading-state" class="text-center py-16 fade-up">
+     <svg class="spinner mx-auto mb-4" width="48" height="48" viewbox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="20" stroke="var(--primary-action)" stroke-width="2" opacity="0.2" /> <path d="M24 4a20 20 0 0 1 20 20" stroke="var(--primary-action)" stroke-width="2" stroke-linecap="round" fill="none" />
+     </svg>
+     <p style="color:var(--text-color); opacity:0.6;">Chargement des données...</p>
     </div><!-- ====== SUPPLIERS TAB ====== -->
-    <div id="suppliers-section" class="fade-up">
+    <div id="suppliers-section" class="fade-up" style="display:none;">
      <div class="mb-6 fade-up" style="animation-delay:0.1s;"><button id="toggle-supplier-form-btn" class="btn-primary flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm" style="background:var(--primary-action); color:var(--bg-color);" onclick="toggleSupplierForm()">
        <svg width="18" height="18" viewbox="0 0 18 18" fill="none">
         <path d="M9 4v10M4 9h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -193,7 +193,10 @@
    </div>
   </div>
   <script>
-    // ---- State ----
+    // Google Apps Script URL
+    const API_URL = 'https://script.google.com/a/macros/maghouseinternational.org/s/AKfycbyDyDue9tM_tAQRaqkBQmK80-Ol_C__FHfa6k9PpBF9NkZIjdKURuZ2EcBBPLBC0dBeZg/exec';
+
+    // State
     let allSuppliers = [];
     let allOrders = [];
     let currentTab = 'suppliers';
@@ -201,22 +204,58 @@
     let orderSearchQuery = '';
     let orderStatusFilter = '';
 
-    // ---- LocalStorage Manager ----
-    const storage = {
-      save() {
-        localStorage.setItem('suppliers', JSON.stringify(allSuppliers));
-        localStorage.setItem('orders', JSON.stringify(allOrders));
-      },
-      load() {
-        allSuppliers = JSON.parse(localStorage.getItem('suppliers') || '[]');
-        allOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+    // API Helper
+    async function callAPI(action, params = {}) {
+      try {
+        const url = new URL(API_URL);
+        url.searchParams.append('action', action);
+        Object.keys(params).forEach(key => {
+          url.searchParams.append(key, params[key]);
+        });
+
+        const response = await fetch(url, { method: 'GET' });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+        return data;
+      } catch (error) {
+        console.error('API Error:', error);
+        showError('Erreur de connexion: ' + error.message);
+        return null;
       }
-    };
+    }
 
     // Load data on startup
-    storage.load();
+    async function loadData() {
+      document.getElementById('loading-state').style.display = 'block';
+      document.getElementById('suppliers-section').style.display = 'none';
+      document.getElementById('orders-section').style.display = 'none';
 
-    // ---- Tab Switching ----
+      const suppliers = await callAPI('getFournisseurs');
+      const orders = await callAPI('getCommandes');
+
+      if (suppliers) allSuppliers = suppliers;
+      if (orders) allOrders = orders;
+
+      document.getElementById('loading-state').style.display = 'none';
+      switchTab('suppliers');
+      populateSupplierSelect();
+      renderSupplierList();
+      renderOrderList();
+      updateCounts();
+    }
+
+    // Error display
+    function showError(msg) {
+      const div = document.createElement('div');
+      div.style.cssText = 'position:fixed; top:20px; right:20px; background:#ef4444; color:white; padding:16px; border-radius:8px; z-index:9999; max-width:300px;';
+      div.textContent = msg;
+      document.body.appendChild(div);
+      setTimeout(() => div.remove(), 4000);
+    }
+
+    // Tab Switching
     function switchTab(tab) {
       currentTab = tab;
       document.getElementById('suppliers-section').style.display = tab === 'suppliers' ? 'block' : 'none';
@@ -229,7 +268,7 @@
       document.getElementById('tab-orders').style.opacity = tab === 'orders' ? '1' : '0.6';
     }
 
-    // ---- Supplier Form ----
+    // Supplier Form
     function toggleSupplierForm() {
       const panel = document.getElementById('supplier-form-panel');
       panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
@@ -240,7 +279,7 @@
       hideSupplierMessages();
     }
 
-    function handleSupplierSubmit(e) {
+    async function handleSupplierSubmit(e) {
       e.preventDefault();
       hideSupplierMessages();
 
@@ -250,28 +289,33 @@
         return;
       }
 
-      const supplier = {
-        id: Date.now().toString(),
+      document.getElementById('supplier-submit-btn').disabled = true;
+      document.getElementById('supplier-submit-label').textContent = 'Enregistrement...';
+
+      const result = await callAPI('addFournisseur', {
         name,
         contact: document.getElementById('s-contact').value.trim(),
         email: document.getElementById('s-email').value.trim(),
         phone: document.getElementById('s-phone').value.trim(),
         category: document.getElementById('s-category').value.trim(),
         notes: document.getElementById('s-notes').value.trim()
-      };
+      });
 
-      allSuppliers.push(supplier);
-      storage.save();
-      populateSupplierSelect();
-      renderSupplierList();
-      updateCounts();
+      document.getElementById('supplier-submit-btn').disabled = false;
+      document.getElementById('supplier-submit-label').textContent = 'Enregistrer';
 
-      showSupplierSuccess('✅ Fournisseur ajouté !');
-      document.getElementById('supplier-form').reset();
-      setTimeout(() => toggleSupplierForm(), 800);
+      if (result && result.success) {
+        allSuppliers = await callAPI('getFournisseurs');
+        populateSupplierSelect();
+        renderSupplierList();
+        updateCounts();
+        showSupplierSuccess('✅ Fournisseur ajouté !');
+        document.getElementById('supplier-form').reset();
+        setTimeout(() => toggleSupplierForm(), 800);
+      }
     }
 
-    // ---- Order Form ----
+    // Order Form
     function toggleOrderForm() {
       const panel = document.getElementById('order-form-panel');
       panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
@@ -282,7 +326,7 @@
       hideOrderMessages();
     }
 
-    function handleOrderSubmit(e) {
+    async function handleOrderSubmit(e) {
       e.preventDefault();
       hideOrderMessages();
 
@@ -298,35 +342,38 @@
         return;
       }
 
-      const quantity = parseFloat(document.getElementById('o-quantity').value);
-      const price = parseFloat(document.getElementById('o-price').value);
       const date = document.getElementById('o-date').value;
       if (!date) {
         showOrderError('Sélectionnez une date.');
         return;
       }
 
-      const order = {
-        id: Date.now().toString(),
+      document.getElementById('order-submit-btn').disabled = true;
+      document.getElementById('order-submit-label').textContent = 'Enregistrement...';
+
+      const result = await callAPI('addCommande', {
         supplier_id: supplierId,
         article_name: article,
-        quantity,
-        unit_price: price,
+        quantity: document.getElementById('o-quantity').value,
+        unit_price: document.getElementById('o-price').value,
         order_date: date,
         status: document.getElementById('o-status').value
-      };
+      });
 
-      allOrders.push(order);
-      storage.save();
-      renderOrderList();
-      updateCounts();
+      document.getElementById('order-submit-btn').disabled = false;
+      document.getElementById('order-submit-label').textContent = 'Enregistrer';
 
-      showOrderSuccess('✅ Commande ajoutée !');
-      document.getElementById('order-form').reset();
-      setTimeout(() => toggleOrderForm(), 800);
+      if (result && result.success) {
+        allOrders = await callAPI('getCommandes');
+        renderOrderList();
+        updateCounts();
+        showOrderSuccess('✅ Commande ajoutée !');
+        document.getElementById('order-form').reset();
+        setTimeout(() => toggleOrderForm(), 800);
+      }
     }
 
-    // ---- Populate Supplier Select ----
+    // Populate Supplier Select
     function populateSupplierSelect() {
       const select = document.getElementById('o-supplier');
       const current = select.value;
@@ -340,7 +387,7 @@
       select.value = current;
     }
 
-    // ---- Render Suppliers ----
+    // Render Suppliers
     function renderSupplierList() {
       const container = document.getElementById('supplier-list');
       const emptyState = document.getElementById('suppliers-empty');
@@ -437,7 +484,7 @@
       updateCounts();
     }
 
-    // ---- Render Orders ----
+    // Render Orders
     function renderOrderList() {
       const container = document.getElementById('order-list');
       const emptyState = document.getElementById('orders-empty');
@@ -542,16 +589,21 @@
       updateCounts();
     }
 
-    function updateOrderStatus(orderId, newStatus) {
+    async function updateOrderStatus(orderId, newStatus) {
       const order = allOrders.find(o => o.id === orderId);
       if (order) {
-        order.status = newStatus;
-        storage.save();
-        renderOrderList();
+        const result = await callAPI('updateCommande', {
+          id: orderId,
+          status: newStatus
+        });
+        if (result && result.success) {
+          allOrders = await callAPI('getCommandes');
+          renderOrderList();
+        }
       }
     }
 
-    // ---- Delete Handlers ----
+    // Delete Handlers
     function requestDeleteSupplier(id) {
       const card = document.querySelector(`[data-id="${id}"]`);
       if (!card) return;
@@ -574,14 +626,19 @@
       }
     }
 
-    function confirmDeleteSupplier(id) {
-      allSuppliers = allSuppliers.filter(s => s.id !== id);
-      allOrders = allOrders.filter(o => o.supplier_id !== id);
-      storage.save();
-      populateSupplierSelect();
-      renderSupplierList();
-      renderOrderList();
-      updateCounts();
+    async function confirmDeleteSupplier(id) {
+      const result = await callAPI('deleteRow', {
+        id: id,
+        sheet: 'Fournisseurs'
+      });
+      if (result && result.success) {
+        allSuppliers = await callAPI('getFournisseurs');
+        allOrders = await callAPI('getCommandes');
+        populateSupplierSelect();
+        renderSupplierList();
+        renderOrderList();
+        updateCounts();
+      }
     }
 
     function requestDeleteOrder(id) {
@@ -615,14 +672,19 @@
       }
     }
 
-    function confirmDeleteOrder(id) {
-      allOrders = allOrders.filter(o => o.id !== id);
-      storage.save();
-      renderOrderList();
-      updateCounts();
+    async function confirmDeleteOrder(id) {
+      const result = await callAPI('deleteRow', {
+        id: id,
+        sheet: 'Commandes'
+      });
+      if (result && result.success) {
+        allOrders = await callAPI('getCommandes');
+        renderOrderList();
+        updateCounts();
+      }
     }
 
-    // ---- Helpers ----
+    // Helpers
     function updateCounts() {
       const suppCount = getFilteredSuppliers().length;
       const ordCount = getFilteredOrders().length;
@@ -662,11 +724,8 @@
       return d.innerHTML;
     }
 
-    // Initialize on load
-    populateSupplierSelect();
-    renderSupplierList();
-    renderOrderList();
-    updateCounts();
+    // Initialize
+    loadData();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd507fb71a58a3d',t:'MTc3MDk5MzEwNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd5787e578d8a3d',t:'MTc3MDk5NzcxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
